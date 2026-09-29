@@ -706,3 +706,8 @@ h1, h2, h3:not(.q-text), .eyebrow, .pill, .count, .opt, .scale label, .a-meta, .
 .hero-side .notice { font-size: 13.5px; hyphenate-limit-chars: 6 3 2; word-spacing: -0.01em; }
 
 .hero-main .meta-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+
+.pill.std { border-color: var(--patina); color: var(--patina); letter-spacing: .04em; }
+
+/* Question headings are headings: ragged-right, balanced, never stretched. */
+.q-text { text-align: left; hyphens: manual; -webkit-hyphens: manual; text-wrap: balance; }

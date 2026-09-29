@@ -1043,7 +1043,9 @@
       el("span", { class: "q-no mono", text: String(number).padStart(2, "0") }),
       el("h3", { class: "q-text" }, [
         document.createTextNode(L(q).q + " "),
-        q.tech ? el("span", { class: "pill", text: t("tech") }) : null
+        q.tech ? el("span", { class: "pill", text: t("tech") }) : null,
+        q.std ? document.createTextNode(" ") : null,
+        q.std ? el("span", { class: "pill std", title: q.std, text: q.std }) : null
       ])
     ]);
     node.appendChild(head);

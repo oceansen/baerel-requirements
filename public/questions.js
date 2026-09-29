@@ -15,11 +15,11 @@ const SURVEY = {
   },
   intro: {
     nb: [
-      "Formål: kartlegge krav til en bærekraftig digital infrastruktur for integrerte, sirkulære verdikjeder i elektronikk – datasikkerhet, datakvalitet og forvaltning, integrasjon av livsløpsdata på tvers av virksomheter, registrering av klima- og ressursavtrykk gjennom livsløpet, underliggende datamodell og arkitektur, teknologi- og tillitsvalg, KI-agenter og applikasjoner på toppen av dataene, datavolum og agent-til-agent-trafikk – og hvordan den skal styres og gjøres tillitsverdig, bekymringer knyttet til teknologimakt, geopolitikk, svarte bokser og energibruk, fangst av taus kunnskap med bærbare enheter og AR-briller, robotisering av oppgaver mennesker gjør i dag, ubemannet drift, edge-databehandling og datadeling, og hvilke framtidsbilder plattformen må tåle.",
+      "Formål: kartlegge krav til en bærekraftig digital infrastruktur for integrerte, sirkulære verdikjeder i elektronikk – datasikkerhet, datakvalitet og forvaltning, integrasjon av livsløpsdata på tvers av virksomheter, registrering av klima- og ressursavtrykk gjennom livsløpet, underliggende datamodell og arkitektur, digitale produktpass etter standardene EN 18216–18223, teknologi- og tillitsvalg, KI-agenter og applikasjoner på toppen av dataene, datavolum og agent-til-agent-trafikk – og hvordan den skal styres og gjøres tillitsverdig, bekymringer knyttet til teknologimakt, geopolitikk, svarte bokser og energibruk, fangst av taus kunnskap med bærbare enheter og AR-briller, robotisering av oppgaver mennesker gjør i dag, ubemannet drift, edge-databehandling og datadeling, og hvilke framtidsbilder plattformen må tåle.",
       "Intervjuet er ment for alle typer virksomheter i elektronikkens verdikjede – fra material- og komponentleverandører, kretskort- og kontraktsprodusenter, OEM-er og systemintegratorer, via eiere, drift-, service- og reparasjonsaktører, til ombruksaktører, returlogistikk og gjenvinnere – og for myndigheter, forskning og teknologileverandører."
     ],
     en: [
-      "Purpose: collect requirements for a sustainable digital infrastructure supporting integrated, circular electronics value chains — covering data security, quality and governance; integration of lifecycle data across organisations; recording of carbon and resource footprints across the lifecycle; the underlying data model and architecture; technology and trust choices; AI agents and applications built on the data; data volume and agent-to-agent traffic, and how to govern it and make it trustworthy; concerns about tech power, geopolitics, black boxes and energy use; capture of tacit knowledge through wearables and AR glasses; robotic automation of work people do today; unattended operation; edge data fusion and data sharing; and the future worlds the platform must withstand.",
+      "Purpose: collect requirements for a sustainable digital infrastructure supporting integrated, circular electronics value chains — covering data security, quality and governance; integration of lifecycle data across organisations; recording of carbon and resource footprints across the lifecycle; the underlying data model and architecture; Digital Product Passports under EN 18216–18223; technology and trust choices; AI agents and applications built on the data; data volume and agent-to-agent traffic, and how to govern it and make it trustworthy; concerns about tech power, geopolitics, black boxes and energy use; capture of tacit knowledge through wearables and AR glasses; robotic automation of work people do today; unattended operation; edge data fusion and data sharing; and the future worlds the platform must withstand.",
       "The interview is intended for any organisation in the electronics value chain — from materials and component suppliers, PCB and EMS manufacturers, OEMs and system integrators, through operators, service and repair providers, to refurbishers, reverse logistics and recyclers — as well as regulators, researchers and technology providers."
     ]
   },
@@ -301,6 +301,100 @@ const SURVEY = {
         { id: "q45", t: "longtext", tech: true,
           nb: { q: "Har du synspunkter på en konkret foretrukket teknologistack, eller på tilnærminger som bør unngås?" },
           en: { q: "If you have a view on a preferred concrete technology stack, or on approaches that should be avoided, describe it here." } }
+      ]
+    },
+    {
+      id: "s16",
+      nb: { title: "Digitalt produktpass – krav etter EN 18216–18223", lead: "Hva virksomheten trenger for å oppfylle kravene til digitalt produktpass (ESPR) etter de harmoniserte standardene fra mai 2026 – identifikatorer, databærere, lagring, API-er, utveksling og semantisk samhandling – og de kommende standardene for tilgang og integritet." },
+      en: { title: "Digital Product Passport — requirements under EN 18216–18223", lead: "What the organisation needs to meet the Digital Product Passport requirements (ESPR) under the harmonised standards of May 2026 — identifiers, data carriers, storage, APIs, exchange and semantic interoperability — and the forthcoming standards on access and integrity." },
+      questions: [
+        { id: "q181", core: true, t: "single", std: "ESPR",
+          nb: { q: "Hvor forberedt er virksomheten på kravene til digitalt produktpass og standardene EN 18216–18223?",
+            o: ["Ikke kjent med kravene", "Kjent med dem, men ikke startet", "Kartlegger hva som kreves for våre produkter", "Pilot eller prosjekt i gang", "Produktpass i drift for enkelte produkter", "Ikke relevant for oss"] },
+          en: { q: "How prepared is the organisation for the Digital Product Passport requirements and the standards EN 18216–18223?",
+            o: ["Not familiar with the requirements", "Familiar, but not started", "Mapping what is required for our products", "Pilot or project under way", "Passports in operation for some products", "Not relevant for us"] } },
+        { id: "q182", t: "multi", other: true, std: "ESPR",
+          nb: { q: "Hva gjør produktpass aktuelt for dere først?",
+            o: ["Batterier (krav fra februar 2027)", "IKT-produkter og elektronikk (etter Kommisjonens plan rundt 2029)", "Komponenter vi leverer til kunder som selv må ha produktpass", "Emballasje", "Andre produktgrupper under ESPR", "Krav fra kunder før regelverket slår inn", "Vet ikke", "Annet"] },
+          en: { q: "What makes product passports relevant for you first?",
+            o: ["Batteries (required from February 2027)", "ICT products and electronics (around 2029 in the Commission’s plan)", "Components we supply to customers who need passports themselves", "Packaging", "Other product groups under ESPR", "Customer demands ahead of regulation", "Don’t know", "Other"] } },
+
+        { id: "q183", core: true, t: "multi", std: "EN 18219",
+          nb: { q: "Hvilke identifikatorer bruker eller planlegger dere for produktene?",
+            o: ["GS1 (GTIN med serienummer, GS1 Digital Link)", "Egenutstedt identifikasjonslenke etter IEC 61406", "Desentraliserte identifikatorer (W3C DID)", "Identifikatorer etter ISO/IEC 15459 (utstedende organisasjon)", "DOI", "Interne serienumre uten ekstern standard", "Vet ikke"] },
+          en: { q: "Which identifiers do you use or plan for your products?",
+            o: ["GS1 (GTIN with serial number, GS1 Digital Link)", "Self-issued identification link under IEC 61406", "Decentralised identifiers (W3C DID)", "ISO/IEC 15459 identifiers (issuing agency)", "DOI", "Internal serial numbers without an external standard", "Don’t know"] } },
+        { id: "q184", t: "single", std: "EN 18219",
+          nb: { q: "På hvilket nivå bør produktpasset identifisere produktet?",
+            o: ["Modell eller varenummer", "Batch eller parti", "Enkeltenhet (serialisert)", "Ulikt for ulike produktlinjer", "Vet ikke"] },
+          en: { q: "At which level should the passport identify the product?",
+            o: ["Model or item number", "Batch or lot", "Individual item (serialised)", "Differs between product lines", "Don’t know"] } },
+        { id: "q185", t: "multi", tech: true, std: "EN 18219",
+          nb: { q: "Hvilke identifikatorer har dere for aktører og anlegg?",
+            o: ["LEI (Legal Entity Identifier)", "GLN (GS1 Global Location Number)", "EORI-nummer", "Organisasjonsnummer eller annet nasjonalt register", "D-U-N-S", "Ingen felles identifikator for anleggene våre", "Vet ikke"] },
+          en: { q: "Which identifiers do you have for operators and facilities?",
+            o: ["LEI (Legal Entity Identifier)", "GLN (GS1 Global Location Number)", "EORI number", "National business register number", "D-U-N-S", "No common identifier for our facilities", "Don’t know"] } },
+
+        { id: "q186", core: true, t: "multi", std: "EN 18220",
+          nb: { q: "Hvilke databærere er realistiske på produktene deres?",
+            o: ["QR-kode", "Data Matrix", "NFC", "UHF RFID", "Bare på emballasje eller dokumentasjon – ikke på selve produktet", "Produktet er for lite eller ømfintlig til å merkes", "Merkingen må tåle krevende miljø (varme, kjemikalier, slitasje)", "Vet ikke"] },
+          en: { q: "Which data carriers are realistic on your products?",
+            o: ["QR code", "Data Matrix", "NFC", "UHF RFID", "Only on packaging or documentation — not on the product itself", "The product is too small or delicate to mark", "Marking must withstand harsh conditions (heat, chemicals, wear)", "Don’t know"] } },
+        { id: "q187", t: "scale", std: "EN 18220",
+          nb: { hint: "1 = enkelt, 5 = svært krevende", q: "Hvor krevende er det å merke produktene slik at databæreren kan leses gjennom hele livsløpet – også ved reparasjon, demontering og gjenvinning?" },
+          en: { hint: "1 = easy, 5 = very demanding", q: "How demanding is it to mark your products so the data carrier stays readable through the whole lifecycle — including repair, disassembly and recycling?" } },
+
+        { id: "q188", core: true, t: "single", std: "EN 18221",
+          nb: { q: "Hvem bør lagre og drifte produktpassene deres?",
+            o: ["Vi selv, i egen infrastruktur", "En DPP-tjenesteleverandør", "En bransjefelles eller nøytral plattform", "Egen lagring, med sikkerhetskopi hos en tjenesteleverandør", "Vet ikke"] },
+          en: { q: "Who should store and operate your product passports?",
+            o: ["Ourselves, on our own infrastructure", "A DPP service provider", "A shared industry or neutral platform", "Our own storage, with a backup at a service provider", "Don’t know"] } },
+        { id: "q189", t: "multi", other: true, std: "EN 18221",
+          nb: { q: "Hva er viktigst for lagring og persistens gjennom produktets levetid?",
+            o: ["Tilgjengelighet i hele produktets levetid (10–20 år eller mer)", "At passet overlever konkurs, oppkjøp eller nedleggelse", "Versjonering og arkiv av tidligere versjoner", "Sikkerhetskopi hos en uavhengig part", "Lagring i EU/EØS", "Kostnaden ved langtidslagring", "Desentralisert lagring uten én sentral eier", "Annet"] },
+          en: { q: "What matters most for storage and persistence over the product’s life?",
+            o: ["Availability for the whole product life (10–20 years or more)", "The passport surviving bankruptcy, acquisition or closure", "Versioning and an archive of earlier versions", "Backup at an independent party", "Storage within the EU/EEA", "The cost of long-term storage", "Decentralised storage with no single owner", "Other"] } },
+
+        { id: "q190", t: "multi", tech: true, other: true, std: "EN 18222",
+          nb: { q: "Hvilke livsløpsoperasjoner må kunne gjøres via API?",
+            o: ["Opprette pass og registrere det i EUs DPP-register", "Lese enkeltpass", "Hente mange pass samtidig (batch)", "Oppdatere ved reparasjon, oppgradering eller eierskifte", "Versjonering og historikk", "Søke på tvers av pass (f.eks. etter materiale eller komponent)", "Avslutte passet ved endt levetid", "Koble komponentpass til passet for sluttproduktet", "Annet"] },
+          en: { q: "Which lifecycle operations must be possible through an API?",
+            o: ["Create a passport and register it in the EU DPP Registry", "Read a single passport", "Retrieve many passports at once (batch)", "Update on repair, upgrade or change of ownership", "Versioning and history", "Search across passports (e.g. by material or component)", "Retire the passport at end of life", "Link component passports to the passport of the end product", "Other"] } },
+        { id: "q191", t: "single", std: "EN 18222",
+          nb: { q: "Hvem bør kunne oppdatere produktpasset etter at produktet er solgt?",
+            o: ["Bare produsenten eller den opprinnelige aktøren", "Produsenten og autoriserte reparatører og ombruksaktører", "Alle aktører i livsløpet med verifisert identitet", "Også agenter på vegne av autoriserte aktører", "Vet ikke"] },
+          en: { q: "Who should be able to update the passport after the product has been sold?",
+            o: ["Only the manufacturer or original operator", "The manufacturer plus authorised repairers and reuse operators", "Any lifecycle actor with a verified identity", "Also agents acting for authorised actors", "Don’t know"] } },
+
+        { id: "q192", t: "multi", tech: true, other: true, std: "EN 18216",
+          nb: { q: "Hvilke krav har dere til utveksling av produktpassdata mellom systemer?",
+            o: ["REST over HTTPS med sterk autentisering", "Varsling når et pass endres", "Flytte pass mellom plattformer uten innelåsing", "Integrasjon med ERP, PLM eller MES", "Utveksle komponentdata med leverandører", "Lesing uten nettforbindelse (f.eks. ved demontering)", "Annet"] },
+          en: { q: "What are your requirements for exchanging passport data between systems?",
+            o: ["REST over HTTPS with strong authentication", "Notification when a passport changes", "Moving passports between platforms without lock-in", "Integration with ERP, PLM or MES", "Exchanging component data with suppliers", "Reading without a network connection (e.g. during disassembly)", "Other"] } },
+
+        { id: "q193", t: "scale", std: "EN 18223",
+          nb: { q: "Hvor viktig er det at produktpassdataene kan tolkes maskinelt på tvers av sektorer og land, uten manuell mapping?" },
+          en: { q: "How important is it that passport data can be interpreted by machines across sectors and countries, without manual mapping?" } },
+        { id: "q194", t: "multi", tech: true, other: true, std: "EN 18223",
+          nb: { q: "Hvilke datamodeller og vokabularer bruker eller vurderer dere?",
+            o: ["Asset Administration Shell (AAS) med IDTA-delmodeller", "GS1 Web Vocabulary eller EPCIS", "ECLASS", "IEC Common Data Dictionary (CDD)", "JSON-LD eller RDF med felles vokabular", "Materialdeklarasjon etter IPC-1752 eller IEC 62474", "Egne interne formater", "Vet ikke", "Annet"] },
+          en: { q: "Which data models and vocabularies do you use or consider?",
+            o: ["Asset Administration Shell (AAS) with IDTA submodels", "GS1 Web Vocabulary or EPCIS", "ECLASS", "IEC Common Data Dictionary (CDD)", "JSON-LD or RDF with a shared vocabulary", "Material declarations under IPC-1752 or IEC 62474", "Our own internal formats", "Don’t know", "Other"] } },
+
+        { id: "q195", core: true, t: "multi", other: true, std: "EN 18239",
+          nb: { q: "Hvilke opplysninger i produktpasset må skjermes, og for hvem?",
+            o: ["Materialsammensetning og leverandører (forretningshemmeligheter)", "Reparasjons- og demonteringsinstruksjoner – bare for autoriserte", "Klimaavtrykk og beregningsgrunnlaget", "Bruks- og feildata fra feltet", "Personopplysninger om eier eller bruker", "Alt kan være offentlig", "Annet"] },
+          en: { q: "Which information in the passport must be restricted, and for whom?",
+            o: ["Material composition and suppliers (trade secrets)", "Repair and disassembly instructions — authorised parties only", "Carbon footprint and its calculation basis", "Usage and failure data from the field", "Personal data about the owner or user", "Everything can be public", "Other"] } },
+        { id: "q196", t: "single", tech: true, std: "EN 18246",
+          nb: { q: "Hvordan bør data i produktpasset signeres og verifiseres?",
+            o: ["W3C Verifiable Credentials", "eIDAS elektroniske attester eller segl", "Digitale segl etter ISO 22376", "Plattformen står for integriteten – ingen egen signering", "Vet ikke"] },
+          en: { q: "How should data in the passport be signed and verified?",
+            o: ["W3C Verifiable Credentials", "eIDAS electronic attestations or seals", "Digital seals under ISO 22376", "The platform guarantees integrity — no separate signing", "Don’t know"] } },
+
+        { id: "q197", core: true, t: "longtext", std: "ESPR",
+          nb: { q: "Hva er den største praktiske utfordringen med å innføre produktpass etter disse standardene – og hva trenger dere hjelp med?" },
+          en: { q: "What is the biggest practical challenge in introducing product passports under these standards — and what do you need help with?" } }
       ]
     },
     {
