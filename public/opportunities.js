@@ -256,6 +256,18 @@ var OPPORTUNITIES = [
     ]
   },
   {
+    id: "livingmodels", type: "ai",
+    nb: { title: "Modeller som holder seg oppdatert, som tjeneste",
+      pitch: "Aldrings-, levetids- og prosessmodeller som kalibreres løpende mot felt-, test- og reparasjonsdata fra hele kjeden – med usikkerhet og sporbarhet – selges til dem som i dag regner på gamle antakelser." },
+    en: { title: "Models that stay current, as a service",
+      pitch: "Ageing, lifetime and process models calibrated continuously against field, test and repair data from the whole chain — with uncertainty and traceability — sold to those who today calculate on stale assumptions." },
+    needs: [
+      { q: "q219", any: [1, 2, 3], nb: "Modeller finnes eller ønskes, men oppdateres ikke løpende", en: "Models exist or are wanted, but are not continuously updated" },
+      { q: "q223", any: [0, 1, 2, 4], nb: "Felt-, test-, reparasjons- eller bruksdata trengs", en: "Field, test, repair or usage data is needed" },
+      { q: "q224", any: [0, 1, 2], nb: "Usikkerhet, sporbarhet eller validering gjør modellene troverdige", en: "Uncertainty, traceability or validation makes the models credible" }
+    ]
+  },
+  {
     id: "dppkit", type: "platform",
     nb: { title: "Standardklart produktpass, levert ferdig",
       pitch: "De fleste står på startstreken. Et ferdig oppsett etter EN 18216–18223 – identifikator, databærer, lagring med persistens, API-er og registrering i EUs register – selges til alle som må ha pass fra 2027." },

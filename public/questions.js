@@ -15,11 +15,11 @@ const SURVEY = {
   },
   intro: {
     nb: [
-      "Formål: kartlegge krav til en bærekraftig digital infrastruktur for integrerte, sirkulære verdikjeder i elektronikk – datasikkerhet, datakvalitet og forvaltning, integrasjon av livsløpsdata på tvers av virksomheter, registrering av klima- og ressursavtrykk gjennom livsløpet, underliggende datamodell og arkitektur, digitale produktpass etter standardene EN 18216–18223, teknologi- og tillitsvalg, kostnad, modenhet og bygg-eller-kjøp, KI-agenter og applikasjoner på toppen av dataene, datavolum og agent-til-agent-trafikk – og hvordan den skal styres og gjøres tillitsverdig, bekymringer knyttet til teknologimakt, geopolitikk, svarte bokser og energibruk, fangst av taus kunnskap med bærbare enheter og AR-briller, robotisering av oppgaver mennesker gjør i dag, ubemannet drift, edge-databehandling og datadeling, og hvilke framtidsbilder plattformen må tåle.",
+      "Formål: kartlegge krav til en bærekraftig digital infrastruktur for integrerte, sirkulære verdikjeder i elektronikk – datasikkerhet, datakvalitet og forvaltning, integrasjon av livsløpsdata på tvers av virksomheter, registrering av klima- og ressursavtrykk gjennom livsløpet, underliggende datamodell og arkitektur, digitale produktpass etter standardene EN 18216–18223, teknologi- og tillitsvalg, kostnad, modenhet og bygg-eller-kjøp, KI-agenter og applikasjoner på toppen av dataene, selvoppdaterende matematiske og fysikkbaserte modeller, datavolum og agent-til-agent-trafikk – og hvordan den skal styres og gjøres tillitsverdig, bekymringer knyttet til teknologimakt, geopolitikk, svarte bokser og energibruk, fangst av taus kunnskap med bærbare enheter og AR-briller, robotisering av oppgaver mennesker gjør i dag, ubemannet drift, edge-databehandling og datadeling, og hvilke framtidsbilder plattformen må tåle.",
       "Intervjuet er ment for alle typer virksomheter i elektronikkens verdikjede – fra material- og komponentleverandører, kretskort- og kontraktsprodusenter, OEM-er og systemintegratorer, via eiere, drift-, service- og reparasjonsaktører, til ombruksaktører, returlogistikk og gjenvinnere – og for myndigheter, forskning og teknologileverandører."
     ],
     en: [
-      "Purpose: collect requirements for a sustainable digital infrastructure supporting integrated, circular electronics value chains — covering data security, quality and governance; integration of lifecycle data across organisations; recording of carbon and resource footprints across the lifecycle; the underlying data model and architecture; Digital Product Passports under EN 18216–18223; technology and trust choices; cost, maturity and build versus buy; AI agents and applications built on the data; data volume and agent-to-agent traffic, and how to govern it and make it trustworthy; concerns about tech power, geopolitics, black boxes and energy use; capture of tacit knowledge through wearables and AR glasses; robotic automation of work people do today; unattended operation; edge data fusion and data sharing; and the future worlds the platform must withstand.",
+      "Purpose: collect requirements for a sustainable digital infrastructure supporting integrated, circular electronics value chains — covering data security, quality and governance; integration of lifecycle data across organisations; recording of carbon and resource footprints across the lifecycle; the underlying data model and architecture; Digital Product Passports under EN 18216–18223; technology and trust choices; cost, maturity and build versus buy; AI agents and applications built on the data; self-updating mathematical and physics-based models; data volume and agent-to-agent traffic, and how to govern it and make it trustworthy; concerns about tech power, geopolitics, black boxes and energy use; capture of tacit knowledge through wearables and AR glasses; robotic automation of work people do today; unattended operation; edge data fusion and data sharing; and the future worlds the platform must withstand.",
       "The interview is intended for any organisation in the electronics value chain — from materials and component suppliers, PCB and EMS manufacturers, OEMs and system integrators, through operators, service and repair providers, to refurbishers, reverse logistics and recyclers — as well as regulators, researchers and technology providers."
     ]
   },
@@ -550,6 +550,56 @@ const SURVEY = {
         { id: "q63", t: "longtext",
           nb: { q: "Beskriv én applikasjon eller agent du ønsker å se bygget på plattformdataene." },
           en: { q: "Describe one application or agent you would like to see built on top of the platform data." } }
+      ]
+    },
+    {
+      id: "s19",
+      nb: { title: "Selvoppdaterende modeller og digitale tvillinger", lead: "Matematiske og fysikkbaserte modeller som holder seg oppdatert når nye data kommer inn – av aldring, levetid, prosesser og gjenvinning – og hva som skal til for å stole på dem." },
+      en: { title: "Self-updating models and digital twins", lead: "Mathematical and physics-based models that stay current as new data arrives — of ageing, lifetime, processes and recovery — and what it takes to trust them." },
+      questions: [
+        { id: "q219", core: true, t: "single",
+          nb: { q: "Har dere matematiske eller fysikkbaserte modeller som kan oppdatere seg selv løpende når nye data kommer inn?",
+            o: ["Ja, i drift – modellene kalibreres automatisk mot nye data", "Ja, men de oppdateres manuelt eller periodisk", "Vi har modeller, men de oppdateres ikke med driftsdata", "Nei, men vi ønsker det", "Nei, og det er ikke aktuelt", "Vet ikke"] },
+          en: { q: "Do you have mathematical or physics-based models that can continuously update themselves as new data arrives?",
+            o: ["Yes, in operation — the models calibrate automatically against new data", "Yes, but they are updated manually or periodically", "We have models, but they are not updated with operational data", "No, but we would like to", "No, and it is not relevant", "Don’t know"] } },
+        { id: "q220", t: "multi", other: true,
+          nb: { q: "Hva beskriver – eller burde – modellene beskrive?",
+            o: ["Materialaldring, slitasje og degradering", "Termisk, elektrisk eller mekanisk oppførsel av produktet", "Batterihelse og gjenværende kapasitet", "Pålitelighet og gjenværende levetid (RUL)", "Produksjonsprosesser (f.eks. lodding, herding, testing)", "Energiforbruk og utslipp", "Logistikk, lager og materialflyt", "Demontering, sortering og materialgjenvinning", "Annet"] },
+          en: { q: "What do — or should — the models describe?",
+            o: ["Material ageing, wear and degradation", "Thermal, electrical or mechanical behaviour of the product", "Battery health and remaining capacity", "Reliability and remaining useful life (RUL)", "Production processes (e.g. soldering, curing, testing)", "Energy use and emissions", "Logistics, inventory and material flow", "Disassembly, sorting and material recovery", "Other"] } },
+        { id: "q221", t: "multi", tech: true,
+          nb: { q: "Hva slags modeller er det?",
+            o: ["Fysikkbaserte simuleringer (FEM, CFD, kretssimulering)", "Forenklede fysikkmodeller eller reduserte ordens modeller", "Statistiske modeller (regresjon, Weibull, overlevelsesanalyse)", "Maskinlæringsmodeller", "Hybride modeller – fysikk kombinert med maskinlæring (f.eks. physics-informed neural networks)", "Digitale tvillinger av produkt eller anlegg", "Regneark og tommelfingerregler", "Vet ikke"] },
+          en: { q: "What kinds of models are they?",
+            o: ["Physics-based simulation (FEM, CFD, circuit simulation)", "Simplified physics or reduced-order models", "Statistical models (regression, Weibull, survival analysis)", "Machine-learning models", "Hybrid models — physics combined with machine learning (e.g. physics-informed neural networks)", "Digital twins of a product or plant", "Spreadsheets and rules of thumb", "Don’t know"] } },
+        { id: "q222", t: "multi", tech: true,
+          nb: { q: "Hvordan oppdateres modellene i dag – eller hvordan burde de oppdateres?",
+            o: ["Tilstandsestimering (f.eks. Kalman-filter, partikkelfilter)", "Bayesiansk oppdatering av parametere", "Periodisk rekalibrering mot nye målinger", "Løpende læring mens data strømmer inn", "Omtrening av maskinlæringsmodeller i batch", "Manuelt, av en ekspert", "De oppdateres ikke i dag", "Vet ikke"] },
+          en: { q: "How are the models updated today — or how should they be?",
+            o: ["State estimation (e.g. Kalman filter, particle filter)", "Bayesian updating of parameters", "Periodic recalibration against new measurements", "Continuous learning as data streams in", "Batch retraining of machine-learning models", "Manually, by an expert", "They are not updated today", "Don’t know"] } },
+        { id: "q223", core: true, t: "multi", other: true,
+          nb: { q: "Hvilke data måtte modellene få fra plattformen for å holde seg oppdatert?",
+            o: ["Sensor- og driftsdata fra felt", "Test- og inspeksjonsdata fra produksjon", "Reparasjons- og feilhistorikk", "Materialdata og stykklister", "Miljø- og bruksforhold (temperatur, fukt, last)", "Data fra demontering og gjenvinning", "Data om tilsvarende produkter fra andre virksomheter", "Annet"] },
+          en: { q: "Which data would the models need from the platform to stay current?",
+            o: ["Sensor and operating data from the field", "Test and inspection data from production", "Repair and failure history", "Material data and bills of materials", "Environmental and usage conditions (temperature, humidity, load)", "Data from disassembly and recycling", "Data on comparable products from other organisations", "Other"] } },
+        { id: "q224", t: "multi", other: true,
+          nb: { q: "Hva må være på plass for at dere skal stole på en modell som endrer seg selv?",
+            o: ["Usikkerheten vises sammen med resultatet – ikke bare ett tall", "Sporbarhet: hvilken modellversjon og hvilke data et resultat bygger på", "Validering mot uavhengige målinger før en oppdatering tas i bruk", "Mulighet til å rulle tilbake til en tidligere versjon", "Varsling når modellen driver eller endrer seg mye", "Fysiske grenser modellen ikke kan bryte", "Godkjenning av en ekspert før større endringer", "Annet"] },
+          en: { q: "What must be in place for you to trust a model that changes itself?",
+            o: ["Uncertainty shown with the result — not just a single number", "Traceability: which model version and which data a result is based on", "Validation against independent measurements before an update goes live", "Being able to roll back to an earlier version", "Alerts when the model drifts or changes a lot", "Physical limits the model cannot break", "Expert approval before major changes", "Other"] } },
+        { id: "q225", t: "single",
+          nb: { q: "Hvem bør eie og drifte slike modeller i en felles plattform?",
+            o: ["Hver virksomhet sine egne – plattformen leverer bare data", "Felles modeller for bransjen, drevet av en nøytral part", "Leverandøren av komponenten eller produktet", "Modeller som tjeneste fra plattformen", "Vet ikke"] },
+          en: { q: "Who should own and run such models on a shared platform?",
+            o: ["Each organisation its own — the platform only supplies data", "Shared industry models, run by a neutral party", "The supplier of the component or product", "Models as a service from the platform", "Don’t know"] } },
+        { id: "q226", t: "multi", other: true,
+          nb: { q: "Hva hindrer dere i å ha selvoppdaterende modeller i dag?",
+            o: ["For lite eller for dårlige data", "Data kommer ikke tilbake fra felt eller fra kunder", "Mangler kompetanse", "Modellene er for regnetunge til løpende oppdatering", "Manglende tillit til modeller som endrer seg selv", "Krav til validering og sertifisering", "Modellene eller dataene er forretningshemmeligheter", "Ikke prioritert", "Annet"] },
+          en: { q: "What stops you from having self-updating models today?",
+            o: ["Too little or poor-quality data", "Data does not come back from the field or from customers", "Lack of expertise", "The models are too computationally heavy for continuous updating", "Lack of trust in models that change themselves", "Validation and certification requirements", "The models or the data are trade secrets", "Not a priority", "Other"] } },
+        { id: "q227", core: true, t: "longtext",
+          nb: { q: "Beskriv én modell som ville vært mest verdifull om den holdt seg oppdatert av seg selv – hva den skal forutsi, og hvilken beslutning den skal støtte." },
+          en: { q: "Describe one model that would be most valuable if it kept itself up to date — what it should predict, and which decision it should support." } }
       ]
     },
     {
