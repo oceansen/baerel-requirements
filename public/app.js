@@ -273,7 +273,9 @@
       ivResumed: "Intervjuet er åpnet fra den personlige lenken.", ivResumeFail: "Den personlige lenken er ikke gyldig.",
       ivServerNewer: "Hentet en nyere versjon av intervjuet fra arbeidsområdet.",
       ivNewOk: "Nytt intervju – det forrige ligger fortsatt i listen over intervjuer på denne enheten.",
-      ivDone: "Ferdig – lagre og fjern fra denne enheten"
+      ivDone: "Ferdig – lagre og fjern fra denne enheten",
+      ivLinkHint: "Åpne lenken i en nettleser på den andre enheten. Den gir tilgang til akkurat dette intervjuet – del den ikke videre.",
+      ivCopy: "Kopier", ivCopied: "Kopiert", ivCopySelect: "Marker lenken og kopier den manuelt."
     },
     en: {
       wsLabel: "Workspace", wsOpen: "Accepting responses", wsClosed: "Closed to new responses",
@@ -303,7 +305,9 @@
       ivResumed: "The interview was opened from its personal link.", ivResumeFail: "That personal link is not valid.",
       ivServerNewer: "Loaded a newer version of the interview from the workspace.",
       ivNewOk: "New interview — the previous one is still in the list of interviews on this device.",
-      ivDone: "Done — save and remove from this device"
+      ivDone: "Done — save and remove from this device",
+      ivLinkHint: "Open the link in a browser on the other device. It gives access to this interview only — do not pass it on.",
+      ivCopy: "Copy", ivCopied: "Copied", ivCopySelect: "Select the link and copy it manually."
     }
   };
   if (WS) ["nb", "en"].forEach(function (l) { Object.keys(WS_T[l]).forEach(function (k) { T[l][k] = WS_T[l][k]; }); });
@@ -921,6 +925,10 @@
     })["catch"](function () {});
   }
 
+  window.addEventListener("hashchange", function () {
+    if (WS && /^#resume=/.test(location.hash)) resumeFromHash();
+  });
+
   function resumeFromHash() {
     var m = /^#resume=([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)$/.exec(location.hash || "");
     if (!m) return Promise.resolve(false);
@@ -958,12 +966,35 @@
       var acts = el("span", { class: "iv-acts" });
       if (active) acts.appendChild(el("span", { class: "pill open", text: t("ivActive") }));
       else acts.appendChild(el("button", { class: "btn", type: "button", text: t("ivOpen"), onclick: function () { openInterview(e.lid); } }));
-      acts.appendChild(el("button", { class: "btn ghost", type: "button", text: t("ivLink"), onclick: function () {
+      var linkBox = el("div", { class: "iv-linkbox hidden" });
+      acts.appendChild(el("button", { class: "btn ghost", type: "button", "aria-expanded": "false", text: t("ivLink"), onclick: function (ev) {
+        var btn = ev.currentTarget;
+        var open = linkBox.classList.contains("hidden");
+        linkBox.classList.toggle("hidden", !open);
+        btn.setAttribute("aria-expanded", String(open));
+        if (!open) return;
+        linkBox.textContent = "";
         var u = personalLink(e.lid);
-        if (!u) { setStatus(t("ivLinkNotYet")); return; }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(u).then(function () { setStatus(t("ivLinkCopied")); }, function () { setStatus(t("copyFail")); });
-        } else setStatus(t("copyFail"));
+        if (!u) { linkBox.appendChild(el("p", { class: "a-meta", text: t("ivLinkNotYet") })); return; }
+        var field = el("input", { type: "text", readonly: "readonly", class: "iv-linkfield", "aria-label": t("ivLink") });
+        field.value = u;
+        var msg = el("span", { class: "a-meta iv-linkmsg", role: "status" });
+        var copyBtn = el("button", { class: "btn primary", type: "button", text: t("ivCopy") });
+        var copy = function () {
+          field.focus(); field.select();
+          var done = function () { msg.textContent = t("ivCopied"); copyBtn.textContent = t("ivCopied"); };
+          var manual = function () { msg.textContent = t("ivCopySelect"); };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(done, function () {
+            try { if (document.execCommand("copy")) done(); else manual(); } catch (x) { manual(); }
+          });
+          else { try { if (document.execCommand("copy")) done(); else manual(); } catch (x) { manual(); } }
+        };
+        copyBtn.addEventListener("click", copy);
+        field.addEventListener("focus", function () { field.select(); });
+        linkBox.appendChild(el("div", { class: "iv-linkrow" }, [field, copyBtn]));
+        linkBox.appendChild(el("p", { class: "a-meta", text: t("ivLinkHint") }));
+        linkBox.appendChild(msg);
+        copy();
       } }));
       var rm = el("button", { class: "btn ghost", type: "button", text: t("ivRemove") });
       rm.addEventListener("click", function () {
@@ -978,7 +1009,8 @@
       acts.appendChild(rm);
       ul.appendChild(el("li", { class: active ? "active" : "" }, [
         el("span", { class: "iv-name" }, [el("b", { text: info.label || t("ivUnnamed") }), el("span", { class: "count", text: bits })]),
-        acts
+        acts,
+        linkBox
       ]));
     });
     box.appendChild(ul);
@@ -986,6 +1018,8 @@
       el("button", { class: "btn", type: "button", text: t("ivNew"), onclick: newInterview })
     ]));
     box.appendChild(el("p", { class: "a-meta", text: t("ivTotal").replace("{n}", String(ws.info.count || 0)) }));
+    statusBox = el("p", { class: "iv-status", role: "status", "aria-live": "polite" });
+    box.appendChild(statusBox);
     return box;
   }
 
@@ -1930,6 +1964,7 @@
   var statusBox = null;
 
   function setStatus(msg) {
+    if (statusBox && !statusBox.isConnected) statusBox = null;
     if (!statusBox) return;
     statusBox.textContent = msg;
   }

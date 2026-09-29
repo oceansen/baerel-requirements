@@ -837,3 +837,11 @@ h1, h2, h3:not(.q-text), .eyebrow, .pill, .count, .opt, .scale label, .a-meta, .
 .iv-acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .iv-acts .btn { font-size: 13px; padding: 6px 11px; }
 .iv-acts .pill.open { border-color: var(--patina); color: var(--patina); background: var(--surface); }
+
+.iv-linkbox { flex-basis: 100%; margin: 4px 0 2px; padding: 10px 12px; border: 1px dashed var(--line-strong); border-radius: var(--r); background: var(--surface); }
+.iv-linkrow { display: flex; gap: 8px; }
+.iv-linkfield { flex: 1 1 auto; min-width: 0; font: 12.5px "IBM Plex Mono", ui-monospace, monospace; padding: 8px 10px; }
+.iv-linkbox .a-meta { margin: 6px 0 0; }
+.iv-linkmsg { display: block; color: var(--patina); }
+.iv-status { margin: 8px 0 0; font-size: 13px; color: var(--patina); min-height: 1em; }
+@media (max-width: 640px) { .iv-linkrow { flex-direction: column; } }
