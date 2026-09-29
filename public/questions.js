@@ -15,11 +15,11 @@ const SURVEY = {
   },
   intro: {
     nb: [
-      "Formål: kartlegge krav til en bærekraftig digital infrastruktur for integrerte, sirkulære verdikjeder i elektronikk – datasikkerhet, datakvalitet og forvaltning, integrasjon av livsløpsdata på tvers av virksomheter, registrering av klima- og ressursavtrykk gjennom livsløpet, underliggende datamodell og arkitektur, teknologi- og tillitsvalg, KI-agenter og applikasjoner på toppen av dataene, datavolum og agent-til-agent-trafikk – og hvordan den skal styres og gjøres tillitsverdig, fangst av taus kunnskap med bærbare enheter og AR-briller, robotisering av oppgaver mennesker gjør i dag, ubemannet drift, edge-databehandling og datadeling, og hvilke framtidsbilder plattformen må tåle.",
+      "Formål: kartlegge krav til en bærekraftig digital infrastruktur for integrerte, sirkulære verdikjeder i elektronikk – datasikkerhet, datakvalitet og forvaltning, integrasjon av livsløpsdata på tvers av virksomheter, registrering av klima- og ressursavtrykk gjennom livsløpet, underliggende datamodell og arkitektur, teknologi- og tillitsvalg, KI-agenter og applikasjoner på toppen av dataene, datavolum og agent-til-agent-trafikk – og hvordan den skal styres og gjøres tillitsverdig, bekymringer knyttet til teknologimakt, geopolitikk, svarte bokser og energibruk, fangst av taus kunnskap med bærbare enheter og AR-briller, robotisering av oppgaver mennesker gjør i dag, ubemannet drift, edge-databehandling og datadeling, og hvilke framtidsbilder plattformen må tåle.",
       "Intervjuet er ment for alle typer virksomheter i elektronikkens verdikjede – fra material- og komponentleverandører, kretskort- og kontraktsprodusenter, OEM-er og systemintegratorer, via eiere, drift-, service- og reparasjonsaktører, til ombruksaktører, returlogistikk og gjenvinnere – og for myndigheter, forskning og teknologileverandører."
     ],
     en: [
-      "Purpose: collect requirements for a sustainable digital infrastructure supporting integrated, circular electronics value chains — covering data security, quality and governance; integration of lifecycle data across organisations; recording of carbon and resource footprints across the lifecycle; the underlying data model and architecture; technology and trust choices; AI agents and applications built on the data; data volume and agent-to-agent traffic, and how to govern it and make it trustworthy; capture of tacit knowledge through wearables and AR glasses; robotic automation of work people do today; unattended operation; edge data fusion and data sharing; and the future worlds the platform must withstand.",
+      "Purpose: collect requirements for a sustainable digital infrastructure supporting integrated, circular electronics value chains — covering data security, quality and governance; integration of lifecycle data across organisations; recording of carbon and resource footprints across the lifecycle; the underlying data model and architecture; technology and trust choices; AI agents and applications built on the data; data volume and agent-to-agent traffic, and how to govern it and make it trustworthy; concerns about tech power, geopolitics, black boxes and energy use; capture of tacit knowledge through wearables and AR glasses; robotic automation of work people do today; unattended operation; edge data fusion and data sharing; and the future worlds the platform must withstand.",
       "The interview is intended for any organisation in the electronics value chain — from materials and component suppliers, PCB and EMS manufacturers, OEMs and system integrators, through operators, service and repair providers, to refurbishers, reverse logistics and recyclers — as well as regulators, researchers and technology providers."
     ]
   },
@@ -447,6 +447,76 @@ const SURVEY = {
         { id: "q166", t: "longtext",
           nb: { q: "Hvilke data vil dere aldri la en agent – egen eller andres – få tilgang til, uansett sikringstiltak?" },
           en: { q: "Which data would you never let an agent — yours or anyone else’s — access, whatever the safeguards?" } }
+      ]
+    },
+    {
+      id: "s15",
+      nb: { title: "Teknologimakt, geopolitikk, svarte bokser og energi", lead: "Hva folk faktisk er bekymret for: avhengighet av noen få store teknologiselskaper og dem som eier og leder dem, spenningene mellom USA, Kina og Europa, teknologi ingen kan se inn i – og energien alt dette krever." },
+      en: { title: "Tech power, geopolitics, black boxes and energy", lead: "What people are actually worried about: dependence on a few large tech companies and those who own and run them, tensions between the US, China and Europe, technology nobody can look inside — and the energy all of it takes." },
+      questions: [
+        { id: "q167", core: true, t: "multi", other: true,
+          nb: { q: "Hva er folk i virksomheten – ledelse, ansatte, kunder – mest bekymret for når det gjelder digitalisering og KI i verdikjeden?",
+            o: ["Avhengighet av noen få store teknologiselskaper", "Hvor dataene havner, og hvem som kan kreve tilgang til dem", "Geopolitiske spenninger og handelsrestriksjoner", "KI som «svart boks» – beslutninger ingen kan forklare", "Energiforbruk og klimaavtrykk fra KI og datasentre", "Jobber og kompetanse som forsvinner eller endrer seg", "Overvåking av ansatte", "Cyberangrep og sabotasje", "Tap av forretningshemmeligheter og konkurransefortrinn", "Leverandørinnlåsing og prisøkninger", "Regulatorisk usikkerhet (AI Act, Data Act, eksportkontroll)", "Lite bekymring – mest optimisme", "Annet"] },
+          en: { q: "What are people in the organisation — management, employees, customers — most worried about when it comes to digitalisation and AI in the value chain?",
+            o: ["Dependence on a few large technology companies", "Where the data ends up, and who can demand access to it", "Geopolitical tensions and trade restrictions", "AI as a “black box” — decisions nobody can explain", "Energy use and carbon footprint of AI and data centres", "Jobs and skills disappearing or changing", "Surveillance of employees", "Cyber attacks and sabotage", "Loss of trade secrets and competitive advantage", "Vendor lock-in and price increases", "Regulatory uncertainty (AI Act, Data Act, export controls)", "Little concern — mostly optimism", "Other"] } },
+
+        { id: "q168", core: true, t: "scale",
+          nb: { hint: "1 = ingen bekymring, 5 = stor bekymring", q: "Hvor bekymret er dere for å bli avhengige av noen få store teknologiselskaper – skyplattformer, KI-modeller, programvare – og av prioriteringene til dem som eier og leder dem?" },
+          en: { hint: "1 = no concern, 5 = major concern", q: "How concerned are you about becoming dependent on a few large technology companies — cloud platforms, AI models, software — and on the priorities of those who own and run them?" } },
+        { id: "q169", t: "multi", other: true,
+          nb: { q: "Hva ved en slik konsentrasjon av teknologimakt bekymrer dere mest?",
+            o: ["Brå endringer i priser, vilkår eller tjenester", "At tjenester kan stanses eller begrenses av politiske grunner", "Utenlandske myndigheters tilgang til data (f.eks. amerikanske CLOUD Act)", "At våre data brukes til å trene andres modeller", "At noen få personers verdier og prioriteringer former verktøyene vi er avhengige av", "Lite innsyn, revisjon og klagemulighet", "Innelåsing – det blir vanskelig og dyrt å bytte", "At europeiske alternativer ikke er gode nok", "Ikke en bekymring for oss", "Annet"] },
+          en: { q: "What about such a concentration of technology power concerns you most?",
+            o: ["Sudden changes in prices, terms or services", "Services being stopped or restricted for political reasons", "Foreign government access to data (e.g. the US CLOUD Act)", "Our data being used to train others’ models", "A few individuals’ values and priorities shaping the tools we depend on", "Little transparency, audit or recourse", "Lock-in — switching becomes hard and expensive", "European alternatives not being good enough", "Not a concern for us", "Other"] } },
+        { id: "q170", t: "single",
+          nb: { q: "Hvor viktig er digital suverenitet – at data, drift og nøkkelteknologi er under europeisk jurisdiksjon og kontroll – for denne plattformen?",
+            o: ["Avgjørende – et krav for at vi skal delta", "Viktig – vi foretrekker europeiske løsninger når de er gode nok", "Nøytralt – beste løsning uansett opprinnelse", "Uviktig – pris og funksjonalitet avgjør", "Vet ikke"] },
+          en: { q: "How important is digital sovereignty — data, operations and key technology under European jurisdiction and control — for this platform?",
+            o: ["Essential — a condition for us to take part", "Important — we prefer European solutions when they are good enough", "Neutral — best solution regardless of origin", "Unimportant — price and functionality decide", "Don’t know"] } },
+
+        { id: "q171", core: true, t: "scale",
+          nb: { hint: "1 = lite utsatt, 5 = svært utsatt", q: "Hvor utsatt er verdikjeden deres for geopolitiske spenninger mellom USA, Kina og Europa?" },
+          en: { hint: "1 = barely exposed, 5 = highly exposed", q: "How exposed is your value chain to geopolitical tensions between the US, China and Europe?" } },
+        { id: "q172", t: "multi", other: true,
+          nb: { q: "Hvor merker eller forventer dere konsekvensene?",
+            o: ["Eksportkontroll og sanksjoner på halvledere og produksjonsutstyr", "Kinesisk kontroll over kritiske råvarer og sjeldne jordarter", "Avhengighet av komponenter, moduler eller produksjon i Kina", "Avhengighet av amerikanske brikker, programvare, skytjenester og KI", "Krav om å dokumentere opprinnelse eller utelukke bestemte leverandører", "Toll og handelshindringer", "Risiko for bakdører eller skjult funksjonalitet i komponenter og fastvare", "Lover som gir myndigheter tilgang til data (f.eks. CLOUD Act, kinesisk etterretningslov)", "Tvungen omlegging av leverandørkjeden", "Ikke relevant for oss", "Annet"] },
+          en: { q: "Where do you feel or expect the consequences?",
+            o: ["Export controls and sanctions on semiconductors and manufacturing equipment", "Chinese control over critical raw materials and rare earths", "Dependence on components, modules or manufacturing in China", "Dependence on US chips, software, cloud services and AI", "Requirements to document origin or exclude specific suppliers", "Tariffs and trade barriers", "Risk of backdoors or hidden functionality in components and firmware", "Laws giving governments access to data (e.g. the CLOUD Act, China’s National Intelligence Law)", "Forced restructuring of the supply chain", "Not relevant for us", "Other"] } },
+        { id: "q173", t: "single",
+          nb: { q: "Bør plattformen vise opprinnelsesland og jurisdiksjon for data, komponenter og tjenester langs verdikjeden?",
+            o: ["Ja, for alt", "Ja, for kritiske komponenter og data", "Bare når regelverket krever det", "Nei, det er for sensitivt", "Vet ikke"] },
+          en: { q: "Should the platform show country of origin and jurisdiction for data, components and services along the value chain?",
+            o: ["Yes, for everything", "Yes, for critical components and data", "Only where regulation requires it", "No, it is too sensitive", "Don’t know"] } },
+
+        { id: "q174", core: true, t: "scale",
+          nb: { hint: "1 = ingen bekymring, 5 = stor bekymring", q: "Hvor stor bekymring er «svarte bokser» i verdikjeden – KI-modeller, algoritmer, fastvare og komponenter dere ikke kan se inn i eller etterprøve?" },
+          en: { hint: "1 = no concern, 5 = major concern", q: "How much of a concern are “black boxes” in the value chain — AI models, algorithms, firmware and components you cannot look inside or verify?" } },
+        { id: "q175", t: "multi", other: true,
+          nb: { q: "Hvor er mangel på innsyn mest problematisk?",
+            o: ["KI-modeller som gir anbefalinger eller tar beslutninger", "Kildekode og fastvare i komponenter og utstyr", "Materialinnhold og stoffer oppgitt av leverandører", "Klimaavtrykkstall fra leverandører", "Algoritmer som priser, rangerer eller kvalifiserer leverandører", "Skytjenester – hvor og hvordan data behandles", "Treningsdataene bak KI-modeller", "Annet"] },
+          en: { q: "Where is lack of transparency most problematic?",
+            o: ["AI models that make recommendations or decisions", "Source code and firmware in components and equipment", "Material content and substances declared by suppliers", "Carbon footprint figures from suppliers", "Algorithms that price, rank or qualify suppliers", "Cloud services — where and how data is processed", "The training data behind AI models", "Other"] } },
+        { id: "q176", t: "multi", other: true,
+          nb: { q: "Hva ville gjort en «svart boks» akseptabel for dere?",
+            o: ["Forklaring på hver enkelt beslutning", "Åpen kildekode eller åpne modeller (open weights)", "Uavhengig revisjon eller sertifisering (f.eks. etter EUs KI-forordning)", "Mulighet til å teste med egne data før bruk", "Dokumentasjon av treningsdata og begrensninger (modellkort)", "Et menneske i løkken ved viktige beslutninger", "Avtalefestet innsynsrett", "Ingenting – vi godtar ikke svarte bokser i kritiske prosesser", "Annet"] },
+          en: { q: "What would make a “black box” acceptable to you?",
+            o: ["An explanation of each individual decision", "Open source or open models (open weights)", "Independent audit or certification (e.g. under the EU AI Act)", "Being able to test it with our own data before use", "Documentation of training data and limitations (model cards)", "A human in the loop for important decisions", "Contractual right to inspect", "Nothing — we do not accept black boxes in critical processes", "Other"] } },
+
+        { id: "q177", core: true, t: "scale",
+          nb: { hint: "1 = ingen bekymring, 5 = stor bekymring", q: "Hvor bekymret er dere for energiforbruket og klimaavtrykket fra KI, datasentre og datadeling – sett opp mot gevinstene for sirkularitet?" },
+          en: { hint: "1 = no concern, 5 = major concern", q: "How concerned are you about the energy use and carbon footprint of AI, data centres and data sharing — weighed against the gains for circularity?" } },
+        { id: "q178", t: "multi", other: true,
+          nb: { q: "Hvilke hensyn bør styre energibruken til plattformen og agentene?",
+            o: ["Bruke mindre, spesialiserte modeller der det holder", "Kjøre tunge beregninger der og når det finnes fornybar kraft", "Datasentre i Norden med fornybar kraft og gjenbruk av spillvarme", "Unngå unødvendig lagring og dupliserte data", "Energibudsjett per tjeneste eller agent", "Vise avtrykket til brukeren før tunge operasjoner", "Rapportere plattformens eget energi- og klimaavtrykk", "Ingen særskilte hensyn – gevinsten er langt større", "Annet"] },
+          en: { q: "Which considerations should govern the energy use of the platform and its agents?",
+            o: ["Use smaller, specialised models where they suffice", "Run heavy computation where and when renewable power is available", "Nordic data centres with renewable power and waste-heat reuse", "Avoid unnecessary storage and duplicated data", "Energy budget per service or agent", "Show the footprint to the user before heavy operations", "Report the platform’s own energy and carbon footprint", "No special considerations — the gains are far larger", "Other"] } },
+
+        { id: "q179", core: true, t: "longtext",
+          nb: { q: "Hva er den største bekymringen du hører i virksomheten om teknologi, KI og data i verdikjeden – og hva skal til for å møte den?" },
+          en: { q: "What is the biggest concern you hear in the organisation about technology, AI and data in the value chain — and what would it take to address it?" } },
+        { id: "q180", t: "longtext",
+          nb: { q: "Finnes det teknologier, leverandører eller land dere ikke vil at plattformen skal være avhengig av? Hvorfor?" },
+          en: { q: "Are there technologies, suppliers or countries you do not want the platform to depend on? Why?" } }
       ]
     },
     {
