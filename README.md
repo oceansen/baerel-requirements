@@ -16,6 +16,13 @@ The Bærel **interview guide**, served with admin-generated company workspaces. 
 - **Export.** **Export ▾** in the top bar works on every page, at any time. It offers a readable document (HTML), data (JSON) and a table (CSV). Filenames carry the date, time and a running number, e.g. `baerel-intervju-kongsberg-maritime-h-k-20260929-1401-v3.json`.
 - **Re-open.** A JSON export includes the full draft. **Open an exported interview** on the start page restores it on any device, so it can be updated and exported again.
 
+## Several private interviews per company
+
+- **Many interviews per company.** Every interview is its own record. On a device, **Interviews on this device** lists them with the interviewee, role, progress and last change. You can open any of them, and **+ New interview** starts a fresh one without touching the others. The interviewer's name carries over.
+- **No one sees anyone else's interview.** Others with the company link see only the total number of interviews, not names, roles or answers. The API returns only the count. A single interview can be read back only with its own secret key, which is created with the interview and stored in the browser that holds it.
+- **Personal link.** It opens one interview on another device, e.g. to continue on a tablet. The key sits in the part of the URL after `#`, which never reaches the server. The app removes it from the address bar at once. Share the link only with the person continuing that interview. When the same interview has been edited elsewhere, opening it takes the newer copy.
+- **Shared devices.** **Remove from device** (or **Done — save and remove from this device** on the summary page) saves to the workspace first, then deletes the local copy. The interview stays with the project.
+
 ## Scenario images
 
 Each usage scenario can carry up to six images, each with an optional caption. The browser downscales them to 1600 px JPEG before upload, so a 5 MB phone photo is stored at roughly 150–300 KB. The server accepts only real JPEG, PNG or WebP files (checked by their magic bytes, never SVG). Images are stored in the database and can be read only through the owning company's link or by the admin. Limits per company: `MAX_IMAGES_PER_COMPANY` (2000) and `MAX_IMAGE_MB_PER_COMPANY` (600). Exported documents and JSON files embed the images, so they work without the server.

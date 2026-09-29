@@ -71,9 +71,13 @@ assert.equal((await call("POST", `/api/w/${token}/submissions`, { response: { sc
 assert.equal((await call("PUT", `/api/w/${token}/submissions/${a.data.id}`, { response: response("Head of sustainability", 80), edit_key: b.data.edit_key }, { admin: false })).status, 403); ok("cannot overwrite someone else's submission");
 assert.equal((await call("PUT", `/api/w/${token}/submissions/${a.data.id}`, { response: response("Head of sustainability", 80), edit_key: a.data.edit_key }, { admin: false })).status, 200); ok("contributor updates own submission with edit key");
 const ws = await call("GET", `/api/w/${token}`, undefined, { admin: false });
-assert.equal(ws.data.contributions.length, 2);
-assert.equal(ws.data.contributions[0].completion, 80);
-assert.equal(ws.data.contributions[0].response, undefined); ok("workspace lists contributors (role/completion/date) but not answers");
+assert.equal(ws.data.count, 2);
+assert.equal(ws.data.contributions, undefined);
+assert.ok(!JSON.stringify(ws.data).includes("Head of sustainability")); ok("workspace shows only a count — no roles, no answers");
+const own = await fetch(`${BASE}/api/w/${token}/submissions/${a.data.id}`, { headers: { "x-edit-key": a.data.edit_key } });
+assert.equal(own.status, 200); assert.equal((await own.json()).response.completion, 80);
+assert.equal((await fetch(`${BASE}/api/w/${token}/submissions/${a.data.id}`, { headers: { "x-edit-key": b.data.edit_key } })).status, 404);
+assert.equal((await fetch(`${BASE}/api/w/${token}/submissions/${a.data.id}`)).status, 404); ok("an interview can be read back only with its own key");
 
 const subs = await call("GET", `/api/admin/companies/${co.id}/submissions`);
 assert.equal(subs.data.responses.length, 2);
@@ -91,7 +95,7 @@ assert.notEqual(token2, token);
 assert.equal((await call("GET", `/c/kongsberg-maritime/${token}`, undefined, { admin: false })).status, 410);
 assert.equal((await call("POST", `/api/w/${token}/submissions`, { response: response("Old link") }, { admin: false })).status, 410);
 assert.equal((await call("GET", `/c/kongsberg-maritime/${token2}`, undefined, { admin: false })).status, 200);
-assert.equal((await call("GET", `/api/w/${token2}`, undefined, { admin: false })).data.contributions.length, 2); ok("rotate: old link 410, new link sees the same workspace");
+assert.equal((await call("GET", `/api/w/${token2}`, undefined, { admin: false })).data.count, 2); ok("rotate: old link 410, new link sees the same workspace");
 assert.equal((await call("PUT", `/api/w/${token2}/submissions/${a.data.id}`, { response: response("Head of sustainability", 90), edit_key: a.data.edit_key }, { admin: false })).status, 200); ok("edit key survives a link rotation");
 
 const revoked = await call("POST", `/api/admin/companies/${co.id}/revoke`);

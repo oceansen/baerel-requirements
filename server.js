@@ -528,13 +528,19 @@ async function handle(req, res) {
     if (!link || link.revoked_at) return fail(res, link ? 410 : 404, link ? "link_revoked" : "not_found", "This link is not active.");
     const company = { id: link.company_id, name: link.name, open: !!link.submissions_open };
 
+    // Everyone with the company link sees only how many interviews exist — never
+    // who gave them or what was said. Each interview is reachable only with its own key.
     if (m === "GET" && !mm[2]) {
-      return json(res, 200, {
-        company,
-        contributions: q.contributions.all(link.company_id).map((s) => ({
-          id: s.id, role: s.role, completion: s.completion, created_at: s.created_at, updated_at: s.updated_at
-        }))
-      });
+      return json(res, 200, { company, count: q.countSubs.get(link.company_id).n });
+    }
+
+    if (m === "GET" && mm[3]) {
+      if (limited("r:" + link.token + ":" + clientIp(req), 120, 10 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many requests — wait a few minutes.");
+      const s = q.subById.get(mm[3], link.company_id);
+      const key = String(req.headers["x-edit-key"] || "");
+      if (!s || !key || !safeEqual(sha256(key), s.edit_key_hash)) return fail(res, 404, "not_found", "No such interview.");
+      const last = q.lastVersion.get(s.id);
+      return json(res, 200, { id: s.id, updated_at: s.updated_at, version: last ? last.n : null, response: JSON.parse(s.response) });
     }
 
     if (mm[2] && (m === "POST" || m === "PUT")) {

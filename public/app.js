@@ -249,7 +249,7 @@
       wsLabel: "Arbeidsområde", wsOpen: "Tar imot svar", wsClosed: "Stengt for nye svar",
       wsContribs: "intervjuer", wsContrib1: "intervju", wsNone: "Ingen intervjuer er sendt inn ennå.",
       wsWho: "Registrerte intervjuer", wsYou: "dette intervjuet", wsRoleless: "Rolle ikke oppgitt",
-      wsPrivacy: "Intervjuet sendes til arbeidsområdet for {org}. Andre med lenken ser at et intervju er registrert (rolle, utfyllingsgrad og dato) – ikke svar eller notater. Ikke del lenken utenfor prosjektet og virksomheten.",
+      wsPrivacy: "Intervjuet lagres i arbeidsområdet for {org}. Ingen andre med lenken kan se svar, notater eller hvem som er intervjuet – bare prosjektet ser intervjuene samlet.",
       finish: "Til innsending", review: "Til innsending",
       reviewTitle: "Oppsummering og innsending",
       reviewLede: "Gå gjennom hva intervjuet har dekket, og send svar og notater inn til arbeidsområdet. Du kan oppdatere innsendingen så lenge arbeidsområdet er åpent.",
@@ -261,13 +261,25 @@
       submitFail: "Kunne ikke sende inn. Prøv igjen, eller last ned svarene som fil og send den til kontaktpersonen.",
       closedBody: "Arbeidsområdet tar ikke imot flere svar. Du kan fortsatt laste ned svarene dine som fil.",
       linkGone: "Lenken er ikke lenger aktiv. Last ned svarene dine som fil, og be kontaktpersonen om den nye lenken.",
-      backupLabel: "Sikkerhetskopi:"
+      backupLabel: "Sikkerhetskopi:",
+      newRespondent: "+ Nytt intervju",
+      ivHere: "Intervjuer på denne enheten", ivNew: "+ Nytt intervju", ivOpen: "Åpne", ivActive: "Åpent nå", ivUnnamed: "Uten navn",
+      ivNotStarted: "ikke startet", ivRemove: "Fjern fra enheten", ivRemoveConfirm: "Bekreft – fjern herfra",
+      ivRemoved: "Intervjuet er fjernet fra denne enheten. Det ligger fortsatt trygt i arbeidsområdet.",
+      ivLink: "Personlig lenke", ivLinkCopied: "Personlig lenke kopiert. Del den bare med den som skal fortsette akkurat dette intervjuet.",
+      ivLinkNotYet: "Lenken blir tilgjengelig når intervjuet er lagret i arbeidsområdet – svar på ett spørsmål først.",
+      ivTotal: "{n} intervjuer registrert i arbeidsområdet totalt.",
+      ivPrivacy: "Hvert intervju er privat. Andre med lenken til arbeidsområdet ser verken svar, notater eller hvem som er intervjuet – bare prosjektet ser intervjuene samlet. Deler flere samme enhet: fjern intervjuet fra enheten når dere er ferdige.",
+      ivResumed: "Intervjuet er åpnet fra den personlige lenken.", ivResumeFail: "Den personlige lenken er ikke gyldig.",
+      ivServerNewer: "Hentet en nyere versjon av intervjuet fra arbeidsområdet.",
+      ivNewOk: "Nytt intervju – det forrige ligger fortsatt i listen over intervjuer på denne enheten.",
+      ivDone: "Ferdig – lagre og fjern fra denne enheten"
     },
     en: {
       wsLabel: "Workspace", wsOpen: "Accepting responses", wsClosed: "Closed to new responses",
       wsContribs: "interviews", wsContrib1: "interview", wsNone: "No interviews submitted yet.",
       wsWho: "Recorded interviews", wsYou: "this interview", wsRoleless: "Role not given",
-      wsPrivacy: "The interview goes to the {org} workspace. Others with the link see that an interview was recorded (role, completion and date) — not the answers or notes. Keep the link within the project and the organisation.",
+      wsPrivacy: "The interview is stored in the {org} workspace. Nobody else with the link can see the answers, the notes or who was interviewed — only the project sees the interviews together.",
       finish: "Go to submission", review: "Go to submission",
       reviewTitle: "Summary and submission",
       reviewLede: "Check what the interview covered, then submit the answers and notes to the workspace. You can update the submission while the workspace is open.",
@@ -279,7 +291,19 @@
       submitFail: "Could not submit. Try again, or download your responses as a file and send it to your contact.",
       closedBody: "This workspace no longer accepts responses. You can still download your answers as a file.",
       linkGone: "This link is no longer active. Download your answers as a file and ask your contact for the new link.",
-      backupLabel: "Backup:"
+      backupLabel: "Backup:",
+      newRespondent: "+ New interview",
+      ivHere: "Interviews on this device", ivNew: "+ New interview", ivOpen: "Open", ivActive: "Open now", ivUnnamed: "Unnamed",
+      ivNotStarted: "not started", ivRemove: "Remove from device", ivRemoveConfirm: "Confirm — remove from here",
+      ivRemoved: "The interview is removed from this device. It is still safe in the workspace.",
+      ivLink: "Personal link", ivLinkCopied: "Personal link copied. Share it only with whoever will continue this particular interview.",
+      ivLinkNotYet: "The link becomes available once the interview is saved to the workspace — answer one question first.",
+      ivTotal: "{n} interviews recorded in the workspace in total.",
+      ivPrivacy: "Each interview is private. Others with the workspace link see neither answers, notes nor who was interviewed — only the project sees the interviews together. If several people share this device, remove the interview from it when you are done.",
+      ivResumed: "The interview was opened from its personal link.", ivResumeFail: "That personal link is not valid.",
+      ivServerNewer: "Loaded a newer version of the interview from the workspace.",
+      ivNewOk: "New interview — the previous one is still in the list of interviews on this device.",
+      ivDone: "Done — save and remove from this device"
     }
   };
   if (WS) ["nb", "en"].forEach(function (l) { Object.keys(WS_T[l]).forEach(function (k) { T[l][k] = WS_T[l][k]; }); });
@@ -396,6 +420,7 @@
       }));
       lastSaved = new Date();
       saveFailed = false;
+      if (WS && ACTIVE_IV) ivPatch(ACTIVE_IV, ivSummary());
       setSaveState();
       return true;
     } catch (e) {
@@ -649,7 +674,7 @@
   /* ---------------------------------------------------------------- workspace */
 
   var ws = {
-    info: WS ? { company: WS.company, contributions: [] } : null,
+    info: WS ? { company: WS.company, count: 0 } : null,
     gone: false, busy: false, msg: ""
   };
 
@@ -681,7 +706,10 @@
     if (!SUB_KEY) return null;
     try { var r = store.get(SUB_KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; }
   }
-  function rememberSubmission(o) { try { store.set(SUB_KEY, JSON.stringify(o)); } catch (e) {} }
+  function rememberSubmission(o, key, lid) {
+    try { store.set(key || SUB_KEY, JSON.stringify(o)); } catch (e) {}
+    if (WS && (lid || ACTIVE_IV)) ivPatch(lid || ACTIVE_IV, { subId: o.id });
+  }
 
   function wsFetch(method, suffix, body) {
     return fetch("/api/w/" + WS.token + suffix, {
@@ -725,33 +753,250 @@
     }).then(function () { ws.busy = false; render(); });
   }
 
+
+  /* ---------------------------------------------------------------- several interviews per company
+
+     Each interview on a device has its own draft and its own submission key, listed
+     in a small per-company index. Switching interviews never mixes them; starting a
+     new one never touches the previous. A personal link (#resume=<id>.<key>) opens a
+     single interview on another device — the fragment never reaches the server. */
+
+  var IV_INDEX_KEY = null, IV_ACTIVE_KEY = null, ACTIVE_IV = null;
+  var DRAFT_BASE = "baerel-survey-draft-v1";
+
+  function newLid() { return "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function ivKeys(lid) {
+    return { draft: DRAFT_BASE + ":" + WS.company.id + ":" + lid, sub: "baerel-submission-v1:" + WS.company.id + ":" + lid };
+  }
+  function ivList() { try { return JSON.parse(store.get(IV_INDEX_KEY) || "[]"); } catch (e) { return []; } }
+  function ivStore(list) { try { store.set(IV_INDEX_KEY, JSON.stringify(list)); } catch (e) {} }
+  function ivPatch(lid, patch) {
+    var list = ivList(), e = null;
+    list.forEach(function (x) { if (x.lid === lid) e = x; });
+    if (!e) { e = { lid: lid, created: new Date().toISOString() }; list.push(e); }
+    Object.keys(patch).forEach(function (k) { e[k] = patch[k]; });
+    ivStore(list);
+  }
+  function readSub(lid) { try { var r = store.get(ivKeys(lid).sub); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+
+  function useInterview(lid) {
+    ACTIVE_IV = lid;
+    var k = ivKeys(lid);
+    DRAFT_KEY = k.draft;
+    SUB_KEY = k.sub;
+    try { store.set(IV_ACTIVE_KEY, lid); } catch (e) {}
+  }
+
+  function setupInterviews() {
+    IV_INDEX_KEY = "baerel-interviews-v1:" + WS.company.id;
+    IV_ACTIVE_KEY = "baerel-interview-active-v1:" + WS.company.id;
+    var list = ivList();
+    if (!list.length) {
+      // First run, or a browser that used the single-interview version: adopt what is there.
+      var lid = newLid(), k = ivKeys(lid);
+      var oldDraft = store.get(DRAFT_BASE + ":" + WS.company.id), oldSub = store.get("baerel-submission-v1:" + WS.company.id);
+      if (oldDraft) { try { store.set(k.draft, oldDraft); } catch (e) {} store.del(DRAFT_BASE + ":" + WS.company.id); }
+      if (oldSub) { try { store.set(k.sub, oldSub); } catch (e) {} store.del("baerel-submission-v1:" + WS.company.id); }
+      list = [{ lid: lid, created: new Date().toISOString() }];
+      ivStore(list);
+    }
+    var act = store.get(IV_ACTIVE_KEY);
+    if (!list.some(function (x) { return x.lid === act; })) act = list[list.length - 1].lid;
+    useInterview(act);
+  }
+
+  function ivSummary() {
+    var p = totalProgress();
+    return {
+      label: String(state.meta.interviewee || "").trim(),
+      role: String(state.answers.q1 || "").trim(),
+      completion: Math.round((p.done / p.total) * 100),
+      updatedAt: state.updatedAt
+    };
+  }
+
+  function blankInterview(keepInterviewer) {
+    clearTimeout(sync.timer);
+    state.answers = {}; state.notes = {};
+    state.meta = { interviewer: keepInterviewer || "", interviewee: "", date: "" };
+    state.updatedAt = null; state.exportSeq = 0;
+    state.path = "core"; state.tracks = []; state.section = 0; state.started = null; state.view = "start";
+    restored = false; lastSaved = null;
+    sync.last = null; sync.version = null; sync.err = ""; sync.dirty = false;
+  }
+
+  function applyDraft(d) {
+    if (!d) return false;
+    if (d.lang === "nb" || d.lang === "en") state.lang = d.lang;
+    state.answers = d.answers || {};
+    state.notes = d.notes || {};
+    if (d.meta) state.meta = { interviewer: d.meta.interviewer || "", interviewee: d.meta.interviewee || "", date: d.meta.date || "" };
+    state.updatedAt = d.updated_at || d.saved_at || null;
+    state.exportSeq = d.export_seq || 0;
+    state.path = d.path === "full" ? "full" : "core";
+    state.tracks = d.tracks && d.tracks.length ? d.tracks : [];
+    state.section = d.section || 0;
+    state.started = d.started || new Date().toISOString();
+    state.view = d.view === "review" ? "review" : (Object.keys(state.answers).length ? "form" : "start");
+    if (d.saved_at) { var dt = new Date(d.saved_at); if (!isNaN(dt.getTime())) lastSaved = dt; }
+    return true;
+  }
+
+  /* Leave the current interview cleanly: save locally, push to the server, and
+     forget it entirely if nothing was ever entered. */
+  function leaveCurrent() {
+    flushDraft();
+    var empty = !hasContent() && !mySubmission() && !String(state.meta.interviewee || "").trim();
+    if (empty && ACTIVE_IV) {
+      var k = ivKeys(ACTIVE_IV), gone = ACTIVE_IV;
+      store.del(k.draft); store.del(k.sub);
+      ivStore(ivList().filter(function (x) { return x.lid !== gone; }));
+    } else if (sync.dirty || sync.inflight) {
+      doSync();
+    }
+  }
+
+  function openInterview(lid) {
+    if (lid === ACTIVE_IV) return;
+    leaveCurrent();
+    blankInterview(state.meta.interviewer);
+    useInterview(lid);
+    applyDraft(loadDraft());
+    render(); window.scrollTo(0, 0);
+    refreshFromServer();
+  }
+
+  function newInterview() {
+    leaveCurrent();
+    blankInterview(state.meta.interviewer);
+    var lid = newLid();
+    var list = ivList(); list.push({ lid: lid, created: new Date().toISOString() }); ivStore(list);
+    useInterview(lid);
+    render(); window.scrollTo(0, 0);
+    setStatus(t("ivNewOk"));
+  }
+
+  function removeInterview(lid) {
+    var wasActive = lid === ACTIVE_IV;
+    if (wasActive) { flushDraft(); clearTimeout(sync.timer); }
+    var k = ivKeys(lid);
+    store.del(k.draft); store.del(k.sub);
+    var list = ivList().filter(function (x) { return x.lid !== lid; });
+    ivStore(list);
+    if (wasActive) {
+      blankInterview(state.meta.interviewer);
+      if (list.length) { useInterview(list[list.length - 1].lid); applyDraft(loadDraft()); state.view = "start"; }
+      else { var nl = newLid(); ivStore([{ lid: nl, created: new Date().toISOString() }]); useInterview(nl); }
+    }
+    render(); window.scrollTo(0, 0);
+    setStatus(t("ivRemoved"));
+  }
+
+  function personalLink(lid) {
+    var sub = readSub(lid);
+    if (!sub || !sub.id || !sub.edit_key) return null;
+    return location.origin + location.pathname + "#resume=" + sub.id + "." + sub.edit_key;
+  }
+
+  function fetchOwn(sub) {
+    return fetch("/api/w/" + WS.token + "/submissions/" + encodeURIComponent(sub.id), {
+      headers: { "x-edit-key": sub.edit_key }, credentials: "omit", cache: "no-store", referrerPolicy: "no-referrer"
+    }).then(function (r) { if (!r.ok) throw new Error("own"); return r.json(); });
+  }
+
+  /* The same interview may have been continued on another device: take the newer copy. */
+  function refreshFromServer() {
+    var sub = mySubmission(), lidAt = ACTIVE_IV;
+    if (!sub || !sub.edit_key) return Promise.resolve();
+    return fetchOwn(sub).then(function (d) {
+      if (lidAt !== ACTIVE_IV || sync.dirty || sync.inflight) return;
+      var serverAt = d.response && d.response.updated_at;
+      if (serverAt && (!state.updatedAt || serverAt > state.updatedAt)) {
+        var view = state.view, section = state.section;
+        applyDraft(draftFromExport(d.response));
+        state.view = view; state.section = section;
+        saveDraft(); render();
+        setStatus(t("ivServerNewer"));
+      }
+    })["catch"](function () {});
+  }
+
+  function resumeFromHash() {
+    var m = /^#resume=([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)$/.exec(location.hash || "");
+    if (!m) return Promise.resolve(false);
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}   // the key leaves the address bar at once
+    var subId = m[1], key = m[2];
+    var list = ivList();
+    for (var i = 0; i < list.length; i++) {
+      var s0 = readSub(list[i].lid);
+      if (s0 && s0.id === subId) { openInterview(list[i].lid); return Promise.resolve(true); }
+    }
+    return fetchOwn({ id: subId, edit_key: key }).then(function (d) {
+      leaveCurrent();
+      blankInterview(state.meta.interviewer);
+      var lid = newLid();
+      var l2 = ivList(); l2.push({ lid: lid, created: new Date().toISOString(), subId: subId }); ivStore(l2);
+      useInterview(lid);
+      applyDraft(draftFromExport(d.response));
+      rememberSubmission({ id: subId, edit_key: key, updated_at: d.updated_at, version: d.version, sig: answersSig() }, SUB_KEY, lid);
+      if (state.view === "start") state.view = "form";
+      saveDraft(); render(); window.scrollTo(0, 0);
+      setStatus(t("ivResumed"));
+      return true;
+    })["catch"](function () { setStatus(t("ivResumeFail")); return false; });
+  }
+
+  function interviewsPanel() {
+    var box = el("div", { class: "iv-panel" });
+    box.appendChild(el("p", { class: "eyebrow", text: t("ivHere") }));
+    var ul = el("ul", { class: "iv-local" });
+    ivList().slice().reverse().forEach(function (e) {
+      var active = e.lid === ACTIVE_IV;
+      var info = active ? ivSummary() : e;
+      var bits = [info.role, info.updatedAt ? info.completion + " %" : null, info.updatedAt ? fmtWhen(info.updatedAt) : t("ivNotStarted")]
+        .filter(Boolean).join(" · ");
+      var acts = el("span", { class: "iv-acts" });
+      if (active) acts.appendChild(el("span", { class: "pill open", text: t("ivActive") }));
+      else acts.appendChild(el("button", { class: "btn", type: "button", text: t("ivOpen"), onclick: function () { openInterview(e.lid); } }));
+      acts.appendChild(el("button", { class: "btn ghost", type: "button", text: t("ivLink"), onclick: function () {
+        var u = personalLink(e.lid);
+        if (!u) { setStatus(t("ivLinkNotYet")); return; }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(u).then(function () { setStatus(t("ivLinkCopied")); }, function () { setStatus(t("copyFail")); });
+        } else setStatus(t("copyFail"));
+      } }));
+      var rm = el("button", { class: "btn ghost", type: "button", text: t("ivRemove") });
+      rm.addEventListener("click", function () {
+        if (rm.getAttribute("data-armed") !== "1") {
+          rm.setAttribute("data-armed", "1"); rm.textContent = t("ivRemoveConfirm");
+          setTimeout(function () { rm.removeAttribute("data-armed"); rm.textContent = t("ivRemove"); }, 4000);
+          return;
+        }
+        var go = function () { removeInterview(e.lid); };
+        if (active && hasContent()) doSync().then(go); else go();
+      });
+      acts.appendChild(rm);
+      ul.appendChild(el("li", { class: active ? "active" : "" }, [
+        el("span", { class: "iv-name" }, [el("b", { text: info.label || t("ivUnnamed") }), el("span", { class: "count", text: bits })]),
+        acts
+      ]));
+    });
+    box.appendChild(ul);
+    box.appendChild(el("div", { class: "row", style: "margin-top:12px" }, [
+      el("button", { class: "btn", type: "button", text: t("ivNew"), onclick: newInterview })
+    ]));
+    box.appendChild(el("p", { class: "a-meta", text: t("ivTotal").replace("{n}", String(ws.info.count || 0)) }));
+    return box;
+  }
+
   function wsBand() {
-    var c = ws.info.company, n = ws.info.contributions.length;
+    var c = ws.info.company, n = ws.info.count || 0;
     return el("div", { class: "ws-band" }, [
       el("span", { class: "eyebrow", text: t("wsLabel") }),
       el("b", { text: c.name }),
       el("span", { class: "pill " + (ws.gone ? "closed" : c.open ? "open" : "closed"), text: ws.gone ? "—" : c.open ? t("wsOpen") : t("wsClosed") }),
       el("span", { class: "a-meta mono", style: "margin:0", text: n + " " + (n === 1 ? t("wsContrib1") : t("wsContribs")) })
     ]);
-  }
-
-  function wsContribList() {
-    var mine = mySubmission();
-    var box = el("div", { style: "margin-top:26px" });
-    box.appendChild(el("p", { class: "eyebrow", text: t("wsWho") }));
-    var list = ws.info.contributions;
-    if (!list.length) { box.appendChild(el("p", { class: "a-meta", text: t("wsNone") })); return box; }
-    var ul = el("ul", { class: "contrib" });
-    list.forEach(function (s) {
-      var me = !!(mine && mine.id === s.id);
-      ul.appendChild(el("li", { class: me ? "mine" : "" }, [
-        el("span", { text: (s.role || t("wsRoleless")) + (me ? " (" + t("wsYou") + ")" : "") }),
-        el("span", { class: "count num", text: s.completion + "%" }),
-        el("span", { class: "count when", text: fmtWhen(s.updated_at) })
-      ]));
-    });
-    box.appendChild(ul);
-    return box;
   }
 
   function wsSubmitBox() {
@@ -770,7 +1015,12 @@
     box.appendChild(el("div", { class: "row" }, [
       el("button", { class: "btn primary", type: "button", text: t("saveVersion"),
         onclick: function (e) { var b = e.currentTarget; b.disabled = true; doSync("manual").then(function () { render(); }); } }),
-      el("button", { class: "btn", type: "button", text: t("exportDoc"), onclick: function () { doExport("doc"); } })
+      el("button", { class: "btn", type: "button", text: t("exportDoc"), onclick: function () { doExport("doc"); } }),
+      el("button", { class: "btn ghost", type: "button", text: t("ivDone"), onclick: function (e) {
+        var b = e.currentTarget; b.disabled = true;
+        var lid = ACTIVE_IV;
+        doSync("manual").then(function () { removeInterview(lid); });
+      } })
     ]));
     if (sync.err) box.appendChild(el("p", { class: "err", role: "alert", text: sync.err }));
     return box;
@@ -821,6 +1071,7 @@
     var mine = mySubmission();
     var resp = buildResponse();
     var sig = answersSig();
+    var subKey = SUB_KEY, lidAt = ACTIVE_IV;   // the interview being saved, even if the user switches meanwhile
     var body = { response: resp };
     if (reason) body.snapshot = reason;
     var req;
@@ -835,8 +1086,9 @@
       req = wsFetch("POST", "/submissions", body);
     }
     sync.inflight = req.then(function (d) {
-      rememberSubmission({ id: d.id, edit_key: d.edit_key || (mine && mine.edit_key), updated_at: d.updated_at, sig: sig, version: d.version });
-      sync.last = new Date(); sync.version = d.version; sync.err = "";
+      rememberSubmission({ id: d.id, edit_key: d.edit_key || (mine && mine.edit_key), updated_at: d.updated_at, sig: sig, version: d.version }, subKey, lidAt);
+      if (lidAt === ACTIVE_IV) { sync.last = new Date(); sync.version = d.version; sync.err = ""; }
+      if (d.edit_key && ws.info) ws.info.count = (ws.info.count || 0) + 1;   // a new interview was just filed
       return d;
     })["catch"](function (e) {
       if (e.status === 423) ws.info.company.open = false;
@@ -1811,7 +2063,7 @@
     ]));
     side.appendChild(el("p", { class: "notice", text: SURVEY.notice[state.lang] }));
     side.appendChild(el("p", { class: "notice calm", text: SURVEY.privacy[state.lang] + " " + SURVEY.techNote[state.lang] + " " + t("requiredNone") }));
-    if (WS) side.appendChild(el("p", { class: "notice calm", text: fill(t("wsPrivacy")) }));
+    if (WS) side.appendChild(el("p", { class: "notice calm", text: t("ivPrivacy") }));
     intro.appendChild(interviewPanel());
     hero.appendChild(el("div", { class: "hero-grid" }, [intro, side]));
 
@@ -1894,7 +2146,7 @@
         el("span", { class: "count", text: s.questions.length + " " + t("questions") })
       ]));
     });
-    if (WS) hero.appendChild(wsContribList());
+    if (WS) hero.appendChild(interviewsPanel());
     hero.appendChild(toc);
 
     if (WS) main.appendChild(wsBand());
@@ -2045,6 +2297,7 @@
      nothing is lost and the respondent can pick up where they left off. */
   function goHome() {
     flushDraft();
+    if (WS) loadWorkspace().then(function () { if (state.view === "start") render(); });
     if (state.view === "form" || state.view === "review") state.lastView = state.view;
     state.mode = "form";
     state.view = "start";
@@ -2053,6 +2306,7 @@
   }
 
   function resetForm() {
+    if (WS) { newInterview(); return; }
     state.answers = {};
     state.notes = {};
     state.updatedAt = null;
@@ -2792,6 +3046,7 @@
     else renderForm();
   }
 
+  if (WS) setupInterviews();
   var boot = loadDraft();
   if (boot && boot.lang) state.lang = boot.lang;
   if (boot && boot.answers && Object.keys(boot.answers).length) {
@@ -2809,13 +3064,17 @@
     restored = true;
   }
   loadAnalysis();
+  if (WS && ACTIVE_IV && hasContent()) ivPatch(ACTIVE_IV, ivSummary());   // keep the device list labelled after a migration
 
   if (WS) {
     render();
     loadWorkspace().then(function () {
+      return resumeFromHash();
+    }).then(function (resumed) {
       render();
       var mine = mySubmission();
       if (hasContent() && (!mine || mine.sig !== answersSig())) scheduleSync();
+      if (!resumed) refreshFromServer();
     });
   } else if (ADMIN) {
     state.mode = "analyse";
