@@ -137,20 +137,75 @@
     }
   };
 
+
+  /* Interview-guide wording. The tool is run by an interviewer in conversation with
+     someone from the company, so the copy speaks to the interviewer. */
+  var INTERVIEW_T = {
+    nb: {
+      modeForm: "Intervjuguide",
+      autosaveOn: "Svar og notater lagres automatisk i denne nettleseren underveis",
+      restoredHere: "Vi fortsatte der du slapp – intervjuet var lagret i denne nettleseren.",
+      newRespondent: "Start et nytt intervju", confirmReset: "Bekreft – tøm svar og notater",
+      requiredNone: "Ingen spørsmål er obligatoriske – hopp over det som ikke er relevant for intervjuobjektet.",
+      reviewTitle: "Oppsummering av intervjuet",
+      reviewLede: "Gå gjennom hva intervjuet har dekket, og eksporter svar og notater som fil.",
+      pathCoreTitle: "Kjerneintervju", pathCoreBtn: "Start kjerneintervjuet",
+      pathCoreBody: "Det vi trenger fra alle virksomheter. Åpne fordypningen i en seksjon underveis når samtalen går i dybden på et tema.",
+      pathFullTitle: "Fullt intervju", pathFullBtn: "Start fullt intervju",
+      pathFullBody: "Alle temaene, inkludert datamodell og arkitektur, teknologivalg, bærekraftsdetaljer, egosentriske data og robotisering. Egner seg best over to økter.",
+      analyseTitle: "Analyse av intervjuene",
+      analyseLede: "Legg inn intervjufilene. Alt regnes ut lokalt i nettleseren – ingenting lastes opp.",
+      responses: "intervjuer", respondents: "Intervjuer", noData: "Ingen intervjufiler lagt inn ennå.",
+      notePh: "Notat …", noteFor: "Notat til", qNote: "Notat til spørsmålet",
+      qNotePh: "Hva ble sagt, forbehold, sitater, oppfølging …", notesCount: "notater",
+      metaTitle: "Om intervjuet", metaInterviewer: "Intervjuer", metaInterviewerPh: "Ditt navn",
+      metaInterviewee: "Intervjuobjekt", metaIntervieweePh: "Navn eller initialer (valgfritt)", metaDate: "Dato",
+      notSelected: "ikke valgt", notesHead: "Intervjuernotater",
+      minutesCore: "ca. 45–60", minutesFull: "90–120", minutesRange: "45–120",
+      start: "Start intervjuet", notSurvey: "Filen er ikke fra denne intervjuguiden",
+      oppsLede: "Svarene peker mot konkrete produkter og tjenester – dataprodukter, KI-tjenester, plattform- og driftstjenester – som blir mulige hvis valgene under er på plass. Listen oppdateres etter hvert som intervjuet skrider fram. Bruk den gjerne som samtalestøtte mot slutten."
+    },
+    en: {
+      modeForm: "Interview guide",
+      autosaveOn: "Answers and notes are saved automatically in this browser as you go",
+      restoredHere: "Picked up where you left off — the interview was saved in this browser.",
+      newRespondent: "Start a new interview", confirmReset: "Confirm — clear answers and notes",
+      requiredNone: "No question is mandatory — skip anything that is not relevant to the interviewee.",
+      reviewTitle: "Interview summary",
+      reviewLede: "Check what the interview covered, then export the answers and notes as a file.",
+      pathCoreTitle: "Core interview", pathCoreBtn: "Start the core interview",
+      pathCoreBody: "What we need from every organisation. Open a section's deeper track whenever the conversation goes into depth on that subject.",
+      pathFullTitle: "Full interview", pathFullBtn: "Start the full interview",
+      pathFullBody: "Every subject, including data model and architecture, technology choices, sustainability detail, egocentric data and robotics. Works best over two sessions.",
+      analyseTitle: "Analysis of the interviews",
+      analyseLede: "Load the interview files. Everything is computed locally in your browser — nothing is uploaded.",
+      responses: "interviews", respondents: "Interviews", noData: "No interview files loaded yet.",
+      notePh: "Note …", noteFor: "Note on", qNote: "Note on the question",
+      qNotePh: "What was said, caveats, quotes, follow-ups …", notesCount: "notes",
+      metaTitle: "About the interview", metaInterviewer: "Interviewer", metaInterviewerPh: "Your name",
+      metaInterviewee: "Interviewee", metaIntervieweePh: "Name or initials (optional)", metaDate: "Date",
+      notSelected: "not selected", notesHead: "Interviewer notes",
+      minutesCore: "c. 45–60", minutesFull: "90–120", minutesRange: "45–120",
+      start: "Start the interview", notSurvey: "That file is not from this interview guide",
+      oppsLede: "The answers point at concrete products and services — data products, AI services, platform and operations services — that become possible once the choices below are in place. The list updates as the interview progresses; it works well as a prompt towards the end of the conversation."
+    }
+  };
+  ["nb", "en"].forEach(function (l) { Object.keys(INTERVIEW_T[l]).forEach(function (k) { T[l][k] = INTERVIEW_T[l][k]; }); });
+
   /* Workspace wording. Overrides the export-first wording when the survey is opened
      through a company link, where submitting is the main path and export the backup. */
   var WS_T = {
     nb: {
       wsLabel: "Arbeidsområde", wsOpen: "Tar imot svar", wsClosed: "Stengt for nye svar",
-      wsContribs: "bidrag", wsContrib1: "bidrag", wsNone: "Ingen har sendt inn ennå – du kan bli den første.",
-      wsWho: "Hvem har bidratt", wsYou: "deg", wsRoleless: "Rolle ikke oppgitt",
-      wsPrivacy: "Svarene dine sendes til arbeidsområdet for {org}. Andre med lenken ser at du har bidratt (rolle, utfyllingsgrad og dato) – ikke hva du har svart. Del lenken internt, ikke utenfor virksomheten.",
+      wsContribs: "intervjuer", wsContrib1: "intervju", wsNone: "Ingen intervjuer er sendt inn ennå.",
+      wsWho: "Registrerte intervjuer", wsYou: "dette intervjuet", wsRoleless: "Rolle ikke oppgitt",
+      wsPrivacy: "Intervjuet sendes til arbeidsområdet for {org}. Andre med lenken ser at et intervju er registrert (rolle, utfyllingsgrad og dato) – ikke svar eller notater. Ikke del lenken utenfor prosjektet og virksomheten.",
       finish: "Til innsending", review: "Til innsending",
       reviewTitle: "Oppsummering og innsending",
-      reviewLede: "Gå gjennom hva som er besvart, og send svarene inn til arbeidsområdet. Du kan komme tilbake og oppdatere dem så lenge arbeidsområdet er åpent.",
-      submitTitle: "Send inn til {org}",
-      submitBody: "Svarene lagres i arbeidsområdet til {org}. Fra denne nettleseren kan du oppdatere dem senere.",
-      submitBtn: "Send inn svarene", updateBtn: "Oppdater innsendte svar",
+      reviewLede: "Gå gjennom hva intervjuet har dekket, og send svar og notater inn til arbeidsområdet. Du kan oppdatere innsendingen så lenge arbeidsområdet er åpent.",
+      submitTitle: "Send inn intervjuet til {org}",
+      submitBody: "Svar og notater lagres i arbeidsområdet til {org}. Fra denne nettleseren kan du oppdatere innsendingen senere.",
+      submitBtn: "Send inn intervjuet", updateBtn: "Oppdater innsendt intervju",
       submitting: "Sender …", submittedAt: "Sendt inn {when}", upToDate: "Innsendt versjon er oppdatert.",
       changedSince: "Du har endret svar siden forrige innsending – oppdater for å ta dem med.",
       submitFail: "Kunne ikke sende inn. Prøv igjen, eller last ned svarene som fil og send den til kontaktpersonen.",
@@ -160,15 +215,15 @@
     },
     en: {
       wsLabel: "Workspace", wsOpen: "Accepting responses", wsClosed: "Closed to new responses",
-      wsContribs: "contributions", wsContrib1: "contribution", wsNone: "Nobody has submitted yet — you could be the first.",
-      wsWho: "Who has contributed", wsYou: "you", wsRoleless: "Role not given",
-      wsPrivacy: "Your answers go to the {org} workspace. Others with the link see that you contributed (role, completion and date) — not what you answered. Share the link inside your organisation, not outside it.",
+      wsContribs: "interviews", wsContrib1: "interview", wsNone: "No interviews submitted yet.",
+      wsWho: "Recorded interviews", wsYou: "this interview", wsRoleless: "Role not given",
+      wsPrivacy: "The interview goes to the {org} workspace. Others with the link see that an interview was recorded (role, completion and date) — not the answers or notes. Keep the link within the project and the organisation.",
       finish: "Go to submission", review: "Go to submission",
       reviewTitle: "Summary and submission",
-      reviewLede: "Check what has been answered, then submit your responses to the workspace. You can come back and update them while the workspace is open.",
-      submitTitle: "Submit to {org}",
-      submitBody: "Your responses are stored in the {org} workspace. From this browser you can update them later.",
-      submitBtn: "Submit responses", updateBtn: "Update submitted responses",
+      reviewLede: "Check what the interview covered, then submit the answers and notes to the workspace. You can update the submission while the workspace is open.",
+      submitTitle: "Submit the interview to {org}",
+      submitBody: "Answers and notes are stored in the {org} workspace. From this browser you can update the submission later.",
+      submitBtn: "Submit the interview", updateBtn: "Update submitted interview",
       submitting: "Submitting …", submittedAt: "Submitted {when}", upToDate: "The submitted version is up to date.",
       changedSince: "You have changed answers since your last submission — update to include them.",
       submitFail: "Could not submit. Try again, or download your responses as a file and send it to your contact.",
@@ -228,6 +283,8 @@
     lastView: "form",
     section: 0,
     answers: {},
+    notes: {},         // interviewer notes: notes[qid][optionIndex] and notes[qid].q (whole question)
+    meta: { interviewer: "", interviewee: "", date: "" },
     started: null
   };
 
@@ -281,7 +338,8 @@
       store.set(DRAFT_KEY, JSON.stringify({
         lang: state.lang, section: state.section, view: state.view,
         path: state.path, tracks: state.tracks,
-        answers: state.answers, started: state.started, saved_at: new Date().toISOString()
+        answers: state.answers, notes: state.notes, meta: state.meta,
+        started: state.started, saved_at: new Date().toISOString()
       }));
       lastSaved = new Date();
       saveFailed = false;
@@ -382,6 +440,18 @@
       rec.labels_nb = rec.selected.map(function (i) { return q.nb.o[i]; });
       if (a && a.other) rec.other = a.other;
     }
+    var n = state.notes[q.id];
+    if (n) {
+      if (n.q && n.q.trim()) rec.note = n.q.trim();
+      if (q.en.o) {
+        var on = Object.keys(n).filter(function (k) { return k !== "q" && n[k] && n[k].trim(); })
+          .map(Number).sort(function (x, y) { return x - y; })
+          .map(function (k) {
+            return { index: k, selected: (rec.selected || []).indexOf(k) > -1, label_en: q.en.o[k], label_nb: q.nb.o[k], note: n[k].trim() };
+          });
+        if (on.length) rec.option_notes = on;
+      }
+    }
     return rec;
   }
 
@@ -393,6 +463,12 @@
       language: state.lang,
       path: state.path,
       tracks: state.tracks.slice(),
+      format: "interview",
+      interview: {
+        interviewer: String(state.meta.interviewer || "").trim(),
+        interviewee: String(state.meta.interviewee || "").trim(),
+        date: state.meta.date || ""
+      },
       answered_count: p.done,
       asked_count: p.total,
       started_at: state.started,
@@ -410,11 +486,24 @@
   }
 
   function answerToText(rec, lang) {
+    var noteWord = lang === "nb" ? "notat" : "note";
+    var s;
     if (rec.type === "text" || rec.type === "longtext") return rec.text || "";
-    if (rec.type === "scale") return rec.value == null ? "" : String(rec.value);
-    var labs = (lang === "nb" ? rec.labels_nb : rec.labels_en) || [];
-    var s = labs.join(" | ");
-    if (rec.other) s = s ? s + " | " + rec.other : rec.other;
+    if (rec.type === "scale") s = rec.value == null ? "" : String(rec.value);
+    else {
+      var notes = {};
+      (rec.option_notes || []).forEach(function (o) { notes[o.index] = o; });
+      var parts = (rec.selected || []).map(function (i, k) {
+        var lab = ((lang === "nb" ? rec.labels_nb : rec.labels_en) || [])[k] || "";
+        return notes[i] ? lab + " [" + noteWord + ": " + notes[i].note + "]" : lab;
+      });
+      if (rec.other) parts.push(rec.other);
+      (rec.option_notes || []).forEach(function (o) {
+        if (!o.selected) parts.push("(" + (lang === "nb" ? "ikke valgt" : "not selected") + ") " + (lang === "nb" ? o.label_nb : o.label_en) + " [" + noteWord + ": " + o.note + "]");
+      });
+      s = parts.join(" | ");
+    }
+    if (rec.note) s = (s ? s + " | " : "") + noteWord + ": " + rec.note;
     return s;
   }
 
@@ -624,6 +713,96 @@
     });
   }
 
+
+  /* ---------------------------------------------------------------- interviewer notes */
+
+  function noteGet(qid, key) { var n = state.notes[qid]; return (n && n[key]) || ""; }
+  function noteSet(qid, key, v) {
+    var n = state.notes[qid] || (state.notes[qid] = {});
+    if (v && v.trim()) n[key] = v; else { delete n[key]; if (!Object.keys(n).length) delete state.notes[qid]; }
+    persist();
+  }
+
+  /* A small pen button that opens a note field under whatever it is attached to.
+     A field with content stays open, so notes are never hidden by accident. */
+  function noteControl(host, q, key, label, cls) {
+    var has = !!noteGet(q.id, key).trim();
+    var ta = el("textarea", {
+      class: cls + (has ? "" : " hidden"), rows: "2",
+      placeholder: t("notePh"), "aria-label": t("noteFor") + " " + label
+    });
+    ta.value = noteGet(q.id, key);
+    var btn = el("button", {
+      class: "note-btn" + (has ? " on" : ""), type: "button",
+      title: t("noteFor") + " " + label, "aria-label": t("noteFor") + " " + label,
+      "aria-expanded": String(has)
+    }, [el("span", { "aria-hidden": "true", text: "✎" })]);
+    btn.addEventListener("click", function () {
+      var open = ta.classList.toggle("hidden") === false;
+      btn.setAttribute("aria-expanded", String(open));
+      if (open) ta.focus();
+    });
+    ta.addEventListener("input", function () {
+      noteSet(q.id, key, ta.value);
+      btn.classList.toggle("on", !!ta.value.trim());
+    });
+    ta.addEventListener("blur", function () {
+      flushDraft();
+      if (!ta.value.trim()) { ta.classList.add("hidden"); btn.setAttribute("aria-expanded", "false"); }
+    });
+    host.appendChild(btn);
+    host.appendChild(ta);
+  }
+
+  function questionNote(q) {
+    var has = !!noteGet(q.id, "q").trim();
+    var box = el("div", { class: "q-note" });
+    var ta = el("textarea", { class: "q-note-in" + (has ? "" : " hidden"), rows: "2", placeholder: t("qNotePh"), "aria-label": t("qNote") });
+    ta.value = noteGet(q.id, "q");
+    var btn = el("button", { class: "note-link" + (has ? " on" : ""), type: "button", "aria-expanded": String(has) }, [
+      el("span", { "aria-hidden": "true", text: "✎ " }), el("span", { text: t("qNote") })
+    ]);
+    btn.addEventListener("click", function () {
+      var open = ta.classList.toggle("hidden") === false;
+      btn.setAttribute("aria-expanded", String(open));
+      if (open) ta.focus();
+    });
+    ta.addEventListener("input", function () { noteSet(q.id, "q", ta.value); btn.classList.toggle("on", !!ta.value.trim()); });
+    ta.addEventListener("blur", function () {
+      flushDraft();
+      if (!ta.value.trim()) { ta.classList.add("hidden"); btn.setAttribute("aria-expanded", "false"); }
+    });
+    box.appendChild(btn);
+    box.appendChild(ta);
+    return box;
+  }
+
+  function noteCount() {
+    var n = 0;
+    Object.keys(state.notes).forEach(function (q) { n += Object.keys(state.notes[q]).length; });
+    return n;
+  }
+
+  /* Interview details: who ran it, with whom, when. Kept with the draft and exported. */
+  function interviewPanel() {
+    if (!state.meta.date) state.meta.date = new Date().toISOString().slice(0, 10);
+    function field(key, type, labelKey, phKey) {
+      var inp = el("input", { type: type, id: "meta-" + key, placeholder: phKey ? t(phKey) : "" });
+      inp.value = state.meta[key] || "";
+      inp.addEventListener("input", function () { state.meta[key] = inp.value; persist(); });
+      inp.addEventListener("blur", flushDraft);
+      return el("label", { class: "meta-f", "for": "meta-" + key }, [el("span", { class: "eyebrow", text: t(labelKey) }), inp]);
+    }
+    return el("div", { class: "meta-panel" }, [
+      el("p", { class: "eyebrow", text: t("metaTitle") }),
+      el("div", { class: "meta-grid" }, [
+        field("interviewer", "text", "metaInterviewer", "metaInterviewerPh"),
+        field("interviewee", "text", "metaInterviewee", "metaIntervieweePh"),
+        field("date", "date", "metaDate", null)
+      ])
+    ]);
+  }
+
   /* ---------------------------------------------------------------- dom helpers */
 
   function el(tag, attrs, kids) {
@@ -752,7 +931,7 @@
     var main = el("main");
 
     var hero = el("section", { class: "panel hero" });
-    hero.appendChild(el("p", { class: "eyebrow", text: t("program") + " · " + (state.lang === "nb" ? "Kravkartlegging" : "Requirements survey") }));
+    hero.appendChild(el("p", { class: "eyebrow", text: t("program") + " · " + (state.lang === "nb" ? "Intervjuguide" : "Interview guide") }));
     hero.appendChild(el("h1", { text: L(SURVEY.title) }));
     L(SURVEY.intro).forEach(function (para, i) {
       hero.appendChild(el("p", { class: i === 0 ? "lede" : "", text: para }));
@@ -761,7 +940,7 @@
     hero.appendChild(el("ul", { class: "facts" }, [
       el("li", {}, [el("b", { class: "num", text: String(SURVEY.sections.length) }), el("span", { text: t("sections") })]),
       el("li", {}, [el("b", { class: "num", text: String(coreTotal()) + "–" + String(ALL_Q.length) }), el("span", { text: t("questions") })]),
-      el("li", {}, [el("b", { class: "num", text: "30–75" }), el("span", { text: t("estimate") + " (" + t("minutes") + ")" })])
+      el("li", {}, [el("b", { class: "num", text: t("minutesRange") }), el("span", { text: t("estimate") + " (" + t("minutes") + ")" })])
     ]));
 
     hero.appendChild(el("p", { class: "notice", text: SURVEY.notice[state.lang] }));
@@ -784,17 +963,18 @@
     var paths = el("div", { class: "paths" }, [
       el("div", { class: "path-card" }, [
         el("h3", { text: t("pathCoreTitle") }),
-        el("p", { class: "num", text: coreTotal() + " " + t("questions") + " · ca. 30 " + t("minutes") }),
+        el("p", { class: "num", text: coreTotal() + " " + t("questions") + " · " + t("minutesCore") + " " + t("minutes") }),
         el("p", { text: t("pathCoreBody") }),
         el("button", { class: "btn primary", type: "button", text: t("pathCoreBtn"), onclick: function () { begin("core"); } })
       ]),
       el("div", { class: "path-card" }, [
         el("h3", { text: t("pathFullTitle") }),
-        el("p", { class: "num", text: ALL_Q.length + " " + t("questions") + " · 50–75 " + t("minutes") }),
+        el("p", { class: "num", text: ALL_Q.length + " " + t("questions") + " · " + t("minutesFull") + " " + t("minutes") }),
         el("p", { text: t("pathFullBody") }),
         el("button", { class: "btn", type: "button", text: t("pathFullBtn"), onclick: function () { begin("full"); } })
       ])
     ]);
+    hero.appendChild(interviewPanel());
     hero.appendChild(paths);
 
     var inMemory = Object.keys(state.answers).length > 0;
@@ -809,6 +989,8 @@
         onclick: function () {
           if (!inMemory) {
             state.answers = draft.answers;
+            state.notes = draft.notes || {};
+            state.meta = draft.meta || state.meta;
             state.path = draft.path === "full" ? "full" : "core";
             state.tracks = draft.tracks || [];
             state.section = draft.section || 0;
@@ -891,7 +1073,11 @@
           refreshSpine();
           toggleOther(q);
         });
-        opts.appendChild(el("label", { class: "opt", "for": q.id + "-o" + i }, [input, el("span", { text: label })]));
+        var row = el("div", { class: "opt-row" }, [
+          el("label", { class: "opt", "for": q.id + "-o" + i }, [input, el("span", { text: label })])
+        ]);
+        noteControl(row, q, String(i), label, "opt-note");
+        opts.appendChild(row);
       });
       node.appendChild(opts);
 
@@ -907,6 +1093,7 @@
         box.appendChild(inp);
         node.appendChild(box);
       }
+      node.appendChild(questionNote(q));
     } else if (q.t === "scale") {
       node.appendChild(el("p", { class: "q-hint", text: L(q).hint || t("scaleHint") }));
       var sc = el("div", { class: "scale", role: "radiogroup" });
@@ -927,6 +1114,7 @@
         ]));
       });
       node.appendChild(sc);
+      node.appendChild(questionNote(q));
     } else {
       var field = el("div", { class: "field" });
       var input;
@@ -989,6 +1177,10 @@
 
   function resetForm() {
     state.answers = {};
+    state.notes = {};
+    state.meta = { interviewer: state.meta.interviewer, interviewee: "", date: "" };
+    // A new interview is a new submission, not an update of the previous one.
+    if (SUB_KEY) store.del(SUB_KEY);
     state.path = "core";
     state.tracks = [];
     state.section = 0;
@@ -1131,7 +1323,9 @@
       el("li", {}, [el("b", { class: "num", text: p.done + "/" + p.total }), el("span", { text: t("answered") })]),
       el("li", {}, [el("b", { text: state.path === "full" ? t("scopeFull") : t("scopeCore") }), el("span", { text: t("scope") })]),
       el("li", {}, [el("b", { class: "num", text: resp.completion + "%" }), el("span", { text: state.lang === "nb" ? "utfylt" : "complete" })]),
-      el("li", {}, [el("b", { text: resp.respondent.organisation || t("anonymous") }), el("span", { text: t("org") })])
+      el("li", {}, [el("b", { text: resp.respondent.organisation || t("anonymous") }), el("span", { text: t("org") })]),
+      el("li", {}, [el("b", { class: "num", text: String(noteCount()) }), el("span", { text: t("notesCount") })]),
+      state.meta.interviewer ? el("li", {}, [el("b", { text: state.meta.interviewer }), el("span", { text: t("metaInterviewer") })]) : null
     ]));
 
     var toc = el("ol", { class: "toc" });
@@ -1550,6 +1744,7 @@
           recs.forEach(function (r) { if (r.value) { counts[r.value - 1]++; sum += r.value; n++; } });
           if (!n) block.appendChild(el("p", { class: "a-meta", text: t("noAnswers") }));
           else block.appendChild(distribution(counts, sum / n, n));
+          block.appendChild(notesBlock(rows, q));
         } else if (q.t === "multi" || q.t === "single") {
           var tally = L(q).o.map(function (lab) { return { label: lab, n: 0 }; });
           var answered = 0, others = [];
@@ -1568,6 +1763,7 @@
             others.forEach(function (o) { ol.appendChild(el("p", { class: "verbatim", text: o.text })); });
             block.appendChild(ol);
           }
+          block.appendChild(notesBlock(rows, q));
         } else {
           var texts = [];
           rows.forEach(function (r) {
@@ -1611,14 +1807,45 @@
     ]));
   }
 
+  /* Interviewer notes for one question across all loaded interviews. */
+  function notesBlock(rows, q) {
+    var items = [];
+    rows.forEach(function (r) {
+      var rec = r.answers.filter(function (x) { return x.id === q.id; })[0];
+      if (!rec) return;
+      var who = (r.respondent && r.respondent.organisation) || t("anonymous");
+      if (r.respondent && r.respondent.role) who += " · " + r.respondent.role;
+      (rec.option_notes || []).forEach(function (o) {
+        items.push({ tag: (state.lang === "nb" ? o.label_nb : o.label_en) + (o.selected ? "" : " (" + t("notSelected") + ")"), text: o.note, who: who });
+      });
+      if (rec.note) items.push({ tag: t("qNote"), text: rec.note, who: who });
+    });
+    var box = el("div");
+    if (!items.length) return box;
+    box.appendChild(el("p", { class: "eyebrow", style: "margin-top:16px", text: t("notesHead") + " · " + items.length }));
+    var v = el("div", { class: "verbatims" });
+    items.forEach(function (x) {
+      v.appendChild(el("blockquote", { class: "verbatim note-v", style: "margin:0" }, [
+        el("span", { class: "note-tag", text: x.tag }),
+        el("span", { text: x.text }),
+        el("cite", { text: x.who })
+      ]));
+    });
+    box.appendChild(v);
+    return box;
+  }
+
   function wideCsv(rows) {
-    var header = ["organisation", "role", "language", "completion", "exported_at"];
+    var header = ["organisation", "role", "interviewer", "interviewee", "interview_date", "language", "completion", "exported_at"];
     ALL_Q.forEach(function (q) { header.push(q.id + " — " + q.en.q); });
     var out = [header];
     rows.forEach(function (r) {
       var line = [
         (r.respondent && r.respondent.organisation) || "",
         (r.respondent && r.respondent.role) || "",
+        (r.interview && r.interview.interviewer) || "",
+        (r.interview && r.interview.interviewee) || "",
+        (r.interview && r.interview.date) || "",
         r.language || "", r.completion == null ? "" : r.completion, r.exported_at || ""
       ];
       ALL_Q.forEach(function (q) {
@@ -1635,7 +1862,7 @@
   function render() {
     renderTopbar();
     app.textContent = "";
-    document.documentElement.lang = state.lang === "nb" ? "no" : "en";
+    document.documentElement.lang = state.lang === "nb" ? "nb" : "en";
     if (state.mode === "analyse") { renderAnalyse(); return; }
     if (state.mode === "opps") { renderOpportunities(); return; }
     if (state.view === "start") renderStart();
@@ -1647,6 +1874,8 @@
   if (boot && boot.lang) state.lang = boot.lang;
   if (boot && boot.answers && Object.keys(boot.answers).length) {
     state.answers = boot.answers;
+    state.notes = boot.notes || {};
+    if (boot.meta) state.meta = boot.meta;
     state.path = boot.path === "full" ? "full" : "core";
     state.tracks = boot.tracks && boot.tracks.length ? boot.tracks : [];
     state.section = boot.section || 0;

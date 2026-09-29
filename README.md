@@ -1,6 +1,6 @@
 # Bærel requirements: company workspaces
 
-The Bærel survey, served with admin-generated company workspaces.
+The Bærel **interview guide**, served with admin-generated company workspaces. An interviewer runs it in conversation with someone from the company. There is an optional note on every answer option, plus a note per question and interview details (interviewer, interviewee, date). Notes are saved with the draft, stored on submission, shown in the analysis view and included in the JSON and CSV exports.
 
 1. The admin opens `/admin`, clicks **Add company** and types a name, for example `Kongsberg Maritime`.
 2. The server creates the workspace, an internal ID (`co_n8kjkugfsx`), a 256-bit secret token and the private link:

@@ -586,3 +586,100 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   .contrib li { grid-template-columns: 1fr auto; }
   .contrib li .when { grid-column: 1 / -1; }
 }
+
+/* ---------- interviewer notes ---------- */
+
+.opt-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 2px; }
+.opt-row .opt { min-width: 0; }
+
+.note-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-3);
+  font: 14px/1 "IBM Plex Mono", ui-monospace, monospace;
+  width: 32px;
+  height: 32px;
+  margin-top: 1px;
+  border-radius: var(--r);
+  cursor: pointer;
+  opacity: .45;
+  transition: opacity .15s ease, background .15s ease;
+}
+.opt-row:hover .note-btn, .note-btn:focus-visible, .note-btn[aria-expanded="true"] { opacity: 1; }
+.note-btn:hover { background: var(--surface); border-color: var(--line); color: var(--ink); }
+.note-btn.on { opacity: 1; color: var(--copper-ink); background: var(--copper-soft); border-color: color-mix(in srgb, var(--copper) 40%, transparent); }
+
+textarea.opt-note, textarea.q-note-in {
+  font-size: 14px;
+  line-height: 1.45;
+  padding: 8px 11px;
+  border-color: var(--line);
+  border-left: 2px solid var(--copper);
+  background: var(--surface);
+  resize: vertical;
+}
+textarea.opt-note { grid-column: 1 / -1; margin: 2px 0 8px 33px; width: calc(100% - 33px); min-height: 2.9em; }
+textarea.opt-note:focus, textarea.q-note-in:focus { border-color: var(--line-strong); border-left-color: var(--copper); }
+
+.q-note { margin: 12px 0 0 38px; }
+.note-link {
+  appearance: none; border: 0; background: transparent; padding: 3px 0; cursor: pointer;
+  font: inherit; font-size: 13px; color: var(--ink-3);
+  text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px;
+}
+.note-link:hover { color: var(--ink); }
+.note-link.on { color: var(--copper-ink); text-decoration-color: currentColor; }
+textarea.q-note-in { margin-top: 6px; max-width: 64ch; }
+
+.note-v .note-tag { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--copper-ink); margin-bottom: 3px; }
+
+/* ---------- interview details ---------- */
+
+.meta-panel { margin: 26px 0 0; padding: 16px 18px 18px; border: 1px solid var(--line); border-radius: var(--r); background: var(--ground); }
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px 16px; margin-top: 10px; }
+.meta-f { display: grid; gap: 5px; }
+.meta-f .eyebrow { font-size: 10px; }
+.meta-f input { padding: 8px 10px; font-size: 14.5px; }
+
+/* ---------- typographic finish: justified, hyphenated prose ---------- */
+
+body { font-kerning: normal; text-rendering: optimizeLegibility; font-feature-settings: "kern", "liga"; }
+
+.hero p, .sec-head p, .notice, .path-card p:not(.num), .toc li > span > span + span,
+.q-text, .opp-pitch, .submit-box p, .verbatim > span, .verbatim:not(blockquote),
+.track-lead, .adm-fresh p, .login p {
+  text-align: justify;
+  text-justify: inter-word;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  hyphenate-limit-chars: 7 3 3;
+  text-wrap: pretty;
+}
+
+/* One measure and one rhythm for running text. */
+.hero .lede { line-height: 1.55; }
+.hero p, .sec-head p { line-height: 1.6; max-width: 64ch; }
+.notice { line-height: 1.55; max-width: 64ch; }
+.q-text { line-height: 1.45; max-width: 58ch; }
+.path-card p { line-height: 1.5; }
+.q { padding: 24px 0 26px; }
+.opts { margin-top: 12px; }
+
+/* Headings, labels and data stay ragged: justification only helps paragraphs. */
+h1, h2, h3:not(.q-text), .eyebrow, .pill, .count, .opt, .scale label, .a-meta, .status { text-align: left; hyphens: manual; }
+
+@media (max-width: 900px) {
+  .q-note { margin-left: 0; }
+  textarea.opt-note { margin-left: 0; width: 100%; }
+}
+
+@media print {
+  .note-btn:not(.on), .note-link:not(.on) { display: none; }
+  textarea.hidden { display: none; }
+}
+
+/* One shared measure: notices use the same width as the prose around them, so
+   justified lines keep even spacing instead of opening rivers in a narrow box. */
+.hero p, .sec-head p, .notice, textarea.q-note-in { max-width: 40rem; }
+@media (hover: none) { .note-btn { opacity: .75; } }

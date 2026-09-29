@@ -10,30 +10,30 @@ const SCALE_LABELS = {
 
 const SURVEY = {
   title: {
-    nb: "Kravkartlegging – dataplattform for sirkulær elektronikk",
-    en: "Circular Electronics Data Platform – Requirements Survey"
+    nb: "Intervjuguide – dataplattform for sirkulær elektronikk",
+    en: "Interview guide – Circular Electronics Data Platform"
   },
   intro: {
     nb: [
       "Formål: kartlegge krav til en bærekraftig digital infrastruktur for integrerte, sirkulære verdikjeder i elektronikk – datasikkerhet, datakvalitet og forvaltning, integrasjon av livsløpsdata på tvers av virksomheter, registrering av klima- og ressursavtrykk gjennom livsløpet, underliggende datamodell og arkitektur, teknologi- og tillitsvalg, KI-agenter og applikasjoner på toppen av dataene, fangst av taus kunnskap med bærbare enheter og AR-briller, robotisering av oppgaver mennesker gjør i dag, ubemannet drift, edge-databehandling og datadeling, og hvilke framtidsbilder plattformen må tåle.",
-      "Undersøkelsen er ment for alle typer virksomheter i elektronikkens verdikjede – fra material- og komponentleverandører, kretskort- og kontraktsprodusenter, OEM-er og systemintegratorer, via eiere, drift-, service- og reparasjonsaktører, til ombruksaktører, returlogistikk og gjenvinnere – og for myndigheter, forskning og teknologileverandører."
+      "Intervjuet er ment for alle typer virksomheter i elektronikkens verdikjede – fra material- og komponentleverandører, kretskort- og kontraktsprodusenter, OEM-er og systemintegratorer, via eiere, drift-, service- og reparasjonsaktører, til ombruksaktører, returlogistikk og gjenvinnere – og for myndigheter, forskning og teknologileverandører."
     ],
     en: [
       "Purpose: collect requirements for a sustainable digital infrastructure supporting integrated, circular electronics value chains — covering data security, quality and governance; integration of lifecycle data across organisations; recording of carbon and resource footprints across the lifecycle; the underlying data model and architecture; technology and trust choices; AI agents and applications built on the data; capture of tacit knowledge through wearables and AR glasses; robotic automation of work people do today; unattended operation; edge data fusion and data sharing; and the future worlds the platform must withstand.",
-      "The survey is intended for any organisation in the electronics value chain — from materials and component suppliers, PCB and EMS manufacturers, OEMs and system integrators, through operators, service and repair providers, to refurbishers, reverse logistics and recyclers — as well as regulators, researchers and technology providers."
+      "The interview is intended for any organisation in the electronics value chain — from materials and component suppliers, PCB and EMS manufacturers, OEMs and system integrators, through operators, service and repair providers, to refurbishers, reverse logistics and recyclers — as well as regulators, researchers and technology providers."
     ]
   },
   notice: {
-    nb: "Ikke oppgi gradert, eksportkontrollert, kundebeskyttet, forretningssensitiv eller på annen måte beskyttet informasjon. Bruk undersøkelsen til å identifisere behov, begrensninger og temaer for oppfølging – ikke til å dele detaljer.",
-    en: "Please do not include classified, export-controlled, customer-restricted, commercially sensitive or otherwise protected information. Use the survey to identify needs, constraints and follow-up topics — not to disclose specifics."
+    nb: "Minn intervjuobjektet på at gradert, eksportkontrollert, kundebeskyttet, forretningssensitiv eller på annen måte beskyttet informasjon ikke skal deles. Noter behov, begrensninger og temaer for oppfølging – ikke detaljene.",
+    en: "Remind the interviewee not to share classified, export-controlled, customer-restricted, commercially sensitive or otherwise protected information. Note needs, constraints and follow-up topics — not the specifics."
   },
   techNote: {
     nb: "Spørsmål merket «Teknisk – valgfritt» går dypere inn i arkitektur og implementasjon. Hopp over dem hvis de ligger utenfor ditt område.",
     en: "Questions marked “Technical – optional” go deeper into architecture and implementation. Skip them if they fall outside your area."
   },
   privacy: {
-    nb: "Svarene lagres kun i din egen nettleser inntil du eksporterer dem. Ingenting sendes automatisk til noen server.",
-    en: "Your answers stay in your own browser until you export them. Nothing is sent to any server automatically."
+    nb: "Svar og notater lagres kun i denne nettleseren til du eksporterer dem. Ingenting sendes automatisk til noen server.",
+    en: "Answers and notes stay in this browser until you export them. Nothing is sent to any server automatically."
   },
   sections: [
     {
