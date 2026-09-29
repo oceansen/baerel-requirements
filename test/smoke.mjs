@@ -121,6 +121,25 @@ assert.equal((await call("GET", `/api/w/${token2}`, undefined, { admin: false })
   ok("living document: live copy + timestamped versions (first/export/manual), admin can list and download");
 }
 
+// Scenario images: real JPEG/PNG/WebP only, readable only through the owning company's link or by admin.
+{
+  const tokA = (await call("POST", `/api/admin/companies/${co.id}/rotate`)).data.company.url.split("/").pop();
+  const other = (await call("POST", "/api/admin/companies", { name: "Other Co" })).data.company;
+  const tokB = other.url.split("/").pop();
+  const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0xff, 0xd9]);
+  const up = async (tok, body, type) => { const r = await fetch(`${BASE}/api/w/${tok}/attachments`, { method: "POST", headers: { "content-type": type }, body }); return { status: r.status, data: await r.json().catch(() => ({})) }; };
+  const ok1 = await up(tokA, jpeg, "image/jpeg");
+  assert.equal(ok1.status, 201); assert.match(ok1.data.id, /^img_/);
+  assert.equal((await up(tokA, Buffer.from("<svg xmlns='http://www.w3.org/2000/svg'/>"), "image/svg+xml")).status, 415);
+  assert.equal((await up(tokA, Buffer.from("not really a jpeg"), "image/jpeg")).status, 415);
+  const g = await fetch(`${BASE}/api/w/${tokA}/attachments/${ok1.data.id}`);
+  assert.equal(g.status, 200); assert.equal(g.headers.get("content-type"), "image/jpeg"); assert.equal(Buffer.from(await g.arrayBuffer()).length, jpeg.length);
+  assert.equal((await fetch(`${BASE}/api/w/${tokB}/attachments/${ok1.data.id}`)).status, 404);
+  assert.equal((await call("GET", `/api/admin/attachments/${ok1.data.id}`)).status, 200);
+  assert.equal((await call("GET", `/api/admin/attachments/${ok1.data.id}`, undefined, { admin: false })).status, 401);
+  ok("scenario images: only real images stored; isolated per company; admin can read");
+}
+
 const exp = await call("GET", "/api/admin/export");
 assert.equal(exp.data.responses.length, 3); ok("full export");
 const form = await fetch(BASE + "/api/admin/companies", { method: "POST", headers: { cookie, "content-type": "application/x-www-form-urlencoded" }, body: "name=Evil" });

@@ -16,6 +16,10 @@ The Bærel **interview guide**, served with admin-generated company workspaces. 
 - **Export.** **Export ▾** in the top bar works on every page, at any time. It offers a readable document (HTML), data (JSON) and a table (CSV). Filenames carry the date, time and a running number, e.g. `baerel-intervju-kongsberg-maritime-h-k-20260929-1401-v3.json`.
 - **Re-open.** A JSON export includes the full draft. **Open an exported interview** on the start page restores it on any device, so it can be updated and exported again.
 
+## Scenario images
+
+Each usage scenario can carry up to six images, each with an optional caption. The browser downscales them to 1600 px JPEG before upload, so a 5 MB phone photo is stored at roughly 150–300 KB. The server accepts only real JPEG, PNG or WebP files (checked by their magic bytes, never SVG). Images are stored in the database and can be read only through the owning company's link or by the admin. Limits per company: `MAX_IMAGES_PER_COMPANY` (2000) and `MAX_IMAGE_MB_PER_COMPANY` (600). Exported documents and JSON files embed the images, so they work without the server.
+
 ## Run
 
 Requires Node 22.5 or later. There are no npm dependencies: it uses `node:http` and the built-in `node:sqlite`.

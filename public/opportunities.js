@@ -95,7 +95,7 @@ var OPPORTUNITIES = [
       pitch: "Signed, auditable evidence for recycled content, change of ownership and proper recycling — trust sold as a service, not as an infrastructure project." },
     needs: [
       { q: "q47", any: [0, 1, 2, 4, 5, 7], nb: "Noen data trenger manipulasjonssikring", en: "Some data needs tamper-evidence" },
-      { q: "q48", any: [0, 1, 2, 4], nb: "Signaturer, legitimasjoner eller revisjon er akseptert", en: "Signatures, credentials or audit are accepted" },
+      { q: "q163", any: [0, 1, 2, 3], nb: "Signaturer, legitimasjoner, signerte logger eller revisjon er akseptert", en: "Signatures, credentials, signed logs or audit are accepted" },
       { q: "q14", scale: 4, nb: "Opphav og sporbarhet i data er viktig", en: "Data lineage and provenance matter" }
     ]
   },
@@ -202,9 +202,9 @@ var OPPORTUNITIES = [
     en: { title: "Footprint-aware data operations",
       pitch: "A platform that shows and manages its own energy use stands out in tenders where the customer reports Scope 3 — and cuts running cost at the same time." },
     needs: [
-      { q: "q123", scale: 4, nb: "Plattformens eget fotavtrykk skal rapporteres", en: "The platform's own footprint should be reported" },
-      { q: "q124", any: [0, 1, 2, 3, 4, 5, 6, 7], nb: "Konkrete tiltak på datasiden aksepteres", en: "Concrete measures on the data side are accepted" },
-      { q: "q52", scale: 4, nb: "Fotavtrykk teller som utvelgelseskriterium", en: "Footprint counts as a selection criterion" }
+      { q: "q178", any: [10], nb: "Plattformens eget fotavtrykk skal rapporteres", en: "The platform's own footprint should be reported" },
+      { q: "q178", any: [3, 4, 5, 6, 7, 8], nb: "Konkrete tiltak på datasiden aksepteres", en: "Concrete measures on the data side are accepted" },
+      { q: "q177", scale: 4, nb: "Energibruken fra KI og data er en reell bekymring", en: "The energy use of AI and data is a real concern" }
     ]
   },
   {
@@ -228,17 +228,17 @@ var OPPORTUNITIES = [
     needs: [
       { q: "q136", any: [9, 0, 1], nb: "Eksport, åpne formater eller avtalt ordning ved opphør kreves", en: "Export, open formats or an agreed wind-down arrangement is required" },
       { q: "q137", any: [0, 1, 2], nb: "Dataene skal tilbake til deltakerne, til en nøytral instans eller i deponi", en: "Data should return to participants, to a neutral body or into escrow" },
-      { q: "q138", any: [2, 3, 4], nb: "Dataene må kunne leses i 25 år eller mer", en: "Data must stay readable for 25 years or more" }
+      { q: "q40", any: [4, 5], nb: "Dataene må være tilgjengelige hele produktets levetid eller lenger", en: "Data must stay available for the product's lifetime or longer" }
     ]
   },
   {
     id: "sovereign", type: "platform",
     nb: { title: "Suveren europeisk drift",
-      pitch: "En plattform som beviselig kjører på europeisk infrastruktur, og tåler å være frakoblet, blir det trygge valget når suverenitet går fra ønske til krav." },
+      pitch: "En plattform som beviselig kjører på europeisk infrastruktur, under europeisk jurisdiksjon, blir det trygge valget når suverenitet går fra ønske til krav." },
     en: { title: "Sovereign European operation",
-      pitch: "A platform that demonstrably runs on European infrastructure, and tolerates being disconnected, becomes the safe choice when sovereignty turns from preference into requirement." },
+      pitch: "A platform that demonstrably runs on European infrastructure, under European jurisdiction, becomes the safe choice when sovereignty turns from preference into requirement." },
     needs: [
-      { q: "q131", scale: 4, nb: "Drift på europeisk infrastruktur, også frakoblet, er et krav", en: "European operation, including disconnected, is a requirement" },
+      { q: "q170", any: [0], nb: "Europeisk jurisdiksjon og kontroll er et krav", en: "European jurisdiction and control is a requirement" },
       { q: "q50", any: [0, 1, 2, 4], nb: "Lokal, privat, europeisk eller føderert drift foretrekkes", en: "On-premise, private, European or federated hosting preferred" },
       { q: "q127", any: [3], nb: "Datasuverenitet vurderes som et sannsynlig utviklingstrekk", en: "Data sovereignty is considered a plausible development" }
     ]
@@ -253,6 +253,66 @@ var OPPORTUNITIES = [
       { q: "q65", any: [4, 5, 6], nb: "Avviksdeteksjon eller lokal analyse hører hjemme i kanten", en: "Anomaly detection or local analytics belong at the edge" },
       { q: "q67", any: [3, 4], nb: "Konfidensialitet eller IP-beskyttelse driver lokal behandling", en: "Confidentiality or IP protection drives local processing" },
       { q: "q12", scale: 4, nb: "Konfidensialitet er kritisk", en: "Confidentiality is critical" }
+    ]
+  },
+  {
+    id: "dppkit", type: "platform",
+    nb: { title: "Standardklart produktpass, levert ferdig",
+      pitch: "De fleste står på startstreken. Et ferdig oppsett etter EN 18216–18223 – identifikator, databærer, lagring med persistens, API-er og registrering i EUs register – selges til alle som må ha pass fra 2027." },
+    en: { title: "Standards-ready product passport, delivered",
+      pitch: "Most are at the starting line. A ready set-up under EN 18216–18223 — identifier, data carrier, persistent storage, APIs and registration in the EU registry — sold to everyone who needs passports from 2027." },
+    needs: [
+      { q: "q181", any: [1, 2, 3], nb: "Forberedelsene til produktpass er i gang, men ikke ferdige", en: "Passport preparations have started but are not finished" },
+      { q: "q188", any: [1, 2, 3], nb: "En tjenesteleverandør eller felles plattform skal drifte passene", en: "A service provider or shared platform should operate the passports" },
+      { q: "q186", any: [0, 1, 2, 3], nb: "En standard databærer er realistisk på produktene", en: "A standard data carrier is realistic on the products" }
+    ]
+  },
+  {
+    id: "agentgov", type: "trust",
+    nb: { title: "Styring av agenttrafikk som tjeneste",
+      pitch: "Når agenter handler med agenter, trengs noen som utsteder identitet, håndhever kvoter og datakontrakter og fører revisjonslogg – en nøytral trafikkontroll for verdikjeden." },
+    en: { title: "Agent traffic governance as a service",
+      pitch: "When agents deal with agents, someone must issue identity, enforce quotas and data contracts and keep the audit trail — a neutral traffic control for the value chain." },
+    needs: [
+      { q: "q155", scale: 4, nb: "Datavolum fra agenter blir en bekymring om fem år", en: "Agent-driven data volume becomes a concern within five years" },
+      { q: "q158", any: [1, 2], nb: "Agentutveksling skal skje via datakontrakter eller en felles ramme", en: "Agent exchange should run through data contracts or a shared framework" },
+      { q: "q160", scale: 4, nb: "Det må kunne settes grenser for hva agenter genererer", en: "Limits on what agents generate must be possible" }
+    ]
+  },
+  {
+    id: "opencore", type: "model",
+    nb: { title: "Felles åpen kildekode-kjerne for bransjen",
+      pitch: "En kjerne som eies i fellesskap og er åpen for innsyn, med betalt drift, support og tilpasning rundt – kostnaden deles etter bruk, og ingen blir låst til én leverandør." },
+    en: { title: "A shared open-source core for the industry",
+      pitch: "A jointly owned core open to inspection, with paid operations, support and adaptation around it — cost shared by use, and nobody locked to one vendor." },
+    needs: [
+      { q: "q208", any: [0, 1], nb: "Åpen kildekode er et krav eller foretrukket", en: "Open source is required or preferred" },
+      { q: "q210", any: [1, 4], nb: "Åpen kildekode eller en felles bransjeplattform er riktig vei", en: "Open source or a shared industry platform is the right route" },
+      { q: "q201", any: [1, 3, 4], nb: "Kostnaden bør deles etter bruk eller med det offentlige", en: "Cost should be shared by use or with the public sector" }
+    ]
+  },
+  {
+    id: "blackbox", type: "trust",
+    nb: { title: "Uavhengig innsyn i svarte bokser",
+      pitch: "Test, revisjon og dokumentasjon av KI-modeller, algoritmer og fastvare i verdikjeden – en tillitstjeneste for dem som ikke kan godta beslutninger ingen kan forklare." },
+    en: { title: "Independent insight into black boxes",
+      pitch: "Testing, audit and documentation of AI models, algorithms and firmware in the value chain — a trust service for those who cannot accept decisions nobody can explain." },
+    needs: [
+      { q: "q174", scale: 4, nb: "Svarte bokser er en stor bekymring", en: "Black boxes are a major concern" },
+      { q: "q175", any: [0, 1, 4], nb: "Innsyn i KI, fastvare eller algoritmer mangler", en: "Transparency into AI, firmware or algorithms is lacking" },
+      { q: "q176", any: [2, 3, 4], nb: "Revisjon, egen testing eller modellkort ville gjort dem akseptable", en: "Audit, own testing or model cards would make them acceptable" }
+    ]
+  },
+  {
+    id: "origin", type: "data",
+    nb: { title: "Kart over opprinnelse og jurisdiksjon",
+      pitch: "Hvor komponenter, råvarer, data og tjenester kommer fra – og hvilke lover de er underlagt – samlet fra plattformdataene og solgt som risikobilde for innkjøp og beredskap." },
+    en: { title: "Map of origin and jurisdiction",
+      pitch: "Where components, raw materials, data and services come from — and which laws apply to them — assembled from platform data and sold as a risk picture for procurement and preparedness." },
+    needs: [
+      { q: "q171", scale: 4, nb: "Verdikjeden er utsatt for geopolitiske spenninger", en: "The value chain is exposed to geopolitical tensions" },
+      { q: "q172", any: [0, 1, 2, 3, 4], nb: "Konsekvensene merkes i råvarer, komponenter eller dokumentasjon av opprinnelse", en: "Consequences are felt in raw materials, components or origin documentation" },
+      { q: "q173", any: [0, 1], nb: "Plattformen bør vise opprinnelse og jurisdiksjon", en: "The platform should show origin and jurisdiction" }
     ]
   }
 ];

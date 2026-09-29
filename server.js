@@ -89,6 +89,15 @@ db.exec(`
     response       TEXT NOT NULL
   );
   CREATE UNIQUE INDEX IF NOT EXISTS submission_versions_n ON submission_versions(submission_id, n);
+  CREATE TABLE IF NOT EXISTS attachments (
+    id            TEXT PRIMARY KEY,
+    company_id    TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    content_type  TEXT NOT NULL,
+    size          INTEGER NOT NULL,
+    bytes         BLOB NOT NULL,
+    created_at    TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS attachments_company ON attachments(company_id);
 `);
 
 /* Session-signing secret: env if given, otherwise generated once and kept in the
@@ -159,6 +168,9 @@ const q = {
   insertVersion: db.prepare("INSERT INTO submission_versions (submission_id, n, saved_at, reason, completion, response) VALUES (?, ?, ?, ?, ?, ?)"),
   versionsFor: db.prepare("SELECT n, saved_at, reason, completion FROM submission_versions WHERE submission_id = ? ORDER BY n DESC"),
   versionGet: db.prepare("SELECT v.*, s.company_id FROM submission_versions v JOIN submissions s ON s.id = v.submission_id WHERE v.submission_id = ? AND v.n = ?"),
+  insertAtt: db.prepare("INSERT INTO attachments (id, company_id, content_type, size, bytes, created_at) VALUES (?, ?, ?, ?, ?, ?)"),
+  getAtt: db.prepare("SELECT * FROM attachments WHERE id = ?"),
+  attStats: db.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(size), 0) AS bytes FROM attachments WHERE company_id = ?"),
   subsMeta: db.prepare("SELECT id, role, completion, created_at, updated_at, response FROM submissions WHERE company_id = ? ORDER BY created_at")
 };
 
@@ -240,6 +252,47 @@ function readJson(req) {
     });
     req.on("error", reject);
   });
+}
+
+/* Images for usage scenarios. The client downscales and re-encodes before upload;
+   the server still checks the magic bytes, so only real JPEG/PNG/WebP is stored and
+   never anything a browser could run (no SVG). */
+const MAX_IMAGE = 4 * 1024 * 1024;
+const MAX_IMAGES_PER_COMPANY = Number(process.env.MAX_IMAGES_PER_COMPANY || 2000);
+const MAX_IMAGE_BYTES_PER_COMPANY = Number(process.env.MAX_IMAGE_MB_PER_COMPANY || 600) * 1024 * 1024;
+
+function readImage(req) {
+  return new Promise((resolve, reject) => {
+    const ct = (req.headers["content-type"] || "").toLowerCase().split(";")[0].trim();
+    if (!["image/jpeg", "image/png", "image/webp"].includes(ct)) return reject(Object.assign(new Error("image only"), { status: 415 }));
+    let size = 0;
+    const chunks = [];
+    req.on("data", (c) => {
+      size += c.length;
+      if (size > MAX_IMAGE) { reject(Object.assign(new Error("image too large"), { status: 413 })); req.destroy(); return; }
+      chunks.push(c);
+    });
+    req.on("end", () => {
+      const b = Buffer.concat(chunks);
+      const isJpeg = b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
+      const isPng = b.length > 8 && b.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+      const isWebp = b.length > 12 && b.slice(0, 4).toString() === "RIFF" && b.slice(8, 12).toString() === "WEBP";
+      const real = isJpeg ? "image/jpeg" : isPng ? "image/png" : isWebp ? "image/webp" : null;
+      if (!real) return reject(Object.assign(new Error("not an image"), { status: 415 }));
+      resolve({ type: real, bytes: b });
+    });
+    req.on("error", reject);
+  });
+}
+
+function sendImage(res, a) {
+  res.writeHead(200, Object.assign({}, SECURITY_HEADERS, {
+    "Content-Type": a.content_type,
+    "Content-Length": a.size,
+    "Cache-Control": "private, max-age=31536000, immutable",
+    "Content-Disposition": "inline"
+  }));
+  res.end(Buffer.from(a.bytes));
 }
 
 function parseCookies(req) {
@@ -446,6 +499,29 @@ async function handle(req, res) {
     });
   }
 
+  /* ---------- workspace API: scenario images ---------- */
+  if ((mm = p.match(/^\/api\/w\/([A-Za-z0-9_-]{20,100})\/attachments(?:\/(img_[A-Za-z0-9_-]+))?$/))) {
+    const link = q.linkByToken.get(mm[1]);
+    if (!link || link.revoked_at) return fail(res, link ? 410 : 404, link ? "link_revoked" : "not_found", "This link is not active.");
+    if (m === "GET" && mm[2]) {
+      const a = q.getAtt.get(mm[2]);
+      if (!a || a.company_id !== link.company_id) return fail(res, 404, "not_found", "No such image.");
+      return sendImage(res, a);
+    }
+    if (m === "POST" && !mm[2]) {
+      if (!link.submissions_open) return fail(res, 423, "closed", "Submissions for this workspace are closed.");
+      if (limited("img:" + link.token + ":" + clientIp(req), 120, 10 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many uploads — wait a few minutes.");
+      const st = q.attStats.get(link.company_id);
+      if (st.n >= MAX_IMAGES_PER_COMPANY || st.bytes >= MAX_IMAGE_BYTES_PER_COMPANY) return fail(res, 409, "full", "This workspace has reached its image limit.");
+      let img;
+      try { img = await readImage(req); } catch (e) { return fail(res, e.status || 400, "bad_image", e.message); }
+      const id = "img_" + rand(12);
+      q.insertAtt.run(id, link.company_id, img.type, img.bytes.length, img.bytes, now());
+      return json(res, 201, { id, size: img.bytes.length, type: img.type });
+    }
+    return fail(res, 405, "method_not_allowed", "");
+  }
+
   /* ---------- workspace API ---------- */
   if ((mm = p.match(/^\/api\/w\/([A-Za-z0-9_-]{20,100})(\/submissions(?:\/([A-Za-z0-9_-]+))?)?$/))) {
     const link = q.linkByToken.get(mm[1]);
@@ -606,6 +682,12 @@ async function handle(req, res) {
         "Content-Disposition": 'attachment; filename="baerel-' + (c ? c.slug : "interview") + "-" + v.submission_id.slice(4, 10) + "-v" + v.n + "-" + stamp + '.json"',
         "Cache-Control": "no-store"
       });
+    }
+
+    if (m === "GET" && (mm = p.match(/^\/api\/admin\/attachments\/(img_[A-Za-z0-9_-]+)$/))) {
+      const a = q.getAtt.get(mm[1]);
+      if (!a) return fail(res, 404, "not_found", "No such image.");
+      return sendImage(res, a);
     }
 
     if (m === "GET" && p === "/api/admin/submissions") {

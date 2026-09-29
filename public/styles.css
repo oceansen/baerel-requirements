@@ -805,3 +805,22 @@ h1, h2, h3:not(.q-text), .eyebrow, .pill, .count, .opt, .scale label, .a-meta, .
 .iv-vers { display: flex; flex-wrap: wrap; gap: 6px; }
 .iv-vers a { font: 12px "IBM Plex Mono", ui-monospace, monospace; color: var(--patina); border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 9px; text-decoration: none; }
 .iv-vers a:hover { background: var(--patina-soft); }
+
+/* ---------- scenario images ---------- */
+
+.sc-imgrow { margin-top: 12px; }
+.sc-imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 6px 0 8px; }
+.sc-imgs:empty { display: none; }
+.sc-img { position: relative; margin: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--ground); overflow: hidden; display: grid; }
+.sc-img img { display: block; width: 100%; height: 118px; object-fit: cover; background: var(--surface-2); }
+.sc-img .sc-cap { border: 0; border-top: 1px solid var(--line); border-radius: 0; font-size: 12.5px; padding: 6px 8px; background: var(--surface); }
+.sc-img-x {
+  position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%;
+  border: 0; background: rgba(17, 26, 24, .66); color: #fff; font-size: 16px; line-height: 26px; cursor: pointer;
+}
+.sc-img-x:hover { background: var(--copper); }
+.sc-img-pending { min-height: 150px; place-items: center; font-size: 12.5px; color: var(--ink-3); }
+.sc-addimg { padding-left: 0; font-size: 13.5px; }
+.sc-thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 2px; }
+.sc-thumbs img { width: 96px; height: 72px; object-fit: cover; border: 1px solid var(--line); border-radius: 2px; display: block; }
+@media print { .sc-img-x, .sc-addimg { display: none; } }
