@@ -183,12 +183,52 @@
       } }) : null
     ]);
 
+    var ivBox = el("div");
+    if (c.submission_count) {
+      actions.appendChild(el("button", { class: "btn ghost", type: "button", text: "Interviews and versions", onclick: function (e) {
+        var btn = e.currentTarget;
+        if (ivBox.childNodes.length) { ivBox.textContent = ""; btn.textContent = "Interviews and versions"; return; }
+        btn.textContent = "Hide interviews";
+        api("GET", "/api/admin/companies/" + c.id + "/interviews").then(function (d) { ivBox.appendChild(interviewList(d.interviews)); });
+      } }));
+    }
+
     return el("li", { class: "co" }, [
       el("div", { class: "co-top" }, [el("h3", { text: c.name })].concat(pills)),
       el("p", { class: "co-meta mono", text: meta }),
       linkBox(c),
-      actions
+      actions,
+      ivBox
     ]);
+  }
+
+  function fmtTime(iso) {
+    try { return new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return iso; }
+  }
+
+  /* Each interview is a living document; every version is a timestamped snapshot. */
+  function interviewList(list) {
+    var ul = el("ul", { class: "iv-list" });
+    list.forEach(function (iv) {
+      var who = [iv.role || "Role not given", iv.interviewer && ("interviewer " + iv.interviewer), iv.interviewee && ("interviewee " + iv.interviewee)].filter(Boolean).join(" · ");
+      var vers = el("div", { class: "iv-vers" });
+      iv.versions.forEach(function (v) {
+        vers.appendChild(el("a", {
+          href: "/api/admin/submissions/" + iv.id + "/versions/" + v.n,
+          title: v.reason + " · " + v.completion + "% complete",
+          text: "v" + v.n + " · " + fmtTime(v.saved_at) + (v.reason === "export" ? " · export" : v.reason === "manual" ? " · saved" : "")
+        }));
+      });
+      ul.appendChild(el("li", { class: "iv" }, [
+        el("div", { class: "iv-top" }, [
+          el("b", { text: who }),
+          el("span", { class: "co-meta mono", text: iv.completion + "% · last change " + fmtTime(iv.updated_at) + " · " + iv.versions.length + (iv.versions.length === 1 ? " version" : " versions") })
+        ]),
+        vers
+      ]));
+    });
+    return ul;
   }
 
   function renderConsole() {

@@ -79,6 +79,16 @@ db.exec(`
     detail      TEXT NOT NULL DEFAULT ''
   );
   CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+  CREATE TABLE IF NOT EXISTS submission_versions (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    submission_id  TEXT NOT NULL REFERENCES submissions(id) ON DELETE CASCADE,
+    n              INTEGER NOT NULL,
+    saved_at       TEXT NOT NULL,
+    reason         TEXT NOT NULL,
+    completion     INTEGER NOT NULL DEFAULT 0,
+    response       TEXT NOT NULL
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS submission_versions_n ON submission_versions(submission_id, n);
 `);
 
 /* Session-signing secret: env if given, otherwise generated once and kept in the
@@ -144,7 +154,12 @@ const q = {
   updateSub: db.prepare("UPDATE submissions SET role = ?, completion = ?, response = ?, updated_at = ?, link_token = ? WHERE id = ?"),
   subsForCompany: db.prepare("SELECT s.*, c.name AS company_name FROM submissions s JOIN companies c ON c.id = s.company_id WHERE s.company_id = ? ORDER BY s.created_at"),
   allSubs: db.prepare("SELECT s.*, c.name AS company_name FROM submissions s JOIN companies c ON c.id = s.company_id ORDER BY c.name, s.created_at"),
-  auditFor: db.prepare("SELECT at, action, detail FROM audit WHERE company_id = ? ORDER BY id DESC LIMIT 50")
+  auditFor: db.prepare("SELECT at, action, detail FROM audit WHERE company_id = ? ORDER BY id DESC LIMIT 50"),
+  lastVersion: db.prepare("SELECT n, saved_at FROM submission_versions WHERE submission_id = ? ORDER BY n DESC LIMIT 1"),
+  insertVersion: db.prepare("INSERT INTO submission_versions (submission_id, n, saved_at, reason, completion, response) VALUES (?, ?, ?, ?, ?, ?)"),
+  versionsFor: db.prepare("SELECT n, saved_at, reason, completion FROM submission_versions WHERE submission_id = ? ORDER BY n DESC"),
+  versionGet: db.prepare("SELECT v.*, s.company_id FROM submission_versions v JOIN submissions s ON s.id = v.submission_id WHERE v.submission_id = ? AND v.n = ?"),
+  subsMeta: db.prepare("SELECT id, role, completion, created_at, updated_at, response FROM submissions WHERE company_id = ? ORDER BY created_at")
 };
 
 function tx(fn) {
@@ -361,6 +376,32 @@ function cleanResponse(body, company) {
   return r;
 }
 
+/* ------------------------------------------------------------------ versions
+
+   The submission row is the live document: an open interview syncs into it every
+   few seconds. Versions are timestamped snapshots of it — taken whenever the
+   interviewer exports or saves a version, and automatically when the latest
+   snapshot is more than VERSION_EVERY_MIN minutes old — so earlier states of an
+   interview can always be recovered. */
+
+const VERSION_EVERY_MIN = Number(process.env.VERSION_EVERY_MIN || 15);
+
+function snapshot(subId, respJson, completion, reason, t) {
+  const last = q.lastVersion.get(subId);
+  const n = last ? last.n + 1 : 1;
+  q.insertVersion.run(subId, n, t, reason, completion, respJson);
+  return n;
+}
+
+function maybeSnapshot(subId, respJson, completion, requested, t) {
+  const last = q.lastVersion.get(subId);
+  if (requested) return { n: snapshot(subId, respJson, completion, requested, t), taken: true };
+  if (!last || Date.parse(t) - Date.parse(last.saved_at) >= VERSION_EVERY_MIN * 60000) {
+    return { n: snapshot(subId, respJson, completion, "auto", t), taken: true };
+  }
+  return { n: last.n, taken: false };
+}
+
 /* ------------------------------------------------------------------ routes */
 
 async function handle(req, res) {
@@ -421,7 +462,8 @@ async function handle(req, res) {
     }
 
     if (mm[2] && (m === "POST" || m === "PUT")) {
-      if (limited("w:" + link.token + ":" + clientIp(req), 40, 10 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many submissions — wait a few minutes.");
+      // Live sync writes every few seconds while an interview is open.
+      if (limited("w:" + link.token + ":" + clientIp(req), 400, 10 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many saves — wait a few minutes.");
       if (!company.open) return fail(res, 423, "closed", "Submissions for this workspace are closed.");
       let body;
       try { body = await readJson(req); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
@@ -430,14 +472,19 @@ async function handle(req, res) {
       const role = resp.respondent.role;
       const completion = Math.max(0, Math.min(100, Number(resp.completion) || 0));
       const t = now();
+      const requested = ["export", "manual"].includes(body.snapshot) ? body.snapshot : null;
+      const respJson = JSON.stringify(resp);
 
       if (m === "POST" && !mm[3]) {
         if (q.countSubs.get(link.company_id).n >= MAX_SUBMISSIONS_PER_COMPANY) return fail(res, 409, "full", "This workspace has reached its submission limit.");
         const id = "sub_" + rand(9);
         const key = rand(24);
-        q.insertSub.run(id, link.company_id, link.token, sha256(key), role, completion, JSON.stringify(resp), t, t);
+        const v = tx(() => {
+          q.insertSub.run(id, link.company_id, link.token, sha256(key), role, completion, respJson, t, t);
+          return snapshot(id, respJson, completion, requested || "first", t);
+        });
         audit(link.company_id, "submission.created", id);
-        return json(res, 201, { id, edit_key: key, updated_at: t });
+        return json(res, 201, { id, edit_key: key, updated_at: t, version: v, snapshot: true });
       }
 
       if (m === "PUT" && mm[3]) {
@@ -445,9 +492,12 @@ async function handle(req, res) {
         if (!s || !body.edit_key || !safeEqual(sha256(String(body.edit_key)), s.edit_key_hash)) {
           return fail(res, 403, "not_yours", "This submission cannot be changed from here.");
         }
-        q.updateSub.run(role, completion, JSON.stringify(resp), t, link.token, s.id);
-        audit(link.company_id, "submission.updated", s.id);
-        return json(res, 200, { id: s.id, updated_at: t });
+        const v = tx(() => {
+          q.updateSub.run(role, completion, respJson, t, link.token, s.id);
+          return maybeSnapshot(s.id, respJson, completion, requested, t);
+        });
+        if (v.taken) audit(link.company_id, "submission.version", s.id + " v" + v.n + " (" + (requested || "auto") + ")");
+        return json(res, 200, { id: s.id, updated_at: t, version: v.n, snapshot: v.taken });
       }
     }
     return fail(res, 405, "method_not_allowed", "");
@@ -530,7 +580,32 @@ async function handle(req, res) {
       if (m === "GET" && action === "submissions") {
         return json(res, 200, { responses: q.subsForCompany.all(c.id).map(storedResponse) });
       }
+      if (m === "GET" && action === "interviews") {
+        return json(res, 200, { interviews: q.subsMeta.all(c.id).map((s) => {
+          let iv = {};
+          try { iv = JSON.parse(s.response).interview || {}; } catch (e) {}
+          return {
+            id: s.id, role: s.role, completion: s.completion, created_at: s.created_at, updated_at: s.updated_at,
+            interviewer: iv.interviewer || "", interviewee: iv.interviewee || "", date: iv.date || "",
+            versions: q.versionsFor.all(s.id)
+          };
+        }) });
+      }
       return fail(res, 405, "method_not_allowed", "");
+    }
+
+    if (m === "GET" && (mm = p.match(/^\/api\/admin\/submissions\/(sub_[A-Za-z0-9_-]+)\/versions\/(\d+)$/))) {
+      const v = q.versionGet.get(mm[1], Number(mm[2]));
+      if (!v) return fail(res, 404, "not_found", "No such version.");
+      const r = JSON.parse(v.response);
+      const c = q.companyById.get(v.company_id);
+      r._server = { submission_id: v.submission_id, company_id: v.company_id, company_name: c ? c.name : "", version: v.n, version_saved_at: v.saved_at, version_reason: v.reason };
+      const stamp = v.saved_at.replace(/[-:]/g, "").replace("T", "-").slice(0, 13);
+      return send(res, 200, JSON.stringify(r, null, 2), {
+        "Content-Type": "application/json; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="baerel-' + (c ? c.slug : "interview") + "-" + v.submission_id.slice(4, 10) + "-v" + v.n + "-" + stamp + '.json"',
+        "Cache-Control": "no-store"
+      });
     }
 
     if (m === "GET" && p === "/api/admin/submissions") {

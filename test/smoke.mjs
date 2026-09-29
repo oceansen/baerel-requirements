@@ -98,8 +98,31 @@ const revoked = await call("POST", `/api/admin/companies/${co.id}/revoke`);
 assert.equal(revoked.data.company.link_active, false); assert.equal(revoked.data.company.url, null);
 assert.equal((await call("GET", `/api/w/${token2}`, undefined, { admin: false })).status, 410); ok("revoke: no active link at all");
 
+// Living document: every create is v1; exports and manual saves add a version; plain syncs don't (within 15 min).
+{
+  const tok = (await call("POST", `/api/admin/companies/${co.id}/rotate`)).data.company.url.split("/").pop();
+  const c1 = await call("POST", `/api/w/${tok}/submissions`, { response: response("Live doc", 10) }, { admin: false });
+  assert.equal(c1.data.version, 1);
+  const k = c1.data.edit_key, id = c1.data.id;
+  const s1 = await call("PUT", `/api/w/${tok}/submissions/${id}`, { response: response("Live doc", 20), edit_key: k }, { admin: false });
+  assert.equal(s1.data.snapshot, false); assert.equal(s1.data.version, 1);
+  const s2 = await call("PUT", `/api/w/${tok}/submissions/${id}`, { response: response("Live doc", 30), edit_key: k, snapshot: "export" }, { admin: false });
+  assert.equal(s2.data.snapshot, true); assert.equal(s2.data.version, 2);
+  const s3 = await call("PUT", `/api/w/${tok}/submissions/${id}`, { response: response("Live doc", 40), edit_key: k, snapshot: "manual" }, { admin: false });
+  assert.equal(s3.data.version, 3);
+  const ivs = (await call("GET", `/api/admin/companies/${co.id}/interviews`)).data.interviews;
+  const mineIv = ivs.find((x) => x.id === id);
+  assert.deepEqual(mineIv.versions.map((v) => v.n), [3, 2, 1]);
+  assert.deepEqual(mineIv.versions.map((v) => v.reason), ["manual", "export", "first"]);
+  const v2 = await call("GET", `/api/admin/submissions/${id}/versions/2`);
+  assert.equal(v2.status, 200); assert.equal(v2.data.completion, 30); assert.equal(v2.data._server.version, 2);
+  assert.match(v2.headers.get("content-disposition"), /-v2-\d{8}-\d{4}\.json/);
+  assert.equal((await call("GET", `/api/admin/submissions/${id}/versions/2`, undefined, { admin: false })).status, 401);
+  ok("living document: live copy + timestamped versions (first/export/manual), admin can list and download");
+}
+
 const exp = await call("GET", "/api/admin/export");
-assert.equal(exp.data.responses.length, 2); ok("full export");
+assert.equal(exp.data.responses.length, 3); ok("full export");
 const form = await fetch(BASE + "/api/admin/companies", { method: "POST", headers: { cookie, "content-type": "application/x-www-form-urlencoded" }, body: "name=Evil" });
 assert.equal(form.status, 415);
 ok("form-encoded (cross-site style) POST refused");

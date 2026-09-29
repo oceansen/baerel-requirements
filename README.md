@@ -9,6 +9,13 @@ The Bærel **interview guide**, served with admin-generated company workspaces. 
 4. Anyone with the link can open the workspace and submit their own response, then update it later from the same browser.
 5. The admin can **Generate new link** (the old one returns 410), **Revoke link**, **Close / Reopen submissions**, open **Analysis** or download the JSON.
 
+## Living interview documents
+
+- **Auto-sync.** In a workspace, the interview saves itself to the server about five seconds after each change. The status line shows when it last synced and which version is current.
+- **Versions.** The server keeps timestamped versions of each interview. It takes one on first save, on every export, whenever the interviewer clicks **Save a version now**, and automatically when the latest version is older than `VERSION_EVERY_MIN` minutes (default 15). In the admin console, **Interviews and versions** lists every interview and lets you download any version.
+- **Export.** **Export ▾** in the top bar works on every page, at any time. It offers a readable document (HTML), data (JSON) and a table (CSV). Filenames carry the date, time and a running number, e.g. `baerel-intervju-kongsberg-maritime-h-k-20260929-1401-v3.json`.
+- **Re-open.** A JSON export includes the full draft. **Open an exported interview** on the start page restores it on any device, so it can be updated and exported again.
+
 ## Run
 
 Requires Node 22.5 or later. There are no npm dependencies: it uses `node:http` and the built-in `node:sqlite`.

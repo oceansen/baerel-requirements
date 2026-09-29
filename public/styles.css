@@ -780,3 +780,28 @@ h1, h2, h3:not(.q-text), .eyebrow, .pill, .count, .opt, .scale label, .a-meta, .
   .sc-lab { text-align: left; padding-top: 6px; min-width: 0; font-size: 15px; }
 }
 @media print { .sc-add, .sc-head .btn { display: none; } }
+
+/* ---------- export menu ---------- */
+
+.export-btn { font-size: 13px; padding: 5px 13px; border-radius: 999px; }
+.export-menu {
+  position: fixed; z-index: 55; min-width: 240px;
+  background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r);
+  box-shadow: 0 12px 32px -14px rgba(17, 26, 24, .45); padding: 6px; display: grid;
+}
+.export-menu button {
+  appearance: none; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 14px;
+  text-align: left; padding: 9px 12px; border-radius: 2px; cursor: pointer;
+}
+.export-menu button:hover, .export-menu button:focus-visible { background: var(--surface-2); outline: none; }
+.export-menu button.sep { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 11px; color: var(--patina); }
+
+/* ---------- admin: interviews and versions ---------- */
+
+.iv-list { list-style: none; margin: 12px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.iv { padding: 10px 2px; border-bottom: 1px solid var(--line); display: grid; gap: 4px; }
+.iv-top { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; font-size: 14px; }
+.iv-top b { font-weight: 600; }
+.iv-vers { display: flex; flex-wrap: wrap; gap: 6px; }
+.iv-vers a { font: 12px "IBM Plex Mono", ui-monospace, monospace; color: var(--patina); border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 9px; text-decoration: none; }
+.iv-vers a:hover { background: var(--patina-soft); }
