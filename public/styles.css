@@ -711,3 +711,39 @@ h1, h2, h3:not(.q-text), .eyebrow, .pill, .count, .opt, .scale label, .a-meta, .
 
 /* Question headings are headings: ragged-right, balanced, never stretched. */
 .q-text { text-align: left; hyphens: manual; -webkit-hyphens: manual; text-wrap: balance; }
+
+/* ---------- glossary terms ---------- */
+
+.term {
+  cursor: help;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: color-mix(in srgb, var(--patina) 75%, transparent);
+  text-underline-offset: 3px;
+  border-radius: 2px;
+}
+.term:hover, .term[aria-describedby] { text-decoration-style: solid; text-decoration-color: var(--patina); }
+.term:focus-visible { outline: 2px solid var(--patina); outline-offset: 1px; }
+.pill.term { text-decoration: none; }
+.pill.term:hover, .pill.term[aria-describedby] { background: var(--patina-soft); }
+
+.gloss-tip {
+  position: fixed;
+  z-index: 60;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-top: 2px solid var(--patina);
+  border-radius: var(--r);
+  box-shadow: 0 12px 32px -14px rgba(17, 26, 24, .45);
+  padding: 12px 14px 12px;
+  font: 13.5px/1.45 "Familjen Grotesk", "Segoe UI", system-ui, sans-serif;
+  text-align: left;
+}
+.gloss-tip[hidden] { display: none; }
+.gloss-tip b { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 4px; }
+.gloss-tip p { margin: 0 0 9px; color: var(--ink-2); hyphens: auto; -webkit-hyphens: auto; }
+.gloss-tip a { font: 12px "IBM Plex Mono", ui-monospace, monospace; color: var(--patina); text-underline-offset: 3px; }
+
+@media print { .term { text-decoration: none; } .gloss-tip { display: none !important; } }

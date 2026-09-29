@@ -818,6 +818,154 @@
     return n;
   }
 
+
+  /* ---------------------------------------------------------------- glossary
+
+     Terms from glossary.js are marked in question text, options, section leads and
+     the introduction. Hover, focus or tap shows a short definition and the source.
+     Only the first occurrence of a term in each piece of text is marked. */
+
+  var GL = (typeof GLOSSARY !== "undefined") ? GLOSSARY : [];
+  var GL_BY = {};
+  var glRe = null;
+  (function () {
+    var keys = [];
+    GL.forEach(function (g, i) { g.m.forEach(function (k) { GL_BY[k] = i; keys.push(k); }); });
+    keys.sort(function (a, b) { return b.length - a.length; });
+    if (!keys.length) return;
+    var W = "A-Za-z0-9ÆØÅæøåÀ-ÿ_";
+    var esc = keys.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\\/]/g, "\\$&"); });
+    // Whole words only; a trailing hyphen is allowed so Norwegian compounds ("RoHS-krav") still match.
+    glRe = new RegExp("(^|[^" + W + "-])(" + esc.join("|") + ")(?=$|[^" + W + "])", "g");
+  })();
+
+  function termNode(gi, word, extraClass) {
+    return el("span", {
+      class: "term" + (extraClass ? " " + extraClass : ""), role: "button", tabindex: "0",
+      "data-g": String(gi), "aria-haspopup": "true", text: word
+    });
+  }
+
+  function rich(text) {
+    var frag = document.createDocumentFragment();
+    if (!glRe || !text) { frag.appendChild(document.createTextNode(text || "")); return frag; }
+    var seen = {}, last = 0, m;
+    glRe.lastIndex = 0;
+    while ((m = glRe.exec(text))) {
+      var start = m.index + m[1].length, word = m[2], gi = GL_BY[word];
+      if (gi === undefined || seen[gi]) continue;
+      seen[gi] = true;
+      if (start > last) frag.appendChild(document.createTextNode(text.slice(last, start)));
+      frag.appendChild(termNode(gi, word));
+      last = start + word.length;
+    }
+    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    return frag;
+  }
+
+  function stdPill(std) {
+    var gi = GL_BY[std];
+    return gi === undefined ? el("span", { class: "pill std", text: std }) : termNode(gi, std, "pill std");
+  }
+
+  var tip = null, tipFor = null, hideT = null, showT = null, pinned = false;
+
+  function ensureTip() {
+    if (tip) return tip;
+    tip = el("div", { class: "gloss-tip", role: "tooltip", id: "gloss-tip" });
+    tip.hidden = true;
+    tip.addEventListener("mouseenter", function () { clearTimeout(hideT); });
+    tip.addEventListener("mouseleave", function () { if (!pinned) scheduleHide(); });
+    document.body.appendChild(tip);
+    return tip;
+  }
+
+  function placeTip() {
+    if (!tip || !tipFor) return;
+    var r = tipFor.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
+    var w = Math.min(340, vw - 24);
+    tip.style.width = w + "px";
+    var left = Math.max(12, Math.min(r.left, vw - w - 12));
+    var th = tip.offsetHeight;
+    var top = r.bottom + 8;
+    if (top + th > vh - 8 && r.top - th - 8 > 8) top = r.top - th - 8;
+    tip.style.left = left + "px";
+    tip.style.top = top + "px";
+  }
+
+  function showTip(node) {
+    ensureTip();
+    clearTimeout(hideT);
+    var g = GL[+node.getAttribute("data-g")];
+    if (!g) return;
+    var d = g[state.lang] || g.en, host = "";
+    try { host = new URL(g.url).hostname.replace(/^www\./, ""); } catch (e) {}
+    tip.textContent = "";
+    tip.appendChild(el("b", { text: d[0] }));
+    tip.appendChild(el("p", { text: d[1] }));
+    tip.appendChild(el("a", {
+      href: g.url, target: "_blank", rel: "noopener noreferrer",
+      text: (state.lang === "nb" ? "Kilde: " : "Source: ") + host + " ↗"
+    }));
+    if (tipFor && tipFor !== node) tipFor.removeAttribute("aria-describedby");
+    tipFor = node;
+    node.setAttribute("aria-describedby", "gloss-tip");
+    tip.hidden = false;
+    placeTip();
+  }
+
+  function hideTip() {
+    clearTimeout(hideT); clearTimeout(showT);
+    pinned = false;
+    if (tip) tip.hidden = true;
+    if (tipFor) { tipFor.removeAttribute("aria-describedby"); tipFor = null; }
+  }
+  function scheduleHide() { clearTimeout(hideT); hideT = setTimeout(hideTip, 220); }
+
+  document.addEventListener("mouseover", function (e) {
+    var n = e.target.closest && e.target.closest(".term");
+    if (!n || pinned) return;
+    clearTimeout(hideT); clearTimeout(showT);
+    showT = setTimeout(function () { showTip(n); }, 120);
+  });
+  document.addEventListener("mouseout", function (e) {
+    var n = e.target.closest && e.target.closest(".term");
+    if (!n || pinned) return;
+    clearTimeout(showT);
+    if (!(e.relatedTarget && tip && tip.contains(e.relatedTarget))) scheduleHide();
+  });
+  document.addEventListener("focusin", function (e) {
+    var n = e.target.closest && e.target.closest(".term");
+    if (n) showTip(n);
+  });
+  document.addEventListener("focusout", function (e) {
+    var n = e.target.closest && e.target.closest(".term");
+    if (n && !pinned && !(e.relatedTarget && tip && tip.contains(e.relatedTarget))) scheduleHide();
+  });
+  // A click or tap pins the definition open. Cancelling the click also stops a term
+  // inside an answer option from ticking that option.
+  document.addEventListener("click", function (e) {
+    var n = e.target.closest && e.target.closest(".term");
+    if (n) {
+      e.preventDefault(); e.stopPropagation();
+      if (pinned && tipFor === n) { hideTip(); return; }
+      showTip(n); pinned = true;
+      return;
+    }
+    if (pinned && tip && !tip.contains(e.target)) hideTip();
+  }, true);
+  document.addEventListener("keydown", function (e) {
+    var n = e.target.closest && e.target.closest(".term");
+    if (n && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      if (pinned && tipFor === n) hideTip(); else { showTip(n); pinned = true; }
+      return;
+    }
+    if (e.key === "Escape" && tip && !tip.hidden) { var back = tipFor; hideTip(); if (back) back.focus(); }
+  });
+  window.addEventListener("scroll", function () { if (tip && !tip.hidden) { if (pinned) placeTip(); else hideTip(); } }, { passive: true });
+  window.addEventListener("resize", function () { if (tip && !tip.hidden) placeTip(); });
+
   var app = document.getElementById("app");
   var statusBox = null;
 
@@ -937,7 +1085,7 @@
        measure, the practical facts and caveats sit alongside it on the right. */
     var intro = el("div", { class: "hero-main" });
     L(SURVEY.intro).forEach(function (para, i) {
-      intro.appendChild(el("p", { class: i === 0 ? "lede" : "", text: para }));
+      intro.appendChild(el("p", { class: i === 0 ? "lede" : "" }, [rich(para)]));
     });
     var side = el("aside", { class: "hero-side" });
     side.appendChild(el("ul", { class: "facts" }, [
@@ -1042,10 +1190,10 @@
     var head = el("div", { class: "q-head" }, [
       el("span", { class: "q-no mono", text: String(number).padStart(2, "0") }),
       el("h3", { class: "q-text" }, [
-        document.createTextNode(L(q).q + " "),
+        rich(L(q).q + " "),
         q.tech ? el("span", { class: "pill", text: t("tech") }) : null,
         q.std ? document.createTextNode(" ") : null,
-        q.std ? el("span", { class: "pill std", title: q.std, text: q.std }) : null
+        q.std ? stdPill(q.std) : null
       ])
     ]);
     node.appendChild(head);
@@ -1079,7 +1227,7 @@
           toggleOther(q);
         });
         var row = el("div", { class: "opt-row" }, [
-          el("label", { class: "opt", "for": q.id + "-o" + i }, [input, el("span", { text: label })])
+          el("label", { class: "opt", "for": q.id + "-o" + i }, [input, el("span", {}, [rich(label)])])
         ]);
         noteControl(row, q, String(i), label, "opt-note");
         opts.appendChild(row);
@@ -1241,7 +1389,7 @@
     var head = el("header", { class: "sec-head" }, [
       el("p", { class: "eyebrow", text: t("section") + " " + (state.section + 1) + " " + t("of") + " " + SURVEY.sections.length }),
       el("h2", { text: L(s).title }),
-      el("p", { text: L(s).lead })
+      el("p", {}, [rich(L(s).lead)])
     ]);
     main.appendChild(head);
 
@@ -1741,7 +1889,7 @@
         var block = el("section", { class: "a-q" });
         block.appendChild(el("h3", {}, [
           el("span", { class: "q-no mono", text: String(num).padStart(2, "0") + "  " }),
-          document.createTextNode(L(q).q)
+          rich(L(q).q)
         ]));
 
         if (q.t === "scale") {
@@ -1865,6 +2013,7 @@
   /* ---------------------------------------------------------------- render */
 
   function render() {
+    hideTip();
     renderTopbar();
     app.textContent = "";
     document.documentElement.lang = state.lang === "nb" ? "nb" : "en";
