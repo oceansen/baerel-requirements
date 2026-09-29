@@ -1,0 +1,22 @@
+# Render Blueprint: New → Blueprint → pick this repo.
+# SQLite needs a persistent disk, and disks need a paid instance (Starter + 1 GB disk).
+services:
+  - type: web
+    name: baerel-requirements
+    runtime: docker
+    plan: starter
+    region: frankfurt          # EU, closest to Oslo
+    healthCheckPath: /healthz
+    disk:
+      name: baerel-data
+      mountPath: /data
+      sizeGB: 1                # ample: each response is a few kB; can grow later, never shrink
+    envVars:
+      - key: ADMIN_PASSWORD    # asked for once when the Blueprint is created
+        sync: false
+      - key: PUBLIC_URL        # e.g. https://requirements.example.com or https://baerel-requirements.onrender.com
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DB_PATH
+        value: /data/baerel.sqlite

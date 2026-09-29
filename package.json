@@ -1,0 +1,12 @@
+{
+  "name": "baerel-workspaces",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bærel requirements survey with admin-generated company workspaces",
+  "main": "server.js",
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "test": "node --disable-warning=ExperimentalWarning test/smoke.mjs"
+  }
+}
