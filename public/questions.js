@@ -82,6 +82,19 @@ const SURVEY = {
       ]
     },
     {
+      id: "s18",
+      nb: { title: "Bruksscenarioer", lead: "Konkrete situasjoner der plattformen skal gjøre en forskjell. Beskriv så mange som samtalen gir – hver som én setning: når, hvem, hva de skal få til, med hvilke data, fra hvor, og hvorfor." },
+      en: { title: "Usage scenarios", lead: "Concrete situations where the platform should make a difference. Capture as many as the conversation yields — each as one sentence: when, who, what they need to achieve, with which data, from where, and why." },
+      questions: [
+        { id: "q217", core: true, t: "scenarios",
+          nb: { q: "Beskriv situasjoner der noen i verdikjeden trenger data for å ta en beslutning eller gjøre en jobb." },
+          en: { q: "Describe situations in which someone in the value chain needs data to make a decision or do a job." } },
+        { id: "q218", core: true, t: "longtext",
+          nb: { q: "Hvilket av scenarioene ville gitt størst gevinst om det ble løst – og hva står i veien i dag?" },
+          en: { q: "Which of the scenarios would bring the greatest benefit if solved — and what stands in the way today?" } }
+      ]
+    },
+    {
       id: "s2",
       nb: { title: "Datasikkerhet, datakvalitet og forvaltning", lead: "Hva må være på plass før data kan deles og stoles på." },
       en: { title: "Data security, quality and governance", lead: "What has to be in place before data can be shared and trusted." },

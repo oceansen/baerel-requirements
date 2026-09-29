@@ -161,6 +161,20 @@
       metaTitle: "Om intervjuet", metaInterviewer: "Intervjuer", metaInterviewerPh: "Ditt navn",
       metaInterviewee: "Intervjuobjekt", metaIntervieweePh: "Navn eller initialer (valgfritt)", metaDate: "Dato",
       notSelected: "ikke valgt", notesHead: "Intervjuernotater",
+      scTitle: "Scenario", scAdd: "+ Legg til scenario", scDup: "Dupliser", scRemove: "Fjern", scRemoveConfirm: "Bekreft – fjern",
+      scPriority: "Prioritet", scPrioNone: "–", scPrio: { high: "Høy", medium: "Middels", low: "Lav" },
+      scCount: "scenarier", scPreview: "Slik leses scenarioet",
+      scHint: "Ett scenario per konkret situasjon. Fyll inn det dere vet – resten kan stå åpent.",
+      scFrom: "scenarier fra", scInterviews: "intervjuer", scInterview1: "intervju",
+      scLab: { situation: "Når", actor: "trenger", goal: "å", data: "ved hjelp av", source: "som kommer fra", outcome: "slik at" },
+      scPh: { situation: "situasjon eller utløser – f.eks. en returnert enhet kommer inn til reparasjon",
+              actor: "hvem – f.eks. reparatøren",
+              goal: "mål eller beslutning – f.eks. avgjøre om kretskortet kan gjenbrukes",
+              data: "hvilke data – f.eks. feillogg, reparasjonshistorikk og komponentdata",
+              source: "hvor dataene kommer fra – f.eks. produktpasset og produsentens servicesystem",
+              outcome: "utfall – f.eks. enheten repareres i stedet for å kasseres" },
+      scActors: ["designeren", "innkjøperen", "produksjonslederen", "kvalitetsingeniøren", "serviceteknikeren", "reparatøren", "ombruksaktøren", "gjenvinneren", "kunden", "sluttbrukeren", "myndigheten", "revisoren", "en KI-agent"],
+      scSources: ["ERP-systemet", "PLM-systemet", "MES", "leverandøren", "produktpasset", "sensorer i produksjonen", "testutstyret", "servicesystemet", "kunden", "offentlige registre"],
       minutesCore: "ca. 45–60", minutesFull: "90–120", minutesRange: "45–120",
       start: "Start intervjuet", notSurvey: "Filen er ikke fra denne intervjuguiden",
       oppsLede: "Svarene peker mot konkrete produkter og tjenester – dataprodukter, KI-tjenester, plattform- og driftstjenester – som blir mulige hvis valgene under er på plass. Listen oppdateres etter hvert som intervjuet skrider fram. Bruk den gjerne som samtalestøtte mot slutten."
@@ -185,6 +199,20 @@
       metaTitle: "About the interview", metaInterviewer: "Interviewer", metaInterviewerPh: "Your name",
       metaInterviewee: "Interviewee", metaIntervieweePh: "Name or initials (optional)", metaDate: "Date",
       notSelected: "not selected", notesHead: "Interviewer notes",
+      scTitle: "Scenario", scAdd: "+ Add scenario", scDup: "Duplicate", scRemove: "Remove", scRemoveConfirm: "Confirm — remove",
+      scPriority: "Priority", scPrioNone: "–", scPrio: { high: "High", medium: "Medium", low: "Low" },
+      scCount: "scenarios", scPreview: "How the scenario reads",
+      scHint: "One scenario per concrete situation. Fill in what is known — the rest can stay open.",
+      scFrom: "scenarios from", scInterviews: "interviews", scInterview1: "interview",
+      scLab: { situation: "When", actor: "who", goal: "needs to", data: "using", source: "which comes from", outcome: "so that" },
+      scPh: { situation: "situation or trigger — e.g. a returned unit arrives for repair",
+              actor: "actor — e.g. the repair technician",
+              goal: "goal or decision — e.g. decide whether the circuit board can be reused",
+              data: "which data — e.g. fault log, repair history and component data",
+              source: "where the data comes from — e.g. the product passport and the manufacturer’s service system",
+              outcome: "outcome — e.g. the unit is repaired instead of scrapped" },
+      scActors: ["the designer", "the buyer", "the production manager", "the quality engineer", "the service technician", "the repair technician", "the refurbisher", "the recycler", "the customer", "the end user", "the authority", "the auditor", "an AI agent"],
+      scSources: ["the ERP system", "the PLM system", "MES", "the supplier", "the product passport", "sensors in production", "test equipment", "the service system", "the customer", "public registers"],
       minutesCore: "c. 45–60", minutesFull: "90–120", minutesRange: "45–120",
       start: "Start the interview", notSurvey: "That file is not from this interview guide",
       oppsLede: "The answers point at concrete products and services — data products, AI services, platform and operations services — that become possible once the choices below are in place. The list updates as the interview progresses; it works well as a prompt towards the end of the conversation."
@@ -402,6 +430,7 @@
     if (q.t === "scale") return typeof a === "number";
     if (q.t === "single") return a && (typeof a.i === "number");
     if (q.t === "multi") return a && a.i && a.i.length > 0;
+    if (q.t === "scenarios") return Array.isArray(a) && a.some(scenarioFilled);
     return false;
   }
 
@@ -427,6 +456,15 @@
     var rec = { id: q.id, type: q.t, section: q._section, question_en: q.en.q, question_nb: q.nb.q };
     if (q.t === "text" || q.t === "longtext") {
       rec.text = a ? String(a) : "";
+    } else if (q.t === "scenarios") {
+      rec.scenarios = (Array.isArray(a) ? a : []).filter(scenarioFilled).map(function (sc) {
+        var o = {};
+        SC_FIELDS.forEach(function (f) { o[f] = String(sc[f] || "").trim(); });
+        if (sc.priority) o.priority = sc.priority;
+        o.sentence_nb = scenarioSentence(sc, "nb");
+        o.sentence_en = scenarioSentence(sc, "en");
+        return o;
+      });
     } else if (q.t === "scale") {
       rec.value = (typeof a === "number") ? a : null;
     } else if (q.t === "single") {
@@ -489,6 +527,12 @@
     var noteWord = lang === "nb" ? "notat" : "note";
     var s;
     if (rec.type === "text" || rec.type === "longtext") return rec.text || "";
+    if (rec.type === "scenarios") {
+      return (rec.scenarios || []).map(function (sc, i) {
+        var pr = sc.priority ? " (" + (T[lang] || T.en).scPrio[sc.priority] + ")" : "";
+        return (i + 1) + pr + ": " + (lang === "nb" ? sc.sentence_nb : sc.sentence_en);
+      }).join(" || ");
+    }
     if (rec.type === "scale") s = rec.value == null ? "" : String(rec.value);
     else {
       var notes = {};
@@ -713,6 +757,161 @@
     });
   }
 
+
+
+  /* ---------------------------------------------------------------- usage scenarios
+
+     "When [situation], [actor] needs to [goal], using [data], which comes from
+     [source], so that [outcome]." Several per interview; each field is optional. */
+
+  var SC_FIELDS = ["situation", "actor", "goal", "data", "source", "outcome"];
+
+  function scenarioFilled(sc) {
+    return !!sc && SC_FIELDS.some(function (f) { return sc[f] && String(sc[f]).trim(); });
+  }
+
+  function scPart(sc, f, lang) {
+    var v = String((sc && sc[f]) || "").trim().replace(/[.\s]+$/, "");
+    return v || "[" + T[lang].scPh[f].split(/ [–—] /)[0] + "]";
+  }
+
+  function scenarioSentence(sc, lang) {
+    var p = function (f) { return scPart(sc, f, lang); };
+    return lang === "nb"
+      ? "Når " + p("situation") + ", trenger " + p("actor") + " å " + p("goal") + ", ved hjelp av " + p("data") + ", som kommer fra " + p("source") + ", slik at " + p("outcome") + "."
+      : "When " + p("situation") + ", " + p("actor") + " needs to " + p("goal") + ", using " + p("data") + ", which comes from " + p("source") + ", so that " + p("outcome") + ".";
+  }
+
+  /* The same sentence as DOM, with filled parts emphasised and gaps muted. */
+  function scenarioSentenceNode(sc, lang) {
+    var frag = document.createDocumentFragment();
+    var parts = lang === "nb"
+      ? ["Når ", "situation", ", trenger ", "actor", " å ", "goal", ", ved hjelp av ", "data", ", som kommer fra ", "source", ", slik at ", "outcome", "."]
+      : ["When ", "situation", ", ", "actor", " needs to ", "goal", ", using ", "data", ", which comes from ", "source", ", so that ", "outcome", "."];
+    parts.forEach(function (x) {
+      if (SC_FIELDS.indexOf(x) === -1) { frag.appendChild(document.createTextNode(x)); return; }
+      var v = String((sc && sc[x]) || "").trim().replace(/[.\s]+$/, "");
+      frag.appendChild(v ? el("b", { class: "sc-fill", text: v }) : el("span", { class: "sc-gap", text: scPart(sc, x, lang) }));
+    });
+    return frag;
+  }
+
+  function scenarioCount() {
+    var n = 0;
+    ALL_Q.forEach(function (q) {
+      if (q.t === "scenarios" && Array.isArray(state.answers[q.id])) n += state.answers[q.id].filter(scenarioFilled).length;
+    });
+    return n;
+  }
+
+  function ensureDatalists() {
+    ["scActors", "scSources"].forEach(function (key) {
+      var id = "dl-" + key + "-" + state.lang;
+      if (document.getElementById(id)) return;
+      var dl = el("datalist", { id: id });
+      T[state.lang][key].forEach(function (v) { dl.appendChild(el("option", { value: v })); });
+      document.body.appendChild(dl);
+    });
+  }
+
+  function scenarioEditor(q) {
+    var box = el("div", { class: "sc-box" });
+    var list = el("div", { class: "sc-list" });
+    box.appendChild(el("p", { class: "q-hint", style: "margin-left:0", text: t("scHint") }));
+    box.appendChild(list);
+    ensureDatalists();
+
+    function arr() {
+      if (!Array.isArray(state.answers[q.id])) state.answers[q.id] = [];
+      return state.answers[q.id];
+    }
+    function commit() { persist(); refreshSpine(); }
+
+    function card(sc, idx) {
+      var c = el("article", { class: "sc-card" });
+      var preview = el("p", { class: "sc-preview" });
+      function drawPreview() { preview.textContent = ""; preview.appendChild(scenarioSentenceNode(sc, state.lang)); }
+
+      var prio = el("select", { class: "sc-prio", "aria-label": t("scPriority") });
+      [["", t("scPrioNone")], ["high", t("scPrio").high], ["medium", t("scPrio").medium], ["low", t("scPrio").low]].forEach(function (o) {
+        var op = el("option", { value: o[0], text: o[1] });
+        if ((sc.priority || "") === o[0]) op.selected = true;
+        prio.appendChild(op);
+      });
+      function keep() { if (arr().indexOf(sc) === -1) arr().push(sc); }
+      prio.addEventListener("change", function () { keep(); if (prio.value) sc.priority = prio.value; else delete sc.priority; commit(); });
+
+      var rm = el("button", { class: "btn ghost sc-rm", type: "button", text: t("scRemove") });
+      rm.addEventListener("click", function () {
+        if (rm.getAttribute("data-armed") !== "1") {
+          rm.setAttribute("data-armed", "1"); rm.textContent = t("scRemoveConfirm");
+          setTimeout(function () { rm.removeAttribute("data-armed"); rm.textContent = t("scRemove"); }, 4000);
+          return;
+        }
+        var a = arr(); a.splice(idx, 1); commit(); draw();
+      });
+      var dup = el("button", { class: "btn ghost", type: "button", text: t("scDup") });
+      dup.addEventListener("click", function () {
+        keep(); var a = arr(); var copy = JSON.parse(JSON.stringify(sc)); a.splice(a.indexOf(sc) + 1, 0, copy); commit(); draw(a.indexOf(copy));
+      });
+
+      c.appendChild(el("header", { class: "sc-head" }, [
+        el("span", { class: "eyebrow", text: t("scTitle") + " " + (idx + 1) }),
+        el("label", { class: "sc-prio-l" }, [el("span", { class: "eyebrow", text: t("scPriority") }), prio]),
+        dup, rm
+      ]));
+
+      var grid = el("div", { class: "sc-grid" });
+      SC_FIELDS.forEach(function (f) {
+        var long = f === "situation" || f === "goal" || f === "outcome";
+        var id = q.id + "-sc" + idx + "-" + f;
+        var inp = long
+          ? el("textarea", { id: id, rows: "1", placeholder: t("scPh")[f] })
+          : el("input", { id: id, type: "text", placeholder: t("scPh")[f],
+              list: f === "actor" ? "dl-scActors-" + state.lang : f === "source" ? "dl-scSources-" + state.lang : null });
+        inp.value = sc[f] || "";
+        inp.addEventListener("input", function () {
+          sc[f] = inp.value;
+          if (arr().indexOf(sc) === -1) arr().push(sc);
+          persist(); drawPreview();
+          if (long) autoGrow(inp);
+        });
+        inp.addEventListener("change", refreshSpine);
+        inp.addEventListener("blur", flushDraft);
+        grid.appendChild(el("label", { class: "sc-lab", "for": id, text: t("scLab")[f] }));
+        grid.appendChild(inp);
+      });
+      c.appendChild(grid);
+      c.appendChild(el("p", { class: "eyebrow sc-prev-l", text: t("scPreview") }));
+      c.appendChild(preview);
+      drawPreview();
+      return c;
+    }
+
+    function autoGrow(ta) { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + 2 + "px"; }
+
+    function draw(focusIdx) {
+      list.textContent = "";
+      var a = Array.isArray(state.answers[q.id]) ? state.answers[q.id] : [];
+      var shown = a.length ? a : [{}];   // an empty card to start typing into; stored on first keystroke
+      shown.forEach(function (sc, i) { list.appendChild(card(sc, i)); });
+      Array.prototype.forEach.call(list.querySelectorAll("textarea"), function (ta) { setTimeout(function () { autoGrow(ta); }, 0); });
+      if (focusIdx !== undefined) {
+        var f = list.querySelectorAll(".sc-card")[focusIdx];
+        if (f) { f.scrollIntoView({ block: "nearest" }); var first = f.querySelector("textarea, input"); if (first) first.focus(); }
+      }
+    }
+
+    var add = el("button", { class: "btn sc-add", type: "button", text: t("scAdd") });
+    add.addEventListener("click", function () {
+      var a = arr();
+      if (!a.length && list.querySelector(".sc-card")) a.push({});   // keep the visible blank card
+      a.push({}); commit(); draw(a.length - 1);
+    });
+    box.appendChild(add);
+    draw();
+    return box;
+  }
 
   /* ---------------------------------------------------------------- interviewer notes */
 
@@ -1268,6 +1467,8 @@
       });
       node.appendChild(sc);
       node.appendChild(questionNote(q));
+    } else if (q.t === "scenarios") {
+      node.appendChild(scenarioEditor(q));
     } else {
       var field = el("div", { class: "field" });
       var input;
@@ -1478,6 +1679,7 @@
       el("li", {}, [el("b", { class: "num", text: resp.completion + "%" }), el("span", { text: state.lang === "nb" ? "utfylt" : "complete" })]),
       el("li", {}, [el("b", { text: resp.respondent.organisation || t("anonymous") }), el("span", { text: t("org") })]),
       el("li", {}, [el("b", { class: "num", text: String(noteCount()) }), el("span", { text: t("notesCount") })]),
+      scenarioCount() ? el("li", {}, [el("b", { class: "num", text: String(scenarioCount()) }), el("span", { text: t("scCount") })]) : null,
       state.meta.interviewer ? el("li", {}, [el("b", { text: state.meta.interviewer }), el("span", { text: t("metaInterviewer") })]) : null
     ]));
 
@@ -1892,7 +2094,32 @@
           rich(L(q).q)
         ]));
 
-        if (q.t === "scale") {
+        if (q.t === "scenarios") {
+          var scs = [], fromN = 0;
+          rows.forEach(function (r) {
+            var rec = r.answers.filter(function (x) { return x.id === q.id; })[0];
+            if (!rec || !rec.scenarios || !rec.scenarios.length) return;
+            fromN++;
+            var who = (r.respondent && r.respondent.organisation) || t("anonymous");
+            if (r.respondent && r.respondent.role) who += " · " + r.respondent.role;
+            rec.scenarios.forEach(function (sc) { scs.push({ sc: sc, who: who }); });
+          });
+          var rank = { high: 0, medium: 1, low: 2 };
+          scs.sort(function (a, b) { return (rank[a.sc.priority] === undefined ? 3 : rank[a.sc.priority]) - (rank[b.sc.priority] === undefined ? 3 : rank[b.sc.priority]); });
+          if (!scs.length) block.appendChild(el("p", { class: "a-meta", text: t("noAnswers") }));
+          else {
+            block.appendChild(el("p", { class: "a-meta", text: scs.length + " " + t("scFrom") + " " + fromN + " " + (fromN === 1 ? t("scInterview1") : t("scInterviews")) }));
+            var sv = el("div", { class: "verbatims" });
+            scs.forEach(function (x) {
+              var cite = x.who + (x.sc.priority ? " · " + t("scPriority").toLowerCase() + ": " + t("scPrio")[x.sc.priority] : "");
+              sv.appendChild(el("blockquote", { class: "verbatim sc-v", style: "margin:0" }, [
+                el("span", {}, [scenarioSentenceNode(x.sc, state.lang)]),
+                el("cite", { text: cite })
+              ]));
+            });
+            block.appendChild(sv);
+          }
+        } else if (q.t === "scale") {
           var counts = [0, 0, 0, 0, 0], sum = 0, n = 0;
           recs.forEach(function (r) { if (r.value) { counts[r.value - 1]++; sum += r.value; n++; } });
           if (!n) block.appendChild(el("p", { class: "a-meta", text: t("noAnswers") }));

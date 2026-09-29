@@ -747,3 +747,36 @@ h1, h2, h3:not(.q-text), .eyebrow, .pill, .count, .opt, .scale label, .a-meta, .
 .gloss-tip a { font: 12px "IBM Plex Mono", ui-monospace, monospace; color: var(--patina); text-underline-offset: 3px; }
 
 @media print { .term { text-decoration: none; } .gloss-tip { display: none !important; } }
+
+/* ---------- usage scenarios ---------- */
+
+.sc-box { margin: 12px 0 0 38px; }
+.sc-list { display: grid; gap: 14px; }
+.sc-card { border: 1px solid var(--line); border-left: 3px solid var(--patina); border-radius: var(--r); background: var(--surface); padding: 14px 16px 16px; }
+.sc-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-bottom: 12px; }
+.sc-head > .eyebrow { margin-right: auto; color: var(--patina); }
+.sc-head .btn { font-size: 12.5px; padding: 5px 9px; }
+.sc-rm[data-armed="1"] { color: var(--copper-ink); background: var(--copper-soft); }
+.sc-prio-l { display: inline-flex; gap: 8px; align-items: center; }
+.sc-prio { font-size: 13px; padding: 4px 8px; }
+
+.sc-grid { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 12px; align-items: start; }
+.sc-lab {
+  font-family: Newsreader, Georgia, serif; font-size: 16.5px; font-style: italic;
+  color: var(--ink-2); padding-top: 8px; text-align: right; min-width: 7.5em;
+}
+.sc-grid input, .sc-grid textarea { font-size: 14.5px; padding: 8px 11px; resize: none; overflow: hidden; min-height: 38px; line-height: 1.4; }
+
+.sc-prev-l { margin: 14px 0 4px; font-size: 10px; }
+.sc-preview { margin: 0; font-family: Newsreader, Georgia, serif; font-size: 16px; line-height: 1.5; color: var(--ink-2); text-align: left; }
+.sc-fill { font-weight: 500; color: var(--ink); }
+.sc-gap { color: var(--ink-3); font-style: italic; }
+.sc-add { margin-top: 12px; }
+.sc-v > span { font-family: Newsreader, Georgia, serif; font-size: 15.5px; line-height: 1.5; text-align: left; }
+
+@media (max-width: 900px) {
+  .sc-box { margin-left: 0; }
+  .sc-grid { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .sc-lab { text-align: left; padding-top: 6px; min-width: 0; font-size: 15px; }
+}
+@media print { .sc-add, .sc-head .btn { display: none; } }
