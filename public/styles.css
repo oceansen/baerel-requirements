@@ -683,3 +683,26 @@ h1, h2, h3:not(.q-text), .eyebrow, .pill, .count, .opt, .scale label, .a-meta, .
    justified lines keep even spacing instead of opening rivers in a narrow box. */
 .hero p, .sec-head p, .notice, textarea.q-note-in { max-width: 40rem; }
 @media (hover: none) { .note-btn { opacity: .75; } }
+
+/* ---------- start page: two columns on wide screens ---------- */
+
+.hero h1 { max-width: 22ch; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 48px; }
+.hero-side .facts { margin-top: 26px; }
+.hero-side .notice { max-width: none; }
+
+@media (min-width: 1000px) {
+  .hero-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
+  .hero-main .meta-panel { margin-top: 24px; }
+  .hero-main p { max-width: none; }
+  .hero-side { padding-left: 28px; border-left: 1px solid var(--line); margin-top: 18px; }
+  .hero-side .facts { margin-top: 0; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .hero-side .notice:first-of-type { margin-top: 20px; }
+  .hero-side .notice { margin-top: 12px; }
+}
+
+/* Callouts are narrower than the main column: slightly smaller type and eager
+   hyphenation keep their justified lines evenly spaced. */
+.hero-side .notice { font-size: 13.5px; hyphenate-limit-chars: 6 3 2; word-spacing: -0.01em; }
+
+.hero-main .meta-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }

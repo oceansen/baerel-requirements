@@ -577,8 +577,8 @@
 
   if (WS) {
     SURVEY.privacy = {
-      nb: "Svarene lagres i nettleseren din mens du fyller ut, og sendes til arbeidsområdet først når du trykker «Send inn».",
-      en: "Your answers are kept in your browser while you work, and only go to the workspace when you press “Submit”."
+      nb: "Svar og notater lagres i denne nettleseren under intervjuet, og sendes til arbeidsområdet først når du trykker «Send inn».",
+      en: "Answers and notes are kept in this browser during the interview, and only go to the workspace when you press “Submit”."
     };
   }
 
@@ -933,19 +933,23 @@
     var hero = el("section", { class: "panel hero" });
     hero.appendChild(el("p", { class: "eyebrow", text: t("program") + " · " + (state.lang === "nb" ? "Intervjuguide" : "Interview guide") }));
     hero.appendChild(el("h1", { text: L(SURVEY.title) }));
+    /* Two columns on wide screens: the purpose reads on the left at a comfortable
+       measure, the practical facts and caveats sit alongside it on the right. */
+    var intro = el("div", { class: "hero-main" });
     L(SURVEY.intro).forEach(function (para, i) {
-      hero.appendChild(el("p", { class: i === 0 ? "lede" : "", text: para }));
+      intro.appendChild(el("p", { class: i === 0 ? "lede" : "", text: para }));
     });
-
-    hero.appendChild(el("ul", { class: "facts" }, [
+    var side = el("aside", { class: "hero-side" });
+    side.appendChild(el("ul", { class: "facts" }, [
       el("li", {}, [el("b", { class: "num", text: String(SURVEY.sections.length) }), el("span", { text: t("sections") })]),
       el("li", {}, [el("b", { class: "num", text: String(coreTotal()) + "–" + String(ALL_Q.length) }), el("span", { text: t("questions") })]),
       el("li", {}, [el("b", { class: "num", text: t("minutesRange") }), el("span", { text: t("estimate") + " (" + t("minutes") + ")" })])
     ]));
-
-    hero.appendChild(el("p", { class: "notice", text: SURVEY.notice[state.lang] }));
-    hero.appendChild(el("p", { class: "notice calm", text: SURVEY.privacy[state.lang] + " " + SURVEY.techNote[state.lang] + " " + t("requiredNone") }));
-    if (WS) hero.appendChild(el("p", { class: "notice calm", text: fill(t("wsPrivacy")) }));
+    side.appendChild(el("p", { class: "notice", text: SURVEY.notice[state.lang] }));
+    side.appendChild(el("p", { class: "notice calm", text: SURVEY.privacy[state.lang] + " " + SURVEY.techNote[state.lang] + " " + t("requiredNone") }));
+    if (WS) side.appendChild(el("p", { class: "notice calm", text: fill(t("wsPrivacy")) }));
+    intro.appendChild(interviewPanel());
+    hero.appendChild(el("div", { class: "hero-grid" }, [intro, side]));
 
     function begin(path) {
       // The workspace already says which organisation this is; prefill it rather than ask.
@@ -974,7 +978,6 @@
         el("button", { class: "btn", type: "button", text: t("pathFullBtn"), onclick: function () { begin("full"); } })
       ])
     ]);
-    hero.appendChild(interviewPanel());
     hero.appendChild(paths);
 
     var inMemory = Object.keys(state.answers).length > 0;

@@ -284,23 +284,31 @@ function isAdmin(req) {
 
 const MIME = { ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon" };
 
-function serveAsset(res, name) {
+function serveAsset(res, name, pinned) {
   const file = path.resolve(PUB, name);
   if (!file.startsWith(PUB + path.sep)) return send(res, 404, "Not found");
   const ext = path.extname(file);
   if (!MIME[ext]) return send(res, 404, "Not found");
   fs.readFile(file, (err, buf) => {
     if (err) return send(res, 404, "Not found");
-    send(res, 200, buf, { "Content-Type": MIME[ext], "Cache-Control": "public, max-age=300" });
+    send(res, 200, buf, { "Content-Type": MIME[ext], "Cache-Control": pinned ? "public, max-age=31536000, immutable" : "no-cache" });
   });
 }
 
 function template(name) { return fs.readFileSync(path.join(PUB, name), "utf8"); }
 
+/* Content-hashed asset URLs: every deploy changes the ?v= of whatever changed, so
+   browsers never run yesterday's script against today's page. Computed once at boot. */
+const ASSET_VERSION = {};
+for (const f of fs.readdirSync(PUB)) {
+  if (MIME[path.extname(f)]) ASSET_VERSION[f] = crypto.createHash("sha256").update(fs.readFileSync(path.join(PUB, f))).digest("hex").slice(0, 10);
+}
+const versioned = (html) => html.replace(/\/assets\/([A-Za-z0-9_.-]+)/g, (m, f) => ASSET_VERSION[f] ? m + "?v=" + ASSET_VERSION[f] : m);
+
 /* Boot data goes in a JSON data block (not executable), so CSP can stay script-src 'self'. */
 function page(res, file, boot, status) {
   const data = JSON.stringify(boot || {}).replace(/</g, "\\u003c");
-  const html = template(file).replace("<!--BOOT-->", '<script type="application/json" id="boot">' + data + "</script>");
+  const html = versioned(template(file)).replace("<!--BOOT-->", '<script type="application/json" id="boot">' + data + "</script>");
   send(res, status || 200, html, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
 }
 
@@ -362,7 +370,7 @@ async function handle(req, res) {
 
   if (m === "GET" && p === "/healthz") return json(res, 200, { ok: true });
 
-  if (m === "GET" && p.startsWith("/assets/")) return serveAsset(res, p.slice(8));
+  if (m === "GET" && p.startsWith("/assets/")) return serveAsset(res, p.slice(8), url.searchParams.has("v"));
 
   if (m === "GET" && p === "/") {
     return notice(res, 200,

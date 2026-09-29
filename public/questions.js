@@ -28,8 +28,8 @@ const SURVEY = {
     en: "Remind the interviewee not to share classified, export-controlled, customer-restricted, commercially sensitive or otherwise protected information. Note needs, constraints and follow-up topics — not the specifics."
   },
   techNote: {
-    nb: "Spørsmål merket «Teknisk – valgfritt» går dypere inn i arkitektur og implementasjon. Hopp over dem hvis de ligger utenfor ditt område.",
-    en: "Questions marked “Technical – optional” go deeper into architecture and implementation. Skip them if they fall outside your area."
+    nb: "Spørsmål merket «Teknisk – valgfritt» går dypere inn i arkitektur og implementasjon. Hopp over dem hvis de ligger utenfor intervjuobjektets område.",
+    en: "Questions marked “Technical – optional” go deeper into architecture and implementation. Skip them if they fall outside the interviewee’s area."
   },
   privacy: {
     nb: "Svar og notater lagres kun i denne nettleseren til du eksporterer dem. Ingenting sendes automatisk til noen server.",
