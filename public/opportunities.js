@@ -58,7 +58,7 @@ var OPPORTUNITIES = [
     en: { title: "Reuse scoring of used units",
       pitch: "Score every returned unit on remaining life and reuse value from usage and test data — the basis for pricing used equipment instead of guessing." },
     needs: [
-      { q: "q55", any: [7, 9], nb: "Prediksjon av levetid eller ombrukspotensial er ønsket", en: "Remaining-life or reuse-potential prediction is wanted" },
+      { q: "q55", any: [6, 8], nb: "Prediksjon av levetid eller ombrukspotensial er ønsket", en: "Remaining-life or reuse-potential prediction is wanted" },
       { q: "q71", any: [4, 5, 6], nb: "Bruks-, tilstands- eller reparasjonshistorikk er tilgjengelig", en: "Usage, condition or repair history is available" },
       { q: "q28", scale: 4, nb: "Sporbarhet gjennom livsløpet er på plass", en: "Lifecycle traceability is in place" }
     ]
@@ -71,7 +71,7 @@ var OPPORTUNITIES = [
       pitch: "Draft ESPR, CSRD, RoHS and REACH documentation generated from platform data — sold to the many in the chain who lack the people for it." },
     needs: [
       { q: "q117", any: [0, 1, 2, 3, 4], nb: "Noen krever rapportering fra dere", en: "Someone requires reporting from you" },
-      { q: "q55", any: [4], nb: "Automatiske rapportutkast er etterspurt", en: "Automatic report drafting is wanted" },
+      { q: "q55", any: [3], nb: "Automatiske rapportutkast er etterspurt", en: "Automatic report drafting is wanted" },
       { q: "q121", scale: 3, nb: "Tallene må kunne etterprøves", en: "The figures must stand up to checking" }
     ]
   },
@@ -106,7 +106,7 @@ var OPPORTUNITIES = [
     en: { title: "Marketplace for recovered parts and materials",
       pitch: "Once condition, composition and history are known, used components become tradable — the platform takes a share of the trade it enables." },
     needs: [
-      { q: "q55", any: [10], nb: "Å finne annenhåndsmarkeder er av interesse", en: "Finding secondary markets is of interest" },
+      { q: "q55", any: [9], nb: "Å finne annenhåndsmarkeder er av interesse", en: "Finding secondary markets is of interest" },
       { q: "q69", any: [5, 6, 7], nb: "Deling med ombruksaktører og gjenvinnere er aktuelt", en: "Sharing with refurbishers and recyclers is realistic" },
       { q: "q10", any: [1, 2, 3], nb: "Ombruk av produkter eller komponenter er et mål", en: "Reuse of products or components is a goal" }
     ]
@@ -238,7 +238,7 @@ var OPPORTUNITIES = [
     en: { title: "Sovereign European operation",
       pitch: "A platform that demonstrably runs on European infrastructure, under European jurisdiction, becomes the safe choice when sovereignty turns from preference into requirement." },
     needs: [
-      { q: "q170", any: [0], nb: "Europeisk jurisdiksjon og kontroll er et krav", en: "European jurisdiction and control is a requirement" },
+      { q: "q203", any: [0, 1], nb: "Lokal eller europeisk jurisdiksjon og kontroll er et krav", en: "Local or European jurisdiction and control is a requirement" },
       { q: "q50", any: [0, 1, 2, 4], nb: "Lokal, privat, europeisk eller føderert drift foretrekkes", en: "On-premise, private, European or federated hosting preferred" },
       { q: "q127", any: [3], nb: "Datasuverenitet vurderes som et sannsynlig utviklingstrekk", en: "Data sovereignty is considered a plausible development" }
     ]
