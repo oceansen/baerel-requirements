@@ -247,7 +247,13 @@
       smHint: "Ett eksempel per datasett. Små utdrag holder – noen hundre rader eller et par sider. Maks 25 MB per fil.",
       smNoUpload: "Filopplasting er tilgjengelig når kravspesifikasjonen åpnes med tilgangskoden. Her kan dere beskrive eksemplene.",
       smSensBlocked: "Sensitive data skal ikke lastes opp. Beskriv datasettet i stedet – eller lag en syntetisk variant.",
-      smCount: "eksempeldata", smWhich: "Formater i eksemplene"
+      smCount: "eksempeldata", smWhich: "Formater i eksemplene",
+      smMeta: "Metadata", smMetaStd: "Metadatastandard", smMetaDesc: "Hvilke metadata finnes",
+      smMetaDescPh: "f.eks. enheter, tidsstempler, kilde og opphav, eier, lisens, kvalitet, kobling til produkt-ID",
+      smMetaFiles: "Eksempler på metadata", smAddMeta: "+ Legg til metadataeksempel",
+      smMetaHint: "Skjema, dataordbok, katalogpost eller annen beskrivelse av dataene – også alene, uten selve dataene.",
+      smMetaOpts: ["DCAT-AP-NO / DCAT-AP (Felles datakatalog)", "Dublin Core", "JSON Schema", "XML Schema (XSD)", "SHACL eller OWL-ontologi", "AAS-delmodellmaler (IDTA)", "ECLASS / IEC 61360-egenskaper", "CSV on the Web (CSVW)", "Dataordbok eller kodebok i regneark", "Egen intern modell", "Ingen metadata i dag"],
+      smMetaWhich: "Metadatastandarder i eksemplene"
     },
     en: {
       modeFeatures: "Platform features",
@@ -274,7 +280,13 @@
       smHint: "One sample per dataset. Small extracts are enough — a few hundred rows or a couple of pages. Max 25 MB per file.",
       smNoUpload: "File upload is available when the specification is opened with the access code. Here you can describe the samples.",
       smSensBlocked: "Sensitive data must not be uploaded. Describe the dataset instead — or make a synthetic version.",
-      smCount: "data samples", smWhich: "Formats in the samples"
+      smCount: "data samples", smWhich: "Formats in the samples",
+      smMeta: "Metadata", smMetaStd: "Metadata standard", smMetaDesc: "Which metadata exists",
+      smMetaDescPh: "e.g. units, timestamps, source and provenance, owner, licence, quality, link to product ID",
+      smMetaFiles: "Metadata examples", smAddMeta: "+ Add metadata example",
+      smMetaHint: "A schema, data dictionary, catalogue record or other description of the data — also on its own, without the data itself.",
+      smMetaOpts: ["DCAT-AP-NO / DCAT-AP (Norwegian national data catalogue)", "Dublin Core", "JSON Schema", "XML Schema (XSD)", "SHACL or OWL ontology", "AAS submodel templates (IDTA)", "ECLASS / IEC 61360 properties", "CSV on the Web (CSVW)", "Data dictionary or codebook in a spreadsheet", "Own internal model", "No metadata today"],
+      smMetaWhich: "Metadata standards in the samples"
     }
   };
   ["nb", "en"].forEach(function (l) { Object.keys(FEAT_T[l]).forEach(function (k) { T[l][k] = FEAT_T[l][k]; }); });
@@ -613,7 +625,8 @@
       return (rec.samples || []).map(function (sm, i) {
         var st = sm.status === "desired" ? (lang === "nb" ? "ønsket" : "desired") : (lang === "nb" ? "finnes" : "available");
         var bits = [sm.title, lang === "nb" ? sm.format_nb : sm.format_en, sm.source, sm.volume].filter(Boolean).join(", ");
-        return (i + 1) + " [" + st + "] " + bits + (sm.description ? ": " + sm.description : "") + (sm.files && sm.files.length ? " [" + sm.files.map(function (f) { return f.name; }).join("; ") + "]" : "");
+        var md = sm.metadata ? " {" + [lang === "nb" ? sm.metadata.standard_nb : sm.metadata.standard_en, sm.metadata.description, (sm.metadata.files || []).map(function (f) { return f.name; }).join("; ")].filter(Boolean).join(" | ") + "}" : "";
+        return (i + 1) + " [" + st + "] " + bits + (sm.description ? ": " + sm.description : "") + (sm.files && sm.files.length ? " [" + sm.files.map(function (f) { return f.name; }).join("; ") + "]" : "") + md;
       }).join(" || ");
     }
     if (rec.type === "scale") s = rec.value == null ? "" : String(rec.value);
@@ -1155,7 +1168,9 @@
               return "<li><b>" + esc(sm.title || T0.smTitle) + "</b> <span class=\"tag\">" + esc(st) + "</span>" +
                 (meta ? "<div class=\"note\">" + esc(meta) + "</div>" : "") +
                 (sm.description ? "<p>" + esc(sm.description) + "</p>" : "") +
-                (sm.files && sm.files.length ? "<p class=\"uns\">" + esc(T0.smFiles + ": " + sm.files.map(function (f) { return f.name + " (" + fmtSize(f.size) + ")"; }).join(", ")) + "</p>" : "") + "</li>";
+                (sm.files && sm.files.length ? "<p class=\"uns\">" + esc(T0.smFiles + ": " + sm.files.map(function (f) { return f.name + " (" + fmtSize(f.size) + ")"; }).join(", ")) + "</p>" : "") +
+                (sm.metadata ? "<div class=\"note\">" + esc(T0.smMeta + ": " + [lang === "nb" ? sm.metadata.standard_nb : sm.metadata.standard_en, sm.metadata.description,
+                  (sm.metadata.files || []).map(function (f) { return f.name + " (" + fmtSize(f.size) + ")"; }).join(", ")].filter(Boolean).join(" · ")) + "</div>" : "") + "</li>";
             }).join("") + "</ol>";
           }
         } else if (q.t === "scenarios") {
@@ -1261,6 +1276,11 @@
           if (typeof sm.sensitivity === "number") o.sensitivity = sm.sensitivity;
           if (typeof sm.scenario === "number") o.scenario = sm.scenario - 1;
           if (sm.files && sm.files.length) o.files = sm.files.map(function (f) { return { id: f.id, name: f.name, size: f.size }; });
+          if (sm.metadata) {
+            if (typeof sm.metadata.standard === "number") o.metaStd = sm.metadata.standard;
+            if (sm.metadata.description) o.metaDesc = sm.metadata.description;
+            if (sm.metadata.files && sm.metadata.files.length) o.metaFiles = sm.metadata.files.map(function (f) { return { id: f.id, name: f.name, size: f.size }; });
+          }
           return o;
         });
       } else if (q.t === "scenarios") {
@@ -1670,11 +1690,12 @@
      where it comes from, and — when it exists and is not sensitive — the files
      themselves, uploaded to the company's specification on the server. */
 
-  var SM_TEXT = ["title", "desc", "source", "volume"];
+  var SM_TEXT = ["title", "desc", "source", "volume", "metaDesc"];
+  var META_BASE = 100;   // metadata standards are reported to the feature rules as 100 + index
   var SENSITIVE = 3;
 
   function sampleFilled(sm) {
-    return !!sm && (SM_TEXT.some(function (f) { return sm[f] && String(sm[f]).trim(); }) || !!(sm.files && sm.files.length));
+    return !!sm && (SM_TEXT.some(function (f) { return sm[f] && String(sm[f]).trim(); }) || !!(sm.files && sm.files.length) || !!(sm.metaFiles && sm.metaFiles.length));
   }
 
   function sampleCount() {
@@ -1688,7 +1709,9 @@
   function sampleFormats(list) {
     var out = [];
     (list || []).forEach(function (sm) {
-      if (sampleFilled(sm) && typeof sm.format === "number" && out.indexOf(sm.format) === -1) out.push(sm.format);
+      if (!sampleFilled(sm)) return;
+      if (typeof sm.format === "number" && out.indexOf(sm.format) === -1) out.push(sm.format);
+      if (typeof sm.metaStd === "number" && out.indexOf(META_BASE + sm.metaStd) === -1) out.push(META_BASE + sm.metaStd);
     });
     return out.sort(function (a, b) { return a - b; });
   }
@@ -1807,48 +1830,85 @@
       if (scs.length) select("scenario", "smScenario", scs.map(function (o) { return { v: o.i, label: o.label }; }), true);
       c.appendChild(grid);
 
-      /* Files */
-      var pending = 0, errs = [];
-      var fileWrap = el("ul", { class: "sm-files" });
-      var fileIn = el("input", { type: "file", multiple: "multiple", class: "sr" });
-      var addBtn = el("button", { type: "button", class: "btn ghost", text: sm.status === "desired" ? t("smAddTemplate") : t("smAddFile") });
-      var blocked = sm.sensitivity === SENSITIVE;
-      function drawFiles() {
-        fileWrap.textContent = "";
-        (sm.files || []).forEach(function (f, k) {
-          var href = sampleHref(f);
-          var x = el("button", { type: "button", class: "sc-img-x sm-x", title: t("scRemove"), "aria-label": t("scRemove") + " " + f.name, text: "×" });
-          x.addEventListener("click", function () { sm.files.splice(k, 1); if (!sm.files.length) delete sm.files; commit(); drawFiles(); });
-          fileWrap.appendChild(el("li", {}, [
-            href ? el("a", { href: href, text: f.name, download: f.name }) : el("span", { text: f.name }),
-            el("span", { class: "count", text: fmtSize(f.size) }),
-            canWrite() || !WS ? x : null
-          ]));
+      /* A list of uploaded files under sm[key], with an upload button. */
+      function fileList(key, addLabel) {
+        var pending = 0, errs = [];
+        var wrap = el("ul", { class: "sm-files" });
+        var input = el("input", { type: "file", multiple: "multiple", class: "sr" });
+        var btn = el("button", { type: "button", class: "btn ghost", text: addLabel });
+        function drawList() {
+          wrap.textContent = "";
+          (sm[key] || []).forEach(function (f, k) {
+            var href = sampleHref(f);
+            var x = el("button", { type: "button", class: "sc-img-x sm-x", title: t("scRemove"), "aria-label": t("scRemove") + " " + f.name, text: "×" });
+            x.addEventListener("click", function () { sm[key].splice(k, 1); if (!sm[key].length) delete sm[key]; commit(); drawList(); });
+            wrap.appendChild(el("li", {}, [
+              href ? el("a", { href: href, text: f.name, download: f.name }) : el("span", { text: f.name }),
+              el("span", { class: "count", text: fmtSize(f.size) }),
+              canWrite() || !WS ? x : null
+            ]));
+          });
+          for (var i = 0; i < pending; i++) wrap.appendChild(el("li", { class: "pending" }, [el("span", { text: t("smUploading") })]));
+          errs.forEach(function (e) { wrap.appendChild(el("li", { class: "err" }, [el("span", { text: e })])); });
+        }
+        btn.addEventListener("click", function () { input.click(); });
+        input.addEventListener("change", function () {
+          var files = Array.prototype.slice.call(input.files || []);
+          input.value = ""; errs = [];
+          keep();
+          files.forEach(function (file) {
+            pending++; drawList();
+            uploadSample(file).then(function (d) {
+              sm[key] = sm[key] || [];
+              sm[key].push({ id: d.id, name: d.name, size: d.size });
+              commit();
+            })["catch"](function (e) {
+              errs.push(t("smUploadFail") + " " + file.name + " — " + (e.status === 413 ? t("smTooBig") : e.status === 415 ? t("smBadType") : e.message));
+            }).then(function () { pending--; drawList(); });
+          });
         });
-        for (var i = 0; i < pending; i++) fileWrap.appendChild(el("li", { class: "pending" }, [el("span", { text: t("smUploading") })]));
-        errs.forEach(function (e) { fileWrap.appendChild(el("li", { class: "err" }, [el("span", { text: e })])); });
+        drawList();
+        return { list: wrap, btn: btn, input: input };
       }
-      addBtn.addEventListener("click", function () { fileIn.click(); });
-      fileIn.addEventListener("change", function () {
-        var files = Array.prototype.slice.call(fileIn.files || []);
-        fileIn.value = ""; errs = [];
-        keep();
-        files.forEach(function (file) {
-          pending++; drawFiles();
-          uploadSample(file).then(function (d) {
-            sm.files = sm.files || [];
-            sm.files.push({ id: d.id, name: d.name, size: d.size });
-            commit();
-          })["catch"](function (e) {
-            errs.push(t("smUploadFail") + " " + file.name + " — " + (e.status === 413 ? t("smTooBig") : e.status === 415 ? t("smBadType") : e.message));
-          }).then(function () { pending--; drawFiles(); });
-        });
-      });
-      var fileRow = el("div", { class: "sc-imgrow" }, [el("p", { class: "eyebrow sc-prev-l", text: t("smFiles") }), fileWrap]);
+
+      var blocked = sm.sensitivity === SENSITIVE;
+      var data = fileList("files", sm.status === "desired" ? t("smAddTemplate") : t("smAddFile"));
+      var fileRow = el("div", { class: "sc-imgrow" }, [el("p", { class: "eyebrow sc-prev-l", text: t("smFiles") }), data.list]);
       if (blocked) fileRow.appendChild(el("p", { class: "notice", style: "margin:6px 0 0", text: t("smSensBlocked") }));
-      else if (WS && canWrite()) { fileRow.appendChild(addBtn); fileRow.appendChild(fileIn); }
+      else if (WS && canWrite()) { fileRow.appendChild(data.btn); fileRow.appendChild(data.input); }
       c.appendChild(fileRow);
-      drawFiles();
+
+      /* Metadata: the standard used, what exists, and example files. Metadata may be
+         shared even when the data itself is too sensitive to upload. */
+      var meta = el("div", { class: "sm-meta" });
+      meta.appendChild(el("p", { class: "eyebrow sc-prev-l", text: t("smMeta") }));
+      meta.appendChild(el("p", { class: "a-meta", style: "margin:0 0 8px", text: t("smMetaHint") }));
+      var mgrid = el("div", { class: "sc-grid" });
+      var msId = q.id + "-sm" + idx + "-metaStd";
+      var ms = el("select", { id: msId });
+      ms.appendChild(el("option", { value: "", text: "–" }));
+      t("smMetaOpts").forEach(function (l, k) {
+        var op = el("option", { value: String(k), text: l });
+        if (sm.metaStd === k) op.selected = true;
+        ms.appendChild(op);
+      });
+      ms.addEventListener("change", function () { keep(); if (ms.value === "") delete sm.metaStd; else sm.metaStd = Number(ms.value); commit(); });
+      mgrid.appendChild(el("label", { class: "sc-lab", "for": msId, text: t("smMetaStd") }));
+      mgrid.appendChild(ms);
+      var mdId = q.id + "-sm" + idx + "-metaDesc";
+      var md = el("textarea", { id: mdId, rows: "2", placeholder: t("smMetaDescPh") });
+      md.value = sm.metaDesc || "";
+      md.addEventListener("input", function () { keep(); sm.metaDesc = md.value; persist(); });
+      md.addEventListener("change", refreshSpine);
+      md.addEventListener("blur", flushDraft);
+      mgrid.appendChild(el("label", { class: "sc-lab", "for": mdId, text: t("smMetaDesc") }));
+      mgrid.appendChild(md);
+      meta.appendChild(mgrid);
+      var mf = fileList("metaFiles", t("smAddMeta"));
+      meta.appendChild(el("p", { class: "eyebrow sc-prev-l", text: t("smMetaFiles") }));
+      meta.appendChild(mf.list);
+      if (WS && canWrite()) { meta.appendChild(mf.btn); meta.appendChild(mf.input); }
+      c.appendChild(meta);
       return c;
     }
 
@@ -1884,6 +1944,10 @@
       if (typeof sm.sensitivity === "number") { o.sensitivity = sm.sensitivity; o.sensitivity_en = sens.en[sm.sensitivity]; o.sensitivity_nb = sens.nb[sm.sensitivity]; }
       if (typeof sm.scenario === "number") o.scenario = sm.scenario + 1;
       o.files = (sm.files || []).map(function (f) { return { id: f.id, name: f.name, size: f.size }; });
+      if (typeof sm.metaStd === "number" || (sm.metaDesc && sm.metaDesc.trim()) || (sm.metaFiles && sm.metaFiles.length)) {
+        o.metadata = { description: String(sm.metaDesc || "").trim(), files: (sm.metaFiles || []).map(function (f) { return { id: f.id, name: f.name, size: f.size }; }) };
+        if (typeof sm.metaStd === "number") { o.metadata.standard = sm.metaStd; o.metadata.standard_en = T.en.smMetaOpts[sm.metaStd]; o.metadata.standard_nb = T.nb.smMetaOpts[sm.metaStd]; }
+      }
       return o;
     });
   }
@@ -3302,16 +3366,25 @@
           }
         } else if (q.t === "samples") {
           var sms = [], fmt = L(q).o.map(function (lab) { return { label: lab, n: 0 }; });
+          var mst = t("smMetaOpts").map(function (lab) { return { label: lab, n: 0 }; });
           rows.forEach(function (r) {
             var rec = r.answers.filter(function (x) { return x.id === q.id; })[0];
             if (!rec || !rec.samples) return;
             var who = (r.respondent && r.respondent.organisation) || t("anonymous");
-            rec.samples.forEach(function (sm) { sms.push({ sm: sm, who: who }); if (typeof sm.format === "number" && fmt[sm.format]) fmt[sm.format].n++; });
+            rec.samples.forEach(function (sm) {
+              sms.push({ sm: sm, who: who });
+              if (typeof sm.format === "number" && fmt[sm.format]) fmt[sm.format].n++;
+              if (sm.metadata && typeof sm.metadata.standard === "number" && mst[sm.metadata.standard]) mst[sm.metadata.standard].n++;
+            });
           });
           if (!sms.length) block.appendChild(el("p", { class: "a-meta", text: t("noAnswers") }));
           else {
             block.appendChild(el("p", { class: "a-meta", text: t("smWhich") }));
             block.appendChild(bars(fmt.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; }), sms.length, ""));
+            if (mst.some(function (x) { return x.n > 0; })) {
+              block.appendChild(el("p", { class: "a-meta", style: "margin-top:12px", text: t("smMetaWhich") }));
+              block.appendChild(bars(mst.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; }), sms.length, "copper"));
+            }
             var smv = el("div", { class: "verbatims", style: "margin-top:14px" });
             sms.forEach(function (x) {
               var sm = x.sm;
@@ -3326,6 +3399,14 @@
                 ]),
                 sm.description ? el("p", { style: "margin:4px 0 0", text: sm.description }) : null,
                 files,
+                sm.metadata ? el("div", { class: "sm-meta-v" }, [
+                  el("span", { class: "eyebrow", text: t("smMeta") + " " }),
+                  el("span", { text: [state.lang === "nb" ? sm.metadata.standard_nb : sm.metadata.standard_en, sm.metadata.description].filter(Boolean).join(" · ") }),
+                  (sm.metadata.files || []).length ? el("ul", { class: "sm-files" }, sm.metadata.files.map(function (f) {
+                    var href = sampleHref(f);
+                    return el("li", {}, [href ? el("a", { href: href, download: f.name, text: f.name }) : el("span", { text: f.name }), el("span", { class: "count", text: fmtSize(f.size) })]);
+                  })) : null
+                ]) : null,
                 el("cite", { text: [x.who, state.lang === "nb" ? sm.format_nb : sm.format_en, sm.source, sm.volume].filter(Boolean).join(" · ") })
               ]));
             });

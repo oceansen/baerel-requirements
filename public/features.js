@@ -13,7 +13,8 @@
    systems the connectors must reach). Indices refer to option positions in questions.js.
 
    q228 is the sample-data section: its "selected" options are the formats of the
-   samples the organisation described (0 spreadsheet … 9 other). */
+   samples the organisation described (0 spreadsheet … 9 other), plus 100 + the
+   index of each metadata standard named (100 DCAT-AP-NO … 110 no metadata). */
 
 var FEATURE_AREAS = {
   ingest: { nb: "Innhenting og integrasjon", en: "Ingestion and integration" },
@@ -171,7 +172,8 @@ var FEATURES = [
       { q: "q27", scale: 4, w: 2 },
       { q: "q11", any: [4, 6], w: 1 },
       { q: "q157", any: [1], w: 1 },
-      { q: "q42", any: [5], w: 1 }
+      { q: "q42", any: [5], w: 1 },
+      { q: "q228", count: 1, of: [100, 101, 102, 103, 104, 105, 106, 107, 108], w: 1 }
     ] },
   { id: "standards", area: "model",
     nb: { title: "Standardiserte informasjonsmodeller", desc: "Fellesmodellen bygger på og kan eksportere til de standardene dere nevner – ikke låst til én." },
@@ -180,7 +182,8 @@ var FEATURES = [
       { q: "q41", count: 1, of: [0,1,2,3,4,5,6,7,8], w: 2 },
       { q: "q41", count: 3, of: [0,1,2,3,4,5,6,7,8], w: 1 },
       { q: "q136", any: [7], w: 1 },
-      { q: "q29", scale: 4, w: 1 }
+      { q: "q29", scale: 4, w: 1 },
+      { q: "q228", any: [100, 104, 105, 106], w: 1 }
     ],
     detail: ["q41"] },
 

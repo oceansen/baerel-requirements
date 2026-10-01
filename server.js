@@ -403,7 +403,7 @@ const MAX_SAMPLE_BYTES_PER_COMPANY = Number(process.env.MAX_SAMPLE_MB_PER_COMPAN
 const SAMPLE_EXT = new Set(("csv tsv txt json jsonl ndjson xml yaml yml xlsx xls ods parquet avro feather arrow sql md log " +
   "pdf docx odt pptx png jpg jpeg webp gif tif tiff bmp heic mp4 mov webm avi mp3 wav " +
   "step stp iges igs stl obj 3mf dxf dwg glb gltf ply e57 las laz " +
-  "aml aasx owl ttl rdf jsonld nq nt h5 hdf5 mat zip gz tgz 7z").split(" "));
+  "aml aasx owl ttl rdf jsonld nq nt shacl xsd dtd rng rnc avsc proto h5 hdf5 mat zip gz tgz 7z").split(" "));
 
 function cleanFilename(raw) {
   let n = "";
@@ -968,17 +968,23 @@ async function handle(req, res) {
       const entries = [], manifest = [], used = new Set();
       samples.forEach((sm, i) => {
         const folder = String(i + 1).padStart(2, "0") + "-" + (slugify(sm.title || "") || "sample");
-        const files = [];
-        (sm.files || []).forEach((fm) => {
-          const f = q.getSample.get(String(fm.id || ""));
-          if (!f || f.company_id !== c.id) return;
-          let name = folder + "/" + f.filename, k = 2;
-          while (used.has(name)) name = folder + "/" + k++ + "-" + f.filename;
-          used.add(name);
-          entries.push({ name, data: Buffer.from(f.bytes) });
-          files.push({ path: name, size: f.size, sha256: f.sha256 });
-        });
-        manifest.push(Object.assign({}, sm, { files }));
+        const add = (list, dir) => {
+          const out = [];
+          (list || []).forEach((fm) => {
+            const f = q.getSample.get(String(fm.id || ""));
+            if (!f || f.company_id !== c.id) return;
+            let name = dir + "/" + f.filename, k = 2;
+            while (used.has(name)) name = dir + "/" + k++ + "-" + f.filename;
+            used.add(name);
+            entries.push({ name, data: Buffer.from(f.bytes) });
+            out.push({ path: name, size: f.size, sha256: f.sha256 });
+          });
+          return out;
+        };
+        const files = add(sm.files, folder);
+        const entry = Object.assign({}, sm, { files });
+        if (sm.metadata) entry.metadata = Object.assign({}, sm.metadata, { files: add(sm.metadata.files, folder + "/metadata") });
+        manifest.push(entry);
       });
       entries.unshift({ name: "samples.json", data: Buffer.from(JSON.stringify({ company: c.name, exported_at: now(), samples: manifest }, null, 2)) });
       return send(res, 200, zip(entries), {

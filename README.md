@@ -66,14 +66,15 @@ Section 3, **Eksempeldata / Sample data**, lets the organisation add one card pe
 - what kind of data it is: synthetic, anonymised, real but not sensitive, or sensitive
 - which usage scenario it supports
 - the files themselves
+- **metadata**: the metadata standard used (DCAT-AP-NO / DCAT-AP, Dublin Core, JSON Schema, XSD, SHACL/OWL, AAS submodel templates, ECLASS, CSVW, a data dictionary, an internal model or none), what metadata exists, and example metadata files such as schemas, data dictionaries or catalogue records. Metadata can be uploaded even when the data itself is marked sensitive.
 
 A follow-up question asks what the project may use the samples for.
 
 - **Files.** Up to 25 MB each (`MAX_SAMPLE_MB`), and 300 MB / 500 files per company (`MAX_SAMPLE_MB_PER_COMPANY`, `MAX_SAMPLE_FILES_PER_COMPANY`). Files are stored in the database per company and readable only with that company's code session or by the admin.
 - **Accepted types.** Only an allowlist of data, document, image, CAD and archive extensions. Executables are refused by their content, whatever they are called. Files are always served as downloads (`application/octet-stream`, `attachment`, CSP `sandbox`), never rendered.
 - **Sensitive data.** Choosing "sensitive" removes the upload button for that sample, so it can only be described.
-- **Feeding the features.** The formats of the samples count towards the platform features. For example, PDF samples argue for document extraction and sensor logs for a time-series store.
-- **Admin download.** **Sample data (ZIP)** on the company card downloads every file in the company's specification, one folder per sample, with a `samples.json` manifest.
+- **Feeding the features.** The formats of the samples count towards the platform features: PDF samples argue for document extraction, and sensor logs for a time-series store. Named metadata standards count towards the data catalogue and standards-based models.
+- **Admin download.** **Sample data (ZIP)** on the company card downloads every file in the company's specification, one folder per sample (metadata files in a `metadata/` subfolder), with a `samples.json` manifest.
 
 ## Scenario images
 

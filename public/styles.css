@@ -896,3 +896,8 @@ table.profile td:last-child { width: 1%; white-space: nowrap; font-size: 12.5px;
 .sm-files li.pending { color: var(--ink-3); font-style: italic; }
 .sm-files li.err { color: var(--copper-ink); }
 .sm-files .sm-x { position: static; width: 22px; height: 22px; line-height: 20px; }
+
+.sm-meta { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line-strong); }
+.sm-meta .sc-grid select, .sm-meta textarea { font-size: 14px; padding: 7px 10px; }
+.sm-meta textarea { resize: vertical; min-height: 3em; }
+.sm-meta-v { margin-top: 6px; font-size: 13px; color: var(--ink-2); }

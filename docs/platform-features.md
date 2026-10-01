@@ -1,6 +1,6 @@
 # Platform feature catalogue
 
-Generated from `public/features.js`. The Bærel requirements specification derives the data platform’s features from each organisation’s answers. Each signal that is met adds its weight; the total sets the priority: **≥ 4 must have**, **≥ 2 should have**, **≥ 1 could have**, otherwise not indicated. Negative weights argue against a feature. “Shaped by” lists questions whose selected options configure the feature.
+Generated from `public/features.js`. The Bærel requirements specification derives the data platform’s features from each organisation’s answers. Each signal that is met adds its weight; the total sets the priority: **≥ 4 must have**, **≥ 2 should have**, **≥ 1 could have**, otherwise not indicated. Negative weights argue against a feature. “Shaped by” lists questions whose selected options configure the feature. For the sample-data question (q228), the selected options are the formats of the samples plus the metadata standards named.
 
 ## Platform profile
 
@@ -35,7 +35,7 @@ Ready-made connectors, with mapping into the common model, for the systems the o
 
 | Q | Question | Condition | Weight |
 |---|---|---|---|
-| q23 | Which systems or data sources should be connected? | ≥ 1 selected (of listed options) | +2 |
+| q23 | Which systems or data sources should be connected? | ≥ 1 selected (of ERP, MES / production execution, PLM / PDM, QMS, WMS / logistics, CRM / field service, SCADA / historian, PLC and machine data, Sensors / IoT, Test and measurement systems, Inspection and vision systems, LIMS / laboratory systems, CAD / CAE, Simulation and digital-twin tools, Maintenance and asset-management systems, Databases, Material-declaration systems (IPC-1752A, IMDS, SCIP), Carbon / LCA accounting tools, Compliance and reporting systems, Supplier systems, Customer systems, Recycler or take-back partner systems, Wearables and AR devices) | +2 |
 | q23 | Which systems or data sources should be connected? | ≥ 4 selected | +1 |
 | q73 | Which area should receive the highest priority? | any of “Platform and system integration” | +1 |
 | q199 | Which costs worry you most? | any of “Integration with our own systems (ERP, PLM, MES)” | +1 |
@@ -114,7 +114,7 @@ Software close to the source that cleans, fuses and compresses data, and buffers
 
 | Q | Question | Condition | Weight |
 |---|---|---|---|
-| q64 | Where would edge processing — computing close to the data source — be most useful? | ≥ 1 selected (of listed options) | +1 |
+| q64 | Where would edge processing — computing close to the data source — be most useful? | ≥ 1 selected (of Production machines, Assembly stations, Test benches, Inspection and vision equipment, Sensor gateways, Local factory network or infrastructure, Mobile or field service equipment, Products in operation at customer sites, Sorting, disassembly and dismantling lines, Logistics and warehousing) | +1 |
 | q65 | What should be performed at the edge? | ≥ 2 selected | +1 |
 | q67 | Why should processing happen locally rather than centrally? | any of “Low latency”, “Offline or intermittent-connectivity operation”, “Protecting IP while still sharing results”, “Reduced data volume” | +1 |
 | q178 | Which measures should govern the data volume and energy use of the platform and its agents? | any of “Process at the edge to avoid transferring raw data” | +1 |
@@ -200,6 +200,7 @@ A searchable overview of which data exists, who owns it, what it means and how f
 | q11 | Which data-quality problems do you experience most often? | any of “Unclear definitions”, “Poor or missing metadata” | +1 |
 | q157 | Which consequences of growing data volume concern you most? | any of “Noise — it gets harder to find what matters” | +1 |
 | q42 | Which integration pattern do you prefer? | any of “Hybrid — central index or catalogue, federated payloads” | +1 |
+| q228 | Which examples of data do you have — or wish you had? Add one example per dataset, with files where you have t… | ≥ 1 selected (of metadata: DCAT-AP-NO / DCAT-AP, metadata: Dublin Core, metadata: JSON Schema, metadata: XML Schema (XSD), metadata: SHACL or OWL ontology, metadata: AAS submodel templates, metadata: ECLASS / IEC 61360, metadata: CSVW, metadata: Data dictionary) | +1 |
 
 ### Standards-based information models (`standards`)
 
@@ -207,10 +208,11 @@ The common model builds on, and exports to, the standards you name — not locke
 
 | Q | Question | Condition | Weight |
 |---|---|---|---|
-| q41 | Which existing standards or information models should the platform build on? | ≥ 1 selected (of listed options) | +2 |
-| q41 | Which existing standards or information models should the platform build on? | ≥ 3 selected (of listed options) | +1 |
+| q41 | Which existing standards or information models should the platform build on? | ≥ 1 selected (of Digital Product Passport (ESPR, CIRPASS), GS1 standards and EPCIS event data, IPC standards (1752A material declarations, 2581 design data, 175x), ECLASS / IEC 61360 property dictionaries, Asset Administration Shell (Industrie 4.0 / IDTA), OPC UA information models, IMDS and SCIP substance databases, W3C semantic web standards (RDF, OWL, SHACL, JSON-LD), Gaia-X, IDSA or Eclipse Dataspace Components) | +2 |
+| q41 | Which existing standards or information models should the platform build on? | ≥ 3 selected (of Digital Product Passport (ESPR, CIRPASS), GS1 standards and EPCIS event data, IPC standards (1752A material declarations, 2581 design data, 175x), ECLASS / IEC 61360 property dictionaries, Asset Administration Shell (Industrie 4.0 / IDTA), OPC UA information models, IMDS and SCIP substance databases, W3C semantic web standards (RDF, OWL, SHACL, JSON-LD), Gaia-X, IDSA or Eclipse Dataspace Components) | +1 |
 | q136 | Which properties must be built in from the start for the platform to withstand such changes? | any of “Mapped to several standards, not locked to one” | +1 |
 | q29 | How important is a common semantic / information model shared across systems and companies? | rated ≥ 4 | +1 |
+| q228 | Which examples of data do you have — or wish you had? Add one example per dataset, with files where you have t… | any of “metadata: DCAT-AP-NO / DCAT-AP”, “metadata: SHACL or OWL ontology”, “metadata: AAS submodel templates”, “metadata: ECLASS / IEC 61360” | +1 |
 
 Shaped by: q41
 
@@ -262,7 +264,7 @@ Data is signed by whoever stands behind it, so the recipient can check origin an
 | q196 | How should data in the passport be signed and verified? | any of “W3C Verifiable Credentials”, “eIDAS electronic attestations or seals”, “Digital seals under ISO 22376” | +2 |
 | q163 | Which mechanisms for trust and control should the platform support? | any of “Digital signatures on individual records”, “Decentralised identifiers and verifiable credentials (W3C DID / VC)” | +2 |
 | q136 | Which properties must be built in from the start for the platform to withstand such changes? | any of “Signed records verifiable without the platform” | +1 |
-| q47 | If some form of tamper-evidence is needed, which data would justify it? | ≥ 1 selected (of listed options) | +1 |
+| q47 | If some form of tamper-evidence is needed, which data would justify it? | ≥ 1 selected (of Ownership and custody transfers, Material and substance declarations, Certificates of conformity and test reports, Repair, upgrade and maintenance events, Carbon, energy and footprint claims, Recycled-content claims, Warranty and liability status, Proof of proper recycling or disposal) | +1 |
 | q13 | How important is data integrity — that records cannot be altered undetected? | rated ≥ 4 | +1 |
 
 Shaped by: q196, q47
@@ -295,7 +297,7 @@ Rules that check completeness, validity and consistency on ingest, and stop or f
 
 | Q | Question | Condition | Weight |
 |---|---|---|---|
-| q11 | Which data-quality problems do you experience most often? | ≥ 2 selected (of listed options) | +1 |
+| q11 | Which data-quality problems do you experience most often? | ≥ 2 selected (of Missing data, Incorrect data, Inconsistent formats, Duplicate data, Unclear definitions, Outdated information, Poor or missing metadata, Difficult-to-trace data origin, Version conflicts) | +1 |
 | q55 | Which AI-supported capabilities would create the most value for your organisation? | any of “Automatic data-quality checking, validation and cleaning” | +2 |
 | q163 | Which mechanisms for trust and control should the platform support? | any of “Data contracts with schema, quality requirements and service levels” | +1 |
 | q157 | Which consequences of growing data volume concern you most? | any of “Poorer data quality and conflicting versions” | +1 |
@@ -451,7 +453,7 @@ Footprint and recycled-content claims can be audited: basis, method and who has 
 | q47 | If some form of tamper-evidence is needed, which data would justify it? | any of “Carbon, energy and footprint claims”, “Recycled-content claims” | +1 |
 | q122 | Which sustainability decisions should the platform actively support? | any of “Substantiating recycled-content and footprint claims to customers” | +1 |
 | q127 | Which of these developments do you consider plausible by 2035? | any of “A scandal over falsified sustainability data destroys trust in such claims” | +1 |
-| q241 | Which ecolabels, claim rules and procurement requirements must the LCA data be able to substantiate? | ≥ 1 selected (of listed options) | +1 |
+| q241 | Which ecolabels, claim rules and procurement requirements must the LCA data be able to substantiate? | ≥ 1 selected (of Nordic Swan Ecolabel (Svanemerket), EU Ecolabel, TCO Certified, EPEAT, Climate and environment criteria in Norwegian public procurement (procurement regulation § 7-9, at least 30 % weight), The Norwegian Consumer Authority’s guidance on sustainability claims in marketing, EU Empowering Consumers for the Green Transition Directive (2024/825) — ban on unsubstantiated environmental claims) | +1 |
 
 Shaped by: q241
 
@@ -461,7 +463,7 @@ Compares designs, suppliers and repair versus replacement on footprint and cost,
 
 | Q | Question | Condition | Weight |
 |---|---|---|---|
-| q122 | Which sustainability decisions should the platform actively support? | ≥ 2 selected (of listed options) | +2 |
+| q122 | Which sustainability decisions should the platform actively support? | ≥ 2 selected (of Comparing design alternatives on footprint before the choice is made, Choosing supplier or material on footprint, not only price, Showing whether repair or refurbishment beats replacement for a specific unit, Substantiating recycled-content and footprint claims to customers, Finding the largest emission hotspots in production, Tracking progress against reduction targets, Producing reports ready for customers or regulators, Optimising transport and logistics, Avoiding substances and future regulatory risk) | +2 |
 | q122 | Which sustainability decisions should the platform actively support? | any of “Comparing design alternatives on footprint before the choice is made”, “Choosing supplier or material on footprint, not only price”, “Showing whether repair or refurbishment beats replacement for a specific unit” | +1 |
 | q55 | Which AI-supported capabilities would create the most value for your organisation? | any of “Recommending repair, reuse, remanufacture or recycle for a given item” | +1 |
 
@@ -489,7 +491,7 @@ Import and export in ILCD, ecoSpold2, the openLCA schema and digital EPDs, with 
 
 | Q | Question | Condition | Weight |
 |---|---|---|---|
-| q237 | In which formats must LCA data be exchanged? | ≥ 1 selected (of listed options) | +2 |
+| q237 | In which formats must LCA data be exchanged? | ≥ 1 selected (of ILCD — the EU format for life cycle data, ecoSpold2, openLCA schema (JSON-LD), PACT / Catena-X for product footprints, Digital EPDs (ILCD+EPD, ECO Platform)) | +2 |
 | q234 | Which background data must the platform be able to use — with the licences that requires? | any of “ecoinvent”, “Sphera databases (LCA for Experts / GaBi)”, “EF 3.1 datasets from the EU Life Cycle Data Network” | +1 |
 | q234 | Which background data must the platform be able to use — with the licences that requires? | any of “EPDs from EPD-Norge and other programme operators”, “Suppliers’ own PCF and EPD data” | +1 |
 | q231 | Which product category rules and supporting standards must the platform be able to follow — in addition to the… | any of “PCR from EPD-Norge or The International EPD System”, “ISO/TS 14048 — documentation format for LCA data” | +1 |
@@ -505,7 +507,7 @@ Measures and shows the energy use of the platform and its agents, runs heavy com
 |---|---|---|---|
 | q177 | How concerned are you about the energy use and carbon footprint of AI, data centres and data sharing — weighed… | rated ≥ 4 | +2 |
 | q178 | Which measures should govern the data volume and energy use of the platform and its agents? | any of “Run heavy computation where and when renewable power is available”, “Energy budget per service or agent”, “Show the footprint to the user before heavy operations”, “Report the platform’s own energy and carbon footprint to participants” | +1 |
-| q178 | Which measures should govern the data volume and energy use of the platform and its agents? | ≥ 3 selected (of listed options) | +1 |
+| q178 | Which measures should govern the data volume and energy use of the platform and its agents? | ≥ 3 selected (of Use smaller, specialised models where they suffice, Run heavy computation where and when renewable power is available, Nordic data centres with renewable power and waste-heat reuse, Avoid unnecessary storage and duplicated data, Keep raw sensor data for a limited period and retain aggregates, Process at the edge to avoid transferring raw data, Limit retention of video and images, Delete derived data that is no longer used, Energy budget per service or agent, Show the footprint to the user before heavy operations, Report the platform’s own energy and carbon footprint to participants, Share on request (pull) instead of copying everything (push), Purpose limitation — collect only data with a defined use, Compression and efficient data formats) | +1 |
 | q178 | Which measures should govern the data volume and energy use of the platform and its agents? | any of “No special considerations — the gains are far larger” | -2 |
 
 Shaped by: q178
@@ -612,7 +614,7 @@ Give selected partners access to specific data — and receive what you need fro
 
 | Q | Question | Condition | Weight |
 |---|---|---|---|
-| q69 | With whom might data need to be shared? | ≥ 2 selected (of listed options) | +2 |
+| q69 | With whom might data need to be shared? | ≥ 2 selected (of Other units within our own organisation, Suppliers, Contract manufacturers / EMS partners, Customers, Service, repair and maintenance partners, Refurbishers and remanufacturers, Reverse logistics and collection operators, Recyclers, Logistics providers, Regulators and auditors, Certification bodies, Research partners, Openly / publicly) | +2 |
 | q71 | What data would you need to receive from others to work more circularly? | ≥ 2 selected | +1 |
 | q73 | Which area should receive the highest priority? | any of “Cross-company data sharing” | +1 |
 | q69 | With whom might data need to be shared? | any of “No external sharing” | -2 |
@@ -641,7 +643,7 @@ Recordings from glasses or cameras processed on the device or locally, with cons
 | q86 | Which methods of capturing how the work is actually done would be acceptable in your organisation? | any of “Head-mounted camera or smart glasses — first-person video”, “AR glasses that both guide and record”, “Spoken narration by the worker while working” | +2 |
 | q89 | How important is it that knowledge derived from capture is linked to the product, component or process it conc… | rated ≥ 4 | +1 |
 | q88 | How valuable would an AI assistant be that has learned from recorded expert work and guides a less experienced… | rated ≥ 4 | +1 |
-| q87 | Where would first-person (egocentric) data create the most value? | ≥ 1 selected (of listed options) | +1 |
+| q87 | Where would first-person (egocentric) data create the most value? | ≥ 1 selected (of Training new operators, Guidance during repair and maintenance in the field, Disassembly and sorting at end-of-life, More consistent quality judgement during inspection, Documenting non-standard repairs into the product history or product passport, Remote expert support, Capturing why a decision was made, not only what was done, Feeding real work sequences back into design (for assembly, repair, disassembly)) | +1 |
 | q86 | Which methods of capturing how the work is actually done would be acceptable in your organisation? | any of “None of these are acceptable” | -2 |
 
 Shaped by: q93, q94
@@ -653,7 +655,7 @@ Product data robots need to handle new variants (geometry, fasteners, disassembl
 | Q | Question | Condition | Weight |
 |---|---|---|---|
 | q108 | How important is it that robots deliver their process data (cycle times, forces, rejects, images) into the sha… | rated ≥ 4 | +2 |
-| q109 | What data would a robot need from the platform to handle a product it has not seen before? | ≥ 2 selected (of listed options) | +2 |
+| q109 | What data would a robot need from the platform to handle a product it has not seen before? | ≥ 2 selected (of Geometry and CAD models, Bill of materials and component positions, Fasteners — type and location, Disassembly sequence, Torque, force and handling limits, Hazardous substances and safe handling, Product condition and history (product passport), Test and calibration procedures, Grip points and fixturing, Photos or scans of the variant) | +2 |
 | q101 | How important is automation for making reuse, repair and recycling economically viable in a high-wage country? | rated ≥ 4 | +1 |
 | q110 | How important is it that robot programs or skills can be derived from recorded human work (learning from demon… | rated ≥ 4 | +1 |
 

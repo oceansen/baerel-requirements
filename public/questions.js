@@ -81,8 +81,8 @@ const SURVEY = {
     },
     {
       id: "s20",
-      nb: { title: "Eksempeldata", lead: "Vis oss dataene: last opp små utdrag av data dere har i dag, eller beskriv – gjerne med en skisse eller mal – data dere skulle ønske dere hadde. Eksemplene gjør kravene konkrete og brukes til å teste plattformen. Bruk syntetiske eller anonymiserte data; last aldri opp personopplysninger, gradert eller forretningssensitivt materiale." },
-      en: { title: "Sample data", lead: "Show us the data: upload small extracts of data you have today, or describe — ideally with a sketch or template — data you wish you had. The samples make the requirements concrete and are used to test the platform. Use synthetic or anonymised data; never upload personal data or classified or commercially sensitive material." },
+      nb: { title: "Eksempeldata", lead: "Vis oss dataene: last opp små utdrag av data dere har i dag, eller beskriv – gjerne med en skisse eller mal – data dere skulle ønske dere hadde. Del gjerne også metadata – skjema, dataordbok eller katalogpost – også der selve dataene ikke kan deles. Eksemplene gjør kravene konkrete og brukes til å teste plattformen. Bruk syntetiske eller anonymiserte data; last aldri opp personopplysninger, gradert eller forretningssensitivt materiale." },
+      en: { title: "Sample data", lead: "Show us the data: upload small extracts of data you have today, or describe — ideally with a sketch or template — data you wish you had. Share metadata too — a schema, data dictionary or catalogue record — even where the data itself cannot be shared. The samples make the requirements concrete and are used to test the platform. Use synthetic or anonymised data; never upload personal data or classified or commercially sensitive material." },
       questions: [
         { id: "q228", t: "samples",
           nb: { q: "Hvilke eksempler på data har dere – eller ønsker dere? Legg inn ett eksempel per datasett, med filer der dere har dem.",
