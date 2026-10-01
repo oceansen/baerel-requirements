@@ -12,6 +12,9 @@
    `detail` lists questions whose selected options configure the feature (e.g. which
    systems the connectors must reach). Indices refer to option positions in questions.js.
 
+   q243 and q244 exist only in the lean question set (questions-lean.js); in the
+   full set they are simply never answered, so their signals stay unmet.
+
    q228 is the sample-data section: its "selected" options are the formats of the
    samples the organisation described (0 spreadsheet … 9 other), plus 100 + the
    index of each metadata standard named (100 DCAT-AP-NO … 110 no metadata). */
@@ -94,6 +97,7 @@ var FEATURES = [
     nb: { title: "Semantisk kartlegging av partnerdata", desc: "Kartlegger leverandørers og partneres egne formater inn i fellesmodellen – med KI-forslag som et menneske godkjenner." },
     en: { title: "Semantic mapping of partner data", desc: "Maps suppliers' and partners' own formats into the common model — with AI suggestions a person approves." },
     signals: [
+      { q: "q243", any: [7], w: 1 },
       { q: "q29", scale: 4, w: 2 },
       { q: "q55", any: [2], w: 2 },
       { q: "q11", any: [2, 4], w: 1 },
@@ -128,6 +132,7 @@ var FEATURES = [
     nb: { title: "Versjonert og tidsbevisst historikk", desc: "Ingenting overskrives i stillhet: rettelser lagres som nye fakta, og man kan spørre hva man visste om et produkt på et gitt tidspunkt." },
     en: { title: "Versioned, time-aware history", desc: "Nothing is silently overwritten: corrections are stored as new facts, and one can ask what was known about a product at a given time." },
     signals: [
+      { q: "q243", any: [5], w: 2 },
       { q: "q36", scale: 4, w: 2 },
       { q: "q43", any: [1, 2, 3], w: 2 },
       { q: "q34", any: [6], w: 1 },
@@ -192,6 +197,8 @@ var FEATURES = [
     nb: { title: "Finmasket tilgangsstyring og dataeierskap", desc: "Eieren bestemmer hvem som ser hva, ned på felt og datasett, med roller, attributter og tidsbegrensede tilganger." },
     en: { title: "Fine-grained access control and data ownership", desc: "The owner decides who sees what, down to field and dataset, using roles, attributes and time-limited grants." },
     signals: [
+      { q: "q243", any: [3], w: 2 },
+      { q: "q243", any: [0], w: 1 },
       { q: "q15", scale: 4, w: 2 },
       { q: "q12", scale: 4, w: 1 },
       { q: "q17", count: 2, w: 1 },
@@ -212,6 +219,8 @@ var FEATURES = [
     nb: { title: "Manipulasjonssikker revisjonslogg", desc: "Hver lesing og endring – av mennesker og agenter – logges i en logg som ikke kan endres ubemerket." },
     en: { title: "Tamper-evident audit log", desc: "Every read and change — by people and agents — is recorded in a log that cannot be altered undetected." },
     signals: [
+      { q: "q243", any: [4], w: 2 },
+      { q: "q243", any: [1], w: 1 },
       { q: "q16", scale: 4, w: 2 },
       { q: "q163", any: [2], w: 2 },
       { q: "q59", any: [2], w: 1 },
@@ -222,6 +231,7 @@ var FEATURES = [
     nb: { title: "Signerte poster og verifiserbare attester", desc: "Data signeres av den som står bak, slik at mottakeren kan sjekke opphav og integritet – også uten plattformen." },
     en: { title: "Signed records and verifiable credentials", desc: "Data is signed by whoever stands behind it, so the recipient can check origin and integrity — even without the platform." },
     signals: [
+      { q: "q243", any: [1], w: 1 },
       { q: "q196", any: [0, 1, 2], w: 2 },
       { q: "q163", any: [0, 1], w: 2 },
       { q: "q136", any: [5], w: 1 },
@@ -241,6 +251,7 @@ var FEATURES = [
     nb: { title: "Opphav og avstamning – målt, erklært eller utledet", desc: "Hver verdi viser hvor den kom fra, hvem som laget den, og om den er målt, erklært av en part eller utledet av en modell eller agent." },
     en: { title: "Provenance and lineage — measured, declared or inferred", desc: "Every value shows where it came from, who produced it, and whether it was measured, declared by a party, or inferred by a model or agent." },
     signals: [
+      { q: "q243", any: [2], w: 2 },
       { q: "q14", scale: 4, w: 2 },
       { q: "q60", scale: 4, w: 2 },
       { q: "q11", any: [7], w: 1 },
@@ -262,6 +273,7 @@ var FEATURES = [
     nb: { title: "Suveren drift og jurisdiksjon", desc: "Drift, data og nøkkelteknologi under norsk eller europeisk jurisdiksjon, uten avhengighet av én skyleverandør." },
     en: { title: "Sovereign operation and jurisdiction", desc: "Operations, data and key technology under Norwegian or European jurisdiction, without dependence on a single cloud provider." },
     signals: [
+      { q: "q244", any: [0, 4], w: 1 },
       { q: "q203", any: [0, 1], w: 3 },
       { q: "q203", any: [2, 3], w: 1 },
       { q: "q50", any: [0, 1, 2, 4], w: 1 },
@@ -274,6 +286,7 @@ var FEATURES = [
     nb: { title: "Opprinnelsesland og jurisdiksjon i verdikjeden", desc: "Viser hvilket land og hvilken jurisdiksjon data, komponenter og tjenester hører til langs kjeden." },
     en: { title: "Country of origin and jurisdiction along the chain", desc: "Shows which country and jurisdiction data, components and services belong to along the chain." },
     signals: [
+      { q: "q244", any: [1], w: 1 },
       { q: "q173", any: [0, 1], w: 3 },
       { q: "q173", any: [2], w: 1 },
       { q: "q172", any: [4], w: 1 },
@@ -294,6 +307,7 @@ var FEATURES = [
     nb: { title: "Drift uten nett og synkronisering", desc: "Lokale noder og lesere fortsetter når forbindelsen er borte, og synkroniserer uten konflikter når den kommer tilbake." },
     en: { title: "Offline operation and synchronisation", desc: "Local nodes and readers keep working when the connection is down, and synchronise without conflicts when it returns." },
     signals: [
+      { q: "q243", any: [6], w: 2 },
       { q: "q152", scale: 4, w: 2 },
       { q: "q136", any: [4], w: 1 },
       { q: "q192", any: [3], w: 1 },
@@ -304,6 +318,7 @@ var FEATURES = [
     nb: { title: "Personvernbevarende beregning", desc: "Analyse på tvers av virksomheter uten å flytte rådata: føderert læring, differensielt personvern eller sikre enklaver." },
     en: { title: "Privacy-preserving computation", desc: "Analysis across organisations without moving raw data: federated learning, differential privacy or secure enclaves." },
     signals: [
+      { q: "q244", any: [6], w: 1 },
       { q: "q163", any: [7], w: 2 },
       { q: "q157", any: [6], w: 1 },
       { q: "q65", any: [9, 10], w: 1 },
@@ -418,6 +433,7 @@ var FEATURES = [
     nb: { title: "Plattformens eget energi- og klimaregnskap", desc: "Måler og viser plattformens og agentenes energibruk, kjører tung beregning når strømmen er ren, og setter energibudsjett." },
     en: { title: "The platform's own energy and carbon accounting", desc: "Measures and shows the energy use of the platform and its agents, runs heavy computation when power is clean, and sets energy budgets." },
     signals: [
+      { q: "q244", any: [3], w: 2 },
       { q: "q177", scale: 4, w: 2 },
       { q: "q178", any: [1, 8, 9, 10], w: 1 },
       { q: "q178", count: 3, of: [0,1,2,3,4,5,6,7,8,9,10,11,12,13], w: 1 },
@@ -493,6 +509,7 @@ var FEATURES = [
     nb: { title: "Innsyn i modeller og algoritmer", desc: "Forklaring av enkeltbeslutninger, modellkort og mulighet til å teste med egne data før bruk." },
     en: { title: "Transparency of models and algorithms", desc: "Explanations of individual decisions, model cards, and the ability to test with one's own data before use." },
     signals: [
+      { q: "q244", any: [2], w: 2 },
       { q: "q174", scale: 4, w: 2 },
       { q: "q176", any: [0, 3, 4, 5], w: 1 },
       { q: "q59", any: [4], w: 1 },
@@ -590,20 +607,34 @@ function featureSignalMet(sig, a) {
   return false;
 }
 
-function featurePriority(score) {
-  return score >= 4 ? "must" : score >= 2 ? "should" : score >= 1 ? "could" : "none";
+/* Which questions are asked in the current question set. With the lean set some
+   signals have no question behind them; thresholds then scale to what can still be
+   reached, so a feature is not held back only because fewer questions were asked. */
+var FEATURE_ACTIVE = null;
+function setActiveQuestions(ids) {
+  FEATURE_ACTIVE = {};
+  ids.forEach(function (id) { FEATURE_ACTIVE[id] = true; });
+}
+function signalActive(s) { return !FEATURE_ACTIVE || !!FEATURE_ACTIVE[s.q]; }
+
+function featurePriority(score, reach) {
+  var must = Math.max(2, Math.min(4, reach == null ? 4 : reach));
+  var should = must >= 3 ? 2 : 1;
+  return score >= must ? "must" : score >= should ? "should" : score >= 1 ? "could" : "none";
 }
 
 /* get(qid) -> { sel: [indices], val: number|null }. */
 function evalFeatures(get) {
   return FEATURES.map(function (f) {
-    var met = [], against = [], open = [], score = 0;
+    var met = [], against = [], open = [], score = 0, reach = 0;
     f.signals.forEach(function (s) {
+      if (!signalActive(s)) return;
+      if (s.w > 0) reach += s.w;
       var ok = featureSignalMet(s, get(s.q) || { sel: [], val: null });
       if (ok) { score += s.w; (s.w > 0 ? met : against).push(s); }
       else if (s.w > 0) open.push(s);
     });
-    return { feature: f, score: score, priority: featurePriority(score), met: met, against: against, open: open };
+    return { feature: f, score: score, reach: reach, priority: featurePriority(score, reach), met: met, against: against, open: open };
   });
 }
 

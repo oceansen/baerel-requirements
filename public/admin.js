@@ -279,6 +279,8 @@
     }
     main.appendChild(head);
 
+    main.appendChild(questionSetPanel());
+
     if (!state.companies.length) {
       main.appendChild(el("p", { class: "co-empty", text: "No companies yet." }));
       return;
@@ -288,10 +290,30 @@
     main.appendChild(list);
   }
 
+  /* Which question set the companies see. Switching only changes what is shown:
+     answers to questions outside the lean set are kept and come back with the full set. */
+  function questionSetPanel() {
+    var box = el("section", { class: "panel qset" });
+    box.appendChild(el("p", { class: "eyebrow", text: "Question set" }));
+    var seg = el("div", { class: "seg", role: "group", "aria-label": "Question set" });
+    [["full", "Full — 207 questions, 21 sections"], ["lean", "Lean — 50 questions, 5 sections"]].forEach(function (o) {
+      seg.appendChild(el("button", { type: "button", "aria-pressed": String(state.questionSet === o[0]), text: o[1], onclick: function () {
+        if (state.questionSet === o[0]) return;
+        api("POST", "/api/admin/settings", { question_set: o[0] }).then(function (d) { state.questionSet = d.question_set; render(); });
+      } }));
+    });
+    box.appendChild(seg);
+    box.appendChild(el("p", { class: "co-meta", style: "margin-top:10px", text:
+      "Applies to every company the next time they open or reload their page. Switching never deletes anything: answers to questions outside the lean set are kept and reappear with the full set. Analysis follows the same setting." }));
+    return box;
+  }
+
   function render() { if (boot.authed) renderConsole(); else renderLogin(); }
 
   if (boot.authed) {
-    api("GET", "/api/admin/companies").then(function (d) { state.companies = d.companies; render(); });
+    Promise.all([api("GET", "/api/admin/companies"), api("GET", "/api/admin/settings")]).then(function (r) {
+      state.companies = r[0].companies; state.questionSet = r[1].question_set; render();
+    });
   } else {
     render();
   }

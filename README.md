@@ -8,6 +8,25 @@ The Bærel **self-reported requirements specification** for a circular-electroni
 4. Anyone at the company opens the site, types the code and lands on the company's specification. Case, spaces and dashes don't matter; O is read as 0 and I/L as 1.
 5. The admin can **Generate new code** (the old code stops working at once and every open session is signed out), **Revoke access**, **Close / Reopen for changes**, open **Analysis**, download the JSON, and list, download or restore **Versions**.
 
+## Question sets: full or lean
+
+The admin console has a **Question set** switch:
+
+- **Full.** 207 questions in 21 sections. This is the default.
+- **Lean.** 50 questions in 5 sections: needs, scenarios and data; data model, trust and sovereignty; product passport, footprint and LCA; AI, automation and operations; cost, the future and priorities.
+
+`public/questions-lean.js` builds the lean set from the full bank:
+
+- 44 questions are reused exactly (same id and options), so their answers carry over both ways.
+- Two are new merges: q243 (critical platform properties) and q244 (concerns).
+- Four free-text questions get a broader wording.
+
+Switching takes effect when a company opens or reloads its page. It never deletes anything: answers to questions outside the lean set stay stored and reappear with the full set.
+
+In the lean set, platform-feature thresholds scale to the signals that are still asked, and features with no question behind them are hidden.
+
+The state before this option was added is kept on the branch `restore/full-207`.
+
 ## One living specification per company
 
 There is one version of the questionnaire: the full specification, 207 questions in 21 sections. No question is mandatory, and the work can be split between several people at the company, since they all edit the same document.

@@ -101,6 +101,18 @@ assert.equal(p3.status, 200); assert.equal(p3.data.version, 2); ok("retry on the
 const p4 = await call("PUT", "/api/s/spec", { response: spec(40, { q1: "Sustainability", q79: "Data silos", q80: "Contracts" }), base_updated_at: p3.data.updated_at, snapshot: "manual" }, A);
 assert.equal(p4.data.version, 3);
 
+/* ---- question set switch */
+assert.equal((await call("GET", "/api/admin/settings")).data.question_set, "full");
+assert.match((await call("GET", "/spec", undefined, A)).data, /"questionSet":"full"/);
+assert.equal((await call("POST", "/api/admin/settings", { question_set: "tiny" })).status, 422);
+assert.equal((await call("POST", "/api/admin/settings", { question_set: "lean" }, A)).status, 401);
+assert.equal((await call("POST", "/api/admin/settings", { question_set: "lean" })).data.question_set, "lean");
+assert.match((await call("GET", "/spec", undefined, A)).data, /"questionSet":"lean"/);
+const keep = (await call("GET", "/api/s/spec", undefined, A)).data;
+assert.equal((await call("POST", "/api/admin/settings", { question_set: "full" })).data.question_set, "full");
+assert.equal((await call("GET", "/api/s/spec", undefined, A)).data.updated_at, keep.updated_at);
+ok("question set: admin-only switch full ↔ lean, reaches the page, leaves the specification untouched");
+
 /* ---- versions and restore */
 const vl = await call("GET", "/api/s/versions", undefined, A);
 assert.deepEqual(vl.data.versions.map((v) => v.n), [3, 2, 1]);

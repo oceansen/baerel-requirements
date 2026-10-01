@@ -15,6 +15,8 @@
   })();
   var WS = BOOT.mode === "spec" && BOOT.company ? BOOT : null;
   var ADMIN = BOOT.mode === "admin-analysis" ? BOOT : null;
+  // The admin chooses the question set (full or lean); the lean set is built from the full bank.
+  var LEAN = typeof applyQuestionSet === "function" && applyQuestionSet(SURVEY, BOOT.questionSet);
 
   var SCHEMA = "baerel-circular-electronics-requirements";
   var SCHEMA_VERSION = 1;
@@ -363,6 +365,8 @@
   SURVEY.sections.forEach(function (s) {
     s.questions.forEach(function (q) { q._section = s.id; ALL_Q.push(q); Q_BY_ID[q.id] = q; });
   });
+  if (typeof setActiveQuestions === "function") setActiveQuestions(ALL_Q.map(function (q) { return q.id; }));
+  if (LEAN) ["nb", "en"].forEach(function (l) { T[l].minutesRange = LEAN_SET.minutes[l]; });
 
   /* Normalised access to an answer, for the opportunity rules. */
   function localGet(qid) {
@@ -1225,6 +1229,7 @@
       body += "<h2>" + esc(T0.modeFeatures) + "</h2><p>" + esc(T0.featLede) + "</p>";
       body += "<h3>" + esc(T0.featProfile) + "</h3><table>" + PLATFORM_PROFILE.map(function (p) {
         var labs = answerLabels(p.q, localGet);
+        if (!Q_BY_ID[p.q]) return "";
         return "<tr><td>" + esc(p[lang]) + "</td><td>" + esc(labs.length ? labs.join(" · ") : T0.featNotAnswered) + "</td></tr>";
       }).join("") + "</table>";
       ["must", "should", "could"].forEach(function (pr) {
@@ -3023,6 +3028,7 @@
 
     var conf = [];
     (f.detail || []).forEach(function (qid) {
+      if (!Q_BY_ID[qid]) return;
       var labs = answerLabels(qid, get);
       if (labs.length) conf.push({ q: Q_BY_ID[qid], labs: labs });
     });
@@ -3065,6 +3071,7 @@
     var tbl = el("table", { class: "profile" });
     var tb = el("tbody");
     PLATFORM_PROFILE.forEach(function (p) {
+      if (!Q_BY_ID[p.q]) return;
       var labs = answerLabels(p.q, get);
       tb.appendChild(el("tr", {}, [
         el("th", { text: p[state.lang] }),
@@ -3077,7 +3084,8 @@
   }
 
   function sortedFeatures(get) {
-    return evalFeatures(get).sort(function (a, b) {
+    // Features with no question behind them in this question set are left out.
+    return evalFeatures(get).filter(function (r) { return r.reach > 0; }).sort(function (a, b) {
       return (PRIORITY[a.priority].rank - PRIORITY[b.priority].rank) || (b.score - a.score);
     });
   }
@@ -3590,6 +3598,8 @@
   /* ---------------------------------------------------------------- render */
 
   function render() {
+    // A saved position may come from the other question set (or an older version).
+    if (!(state.section >= 0 && state.section < SURVEY.sections.length)) state.section = 0;
     hideTip();
     renderTopbar();
     app.textContent = "";

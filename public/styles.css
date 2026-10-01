@@ -924,3 +924,7 @@ table.profile td:last-child { width: 1%; white-space: nowrap; font-size: 12.5px;
   .brand b { font-size: 14px; line-height: 1.3; }
   .topbar .seg button { padding-left: 8px; padding-right: 8px; font-size: 12px; }
 }
+
+.qset { margin-top: 14px; padding-top: 18px; padding-bottom: 18px; }
+.qset .seg { margin-top: 8px; flex-wrap: wrap; border-radius: 12px; }
+.qset .seg button { padding: 7px 14px; }

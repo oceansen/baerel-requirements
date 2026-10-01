@@ -128,6 +128,12 @@ const SESSION_SECRET = process.env.SESSION_SECRET || (() => {
 })();
 
 const now = () => new Date().toISOString();
+
+/* Which question set companies see: "full" (every question) or "lean" (50). Chosen by
+   the admin; switching never deletes answers, it only changes what is shown. */
+const getSetting = (k, d) => { const r = db.prepare("SELECT value FROM settings WHERE key = ?").get(k); return r ? r.value : d; };
+const setSetting = (k, v) => db.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(k, v);
+const questionSet = () => (getSetting("question_set", "full") === "lean" ? "lean" : "full");
 const rand = (bytes) => crypto.randomBytes(bytes).toString("base64url");
 const sha256 = (s) => crypto.createHash("sha256").update(s).digest("hex");
 
@@ -760,7 +766,7 @@ async function handle(req, res) {
   if (m === "GET" && (p === "/spec" || p === "/spec/")) {
     const co = companySession(req);
     if (!co) { send(res, 302, "", { Location: "/", "Cache-Control": "no-store" }); return; }
-    return page(res, "index.html", { mode: "spec", company: co });
+    return page(res, "index.html", { mode: "spec", company: co, questionSet: questionSet() });
   }
 
   /* ---------- specification API (company session) ---------- */
@@ -861,7 +867,7 @@ async function handle(req, res) {
   if (m === "GET" && p === "/admin/analysis") {
     if (!isAdmin(req)) { send(res, 302, "", { Location: "/admin" }); return; }
     const company = url.searchParams.get("company") || "";
-    return page(res, "index.html", { mode: "admin-analysis", company });
+    return page(res, "index.html", { mode: "admin-analysis", company, questionSet: questionSet() });
   }
 
   if (m === "POST" && p === "/api/admin/login") {
@@ -883,6 +889,20 @@ async function handle(req, res) {
   /* ---------- admin API ---------- */
   if (p.startsWith("/api/admin/")) {
     if (!isAdmin(req)) return fail(res, 401, "unauthorised", "Log in first.");
+
+    if (p === "/api/admin/settings") {
+      if (m === "GET") return json(res, 200, { question_set: questionSet() });
+      if (m === "POST") {
+        let body;
+        try { body = await readJson(req); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
+        const v = body.question_set;
+        if (v !== "full" && v !== "lean") return fail(res, 422, "bad_value", "question_set must be full or lean.");
+        setSetting("question_set", v);
+        audit(null, "settings.question_set", v);
+        return json(res, 200, { question_set: v });
+      }
+      return fail(res, 405, "method_not_allowed", "");
+    }
 
     if (m === "GET" && p === "/api/admin/companies") {
       return json(res, 200, { companies: q.listCompanies.all().map((r) => companyView(req, r)) });
