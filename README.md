@@ -10,7 +10,7 @@ The Bærel **self-reported requirements specification** for a circular-electroni
 
 ## One living specification per company
 
-There is one version of the questionnaire: the full specification, 194 questions in 20 sections. No question is mandatory, and the work can be split between several people at the company, since they all edit the same document.
+There is one version of the questionnaire: the full specification, 207 questions in 21 sections. No question is mandatory, and the work can be split between several people at the company, since they all edit the same document.
 
 
 - **Shared document.** Everyone with the code works in the same specification. It saves to the server about five seconds after each change, and a working copy is kept in the browser.
@@ -31,7 +31,7 @@ On first start the server migrates the database in place:
 
 ## Platform features derived from the answers
 
-The questions do more than collect opinions: they decide which features the data platform must have. `public/features.js` holds a catalogue of 46 features in seven areas (ingestion and integration, data model and storage, trust and governance, product passport and compliance, sustainability, AI and agents, operations and sharing). Each feature lists the answers that argue for it, with a weight:
+The questions do more than collect opinions: they decide which features the data platform must have. `public/features.js` holds a catalogue of 48 features in seven areas (ingestion and integration, data model and storage, trust and governance, product passport and compliance, sustainability, AI and agents, operations and sharing). Each feature lists the answers that argue for it, with a weight:
 
 - **any** — one of the listed options is selected
 - **scale** — rated at or above a threshold
@@ -45,9 +45,21 @@ Negative weights argue against a feature; for example, "no agent access at all" 
 
 To tune the derivation, edit the weights in `features.js`.
 
+## Life cycle assessment (LCA)
+
+Section 7, **Livsløpsvurdering (LCA)**, follows the carbon-footprint section and asks what the platform must do to support LCA in the circular electronics value chain, referring to the standards that apply in Norway and Europe:
+
+- **Practice and modelling.** Current LCA practice, and who should model once the platform runs.
+- **Rules.** Product category rules and supporting standards: EN 50693, ITU-T L.1410 / ETSI ES 203 199, PEFCR, EPD-Norge PCR, ISO 14071, ISO/TS 14048, ISO 14046, ISO 59020, EN 45552–45559, EN 50625 / EN 50614.
+- **Model choices.** System boundaries and multiple life cycles; allocation for reuse and recycling (including PEF's Circular Footprint Formula); background data such as ecoinvent, EF 3.1 and EPDs; the Norwegian electricity mix (location-based, residual mix after guarantees of origin, market-based); impact categories beyond climate.
+- **Exchange and traceability.** Exchange formats (ILCD, ecoSpold2, openLCA, PACT, digital EPDs); what must be stored for results to be reproducible; automatic recalculation.
+- **Labels and claims.** Ecolabels, claim rules and procurement requirements: Nordic Swan Ecolabel, EU Ecolabel, TCO Certified, EPEAT, Norwegian procurement regulation § 7-9, the Consumer Authority's guidance on sustainability claims, and Directive (EU) 2024/825.
+
+Every standard has a glossary entry with a source link. The answers feed two features, **LCA engine with traceable models** and **LCA data exchange and background databases**, and the platform profile gains allocation and electricity mix.
+
 ## Sample data
 
-Section 3 of the specification, **Eksempeldata / Sample data**, lets the organisation add one card per dataset. Each card records:
+Section 3, **Eksempeldata / Sample data**, lets the organisation add one card per dataset. Each card records:
 
 - whether the data is **available today** or **desired**
 - name, description, source system, format and volume

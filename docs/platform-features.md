@@ -1,6 +1,6 @@
 # Platform feature catalogue
 
-Generated from `public/features.js`. The Bærel requirements specification derives the data platform’s features from each organisation’s answers. Each signal that is met adds its weight; the total sets the priority: **≥ 4 must have**, **≥ 2 should have**, **≥ 1 could have**, otherwise not indicated. Negative weights argue against a feature. “Shaped by” lists questions whose selected options configure the feature (e.g. which systems the connectors must reach).
+Generated from `public/features.js`. The Bærel requirements specification derives the data platform’s features from each organisation’s answers. Each signal that is met adds its weight; the total sets the priority: **≥ 4 must have**, **≥ 2 should have**, **≥ 1 could have**, otherwise not indicated. Negative weights argue against a feature. “Shaped by” lists questions whose selected options configure the feature.
 
 ## Platform profile
 
@@ -20,6 +20,8 @@ Parameters read directly from single answers:
 - **Who operates the passports** — q188: Who should store and operate your product passports?
 - **Signing** — q196: How should data in the passport be signed and verified?
 - **Deviation in the middle of the night** — q147: What should happen when something unexpected occurs at three in the morning?
+- **Allocation for reuse and recycling** — q233: How should burdens and benefits of reuse and recycling be shared between life cycles (allocation)?
+- **Electricity mix in LCA** — q235: Which electricity mix should be used for production and use in Norway?
 - **Open source** — q208: What is your stance on open source in the platform?
 - **Route to the platform** — q210: What is the right route to such a platform for you?
 - **Budget per year** — q198: What could the organisation realistically spend per year to take part in such a platform — licences, operations and integration combined?
@@ -134,6 +136,7 @@ Links products, components, materials, organisations and events, so cross-chain 
 | q25 | Which identifiers should link information across the lifecycle and across organisations? | ≥ 3 selected | +1 |
 | q41 | Which existing standards or information models should the platform build on? | any of “W3C semantic web standards (RDF, OWL, SHACL, JSON-LD)” | +1 |
 | q73 | Which area should receive the highest priority? | any of “Data model and semantics”, “Digital thread and traceability” | +1 |
+| q232 | Which system boundaries and life cycles must the LCA models on the platform be able to handle? | any of “Several life cycles for the same unit — a new assessment at each reuse or refurbishment”, “Components harvested and fed into other products” | +1 |
 
 ### Versioned, time-aware history (`temporal`)
 
@@ -284,6 +287,7 @@ Every value shows where it came from, who produced it, and whether it was measur
 | q60 | How important is it that agent-generated or inferred data is clearly distinguishable from measured, verified o… | rated ≥ 4 | +2 |
 | q11 | Which data-quality problems do you experience most often? | any of “Difficult-to-trace data origin” | +1 |
 | q224 | What must be in place for you to trust a model that changes itself? | any of “Traceability: which model version and which data a result is based on” | +1 |
+| q238 | What must the platform keep for an LCA result to be verifiable and reproducible later? | any of “Model version and calculation software”, “Background database and version”, “Characterisation method and version (e.g. EF 3.1, IPCC AR6)”, “Share of primary versus secondary data” | +1 |
 
 ### Data-quality rules and quality gates (`quality`)
 
@@ -433,8 +437,9 @@ Calculates and carries the carbon footprint at product, batch or serial-number l
 | q118 | Which footprint methods or standards do you use, or expect to have to use? | any of “ISO 14067 / GHG Protocol Product Standard (PCF)”, “PACT- or Catena-X-style PCF data exchange” | +1 |
 | q55 | Which AI-supported capabilities would create the most value for your organisation? | any of “Estimating carbon, energy and material footprints” | +1 |
 | q73 | Which area should receive the highest priority? | any of “Sustainability and carbon footprint” | +1 |
+| q235 | Which electricity mix should be used for production and use in Norway? | any of “Residual mix after the sale of guarantees of origin (NVE’s electricity disclosure)”, “Market-based — with guarantees of origin or power purchase agreements (PPA)”, “Both location- and market-based, reported separately” | +1 |
 
-Shaped by: q114, q118, q125
+Shaped by: q114, q118, q125, q235
 
 ### Verifiable sustainability claims (`claims`)
 
@@ -446,6 +451,9 @@ Footprint and recycled-content claims can be audited: basis, method and who has 
 | q47 | If some form of tamper-evidence is needed, which data would justify it? | any of “Carbon, energy and footprint claims”, “Recycled-content claims” | +1 |
 | q122 | Which sustainability decisions should the platform actively support? | any of “Substantiating recycled-content and footprint claims to customers” | +1 |
 | q127 | Which of these developments do you consider plausible by 2035? | any of “A scandal over falsified sustainability data destroys trust in such claims” | +1 |
+| q241 | Which ecolabels, claim rules and procurement requirements must the LCA data be able to substantiate? | ≥ 1 selected (of listed options) | +1 |
+
+Shaped by: q241
 
 ### Decision support for circular choices (`decisions`)
 
@@ -458,6 +466,36 @@ Compares designs, suppliers and repair versus replacement on footprint and cost,
 | q55 | Which AI-supported capabilities would create the most value for your organisation? | any of “Recommending repair, reuse, remanufacture or recycle for a given item” | +1 |
 
 Shaped by: q122
+
+### LCA engine with traceable models (`lca`)
+
+Life cycle assessments under ISO 14040/14044 and product category rules such as EN 50693 or PEFCR, calculated from the platform's data and recalculated when the basis changes — with model, database, method and data quality stored with every result.
+
+| Q | Question | Condition | Weight |
+|---|---|---|---|
+| q230 | How are life cycle assessments (LCA) carried out in your organisation today? | any of “Integrated in design and product development (PLM)”, “Continuously and partly automated from production and operating data” | +2 |
+| q239 | How important is it that LCA results are recalculated automatically when the basis changes — new bill of mater… | rated ≥ 4 | +2 |
+| q240 | Who should do the LCA modelling once the platform is running? | any of “The platform — automatic calculation from templates for the product category”, “Each supplier calculates its contribution, and the platform assembles it along the chain” | +2 |
+| q238 | What must the platform keep for an LCA result to be verifiable and reproducible later? | ≥ 3 selected | +1 |
+| q232 | Which system boundaries and life cycles must the LCA models on the platform be able to handle? | any of “Use phase calculated from actual usage data, not standard scenarios”, “Actual end-of-life route (reuse, refurbishment, material recycling, energy recovery)”, “Several life cycles for the same unit — a new assessment at each reuse or refurbishment” | +1 |
+| q231 | Which product category rules and supporting standards must the platform be able to follow — in addition to the… | any of “EN 50693 — product category rules for LCA of electrical and electronic products”, “ITU-T L.1410 / ETSI ES 203 199 — LCA of ICT equipment and services”, “PEFCR — product category rules under PEF for our product group” | +1 |
+| q118 | Which footprint methods or standards do you use, or expect to have to use? | any of “ISO 14040/14044 life cycle assessment”, “PEF — Product Environmental Footprint” | +1 |
+
+Shaped by: q231, q232, q236
+
+### LCA data exchange and background databases (`lcadata`)
+
+Import and export in ILCD, ecoSpold2, the openLCA schema and digital EPDs, with connections to licensed background databases and suppliers' own data.
+
+| Q | Question | Condition | Weight |
+|---|---|---|---|
+| q237 | In which formats must LCA data be exchanged? | ≥ 1 selected (of listed options) | +2 |
+| q234 | Which background data must the platform be able to use — with the licences that requires? | any of “ecoinvent”, “Sphera databases (LCA for Experts / GaBi)”, “EF 3.1 datasets from the EU Life Cycle Data Network” | +1 |
+| q234 | Which background data must the platform be able to use — with the licences that requires? | any of “EPDs from EPD-Norge and other programme operators”, “Suppliers’ own PCF and EPD data” | +1 |
+| q231 | Which product category rules and supporting standards must the platform be able to follow — in addition to the… | any of “PCR from EPD-Norge or The International EPD System”, “ISO/TS 14048 — documentation format for LCA data” | +1 |
+| q120 | What makes footprint accounting difficult for you today? | any of “Data arrives as PDFs that cannot be processed automatically” | +1 |
+
+Shaped by: q237, q234
 
 ### The platform's own energy and carbon accounting (`greenops`)
 

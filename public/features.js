@@ -120,7 +120,8 @@ var FEATURES = [
       { q: "q28", scale: 4, w: 2 },
       { q: "q25", count: 3, w: 1 },
       { q: "q41", any: [7], w: 1 },
-      { q: "q73", any: [2, 3], w: 1 }
+      { q: "q73", any: [2, 3], w: 1 },
+      { q: "q232", any: [5, 6], w: 1 }
     ] },
   { id: "temporal", area: "model",
     nb: { title: "Versjonert og tidsbevisst historikk", desc: "Ingenting overskrives i stillhet: rettelser lagres som nye fakta, og man kan spørre hva man visste om et produkt på et gitt tidspunkt." },
@@ -240,7 +241,8 @@ var FEATURES = [
       { q: "q14", scale: 4, w: 2 },
       { q: "q60", scale: 4, w: 2 },
       { q: "q11", any: [7], w: 1 },
-      { q: "q224", any: [1], w: 1 }
+      { q: "q224", any: [1], w: 1 },
+      { q: "q238", any: [0, 1, 2, 5], w: 1 }
     ] },
   { id: "quality", area: "trust",
     nb: { title: "Datakvalitetsregler og kvalitetsporter", desc: "Regler som sjekker fullstendighet, gyldighet og konsistens ved innlasting, og som stopper eller merker data som ikke holder mål." },
@@ -361,9 +363,10 @@ var FEATURES = [
       { q: "q116", scale: 4, w: 1 },
       { q: "q118", any: [1, 5], w: 1 },
       { q: "q55", any: [4], w: 1 },
-      { q: "q73", any: [8], w: 1 }
+      { q: "q73", any: [8], w: 1 },
+      { q: "q235", any: [1, 2, 5], w: 1 }
     ],
-    detail: ["q114", "q118", "q125"] },
+    detail: ["q114", "q118", "q125", "q235"] },
   { id: "claims", area: "green",
     nb: { title: "Etterprøvbare bærekraftspåstander", desc: "Påstander om klimaavtrykk og resirkulert innhold kan revideres: grunnlag, metode og hvem som har bekreftet dem." },
     en: { title: "Verifiable sustainability claims", desc: "Footprint and recycled-content claims can be audited: basis, method and who has assured them." },
@@ -371,8 +374,10 @@ var FEATURES = [
       { q: "q121", scale: 4, w: 2 },
       { q: "q47", any: [4, 5], w: 1 },
       { q: "q122", any: [3], w: 1 },
-      { q: "q127", any: [8], w: 1 }
-    ] },
+      { q: "q127", any: [8], w: 1 },
+      { q: "q241", count: 1, of: [0, 1, 2, 3, 4, 5, 6], w: 1 }
+    ],
+    detail: ["q241"] },
   { id: "decisions", area: "green",
     nb: { title: "Beslutningsstøtte for sirkulære valg", desc: "Sammenligner design, leverandører og reparasjon mot utskifting på fotavtrykk og kostnad, og finner de største utslippspunktene." },
     en: { title: "Decision support for circular choices", desc: "Compares designs, suppliers and repair versus replacement on footprint and cost, and finds the largest emission hotspots." },
@@ -382,6 +387,30 @@ var FEATURES = [
       { q: "q55", any: [8], w: 1 }
     ],
     detail: ["q122"] },
+  { id: "lca", area: "green",
+    nb: { title: "LCA-motor med sporbare modeller", desc: "Livsløpsvurderinger etter ISO 14040/14044 og produktkategoriregler som EN 50693 eller PEFCR, beregnet fra plattformens data og regnet om når grunnlaget endres – med modell, database, metode og datakvalitet lagret ved hvert resultat." },
+    en: { title: "LCA engine with traceable models", desc: "Life cycle assessments under ISO 14040/14044 and product category rules such as EN 50693 or PEFCR, calculated from the platform's data and recalculated when the basis changes — with model, database, method and data quality stored with every result." },
+    signals: [
+      { q: "q230", any: [3, 4], w: 2 },
+      { q: "q239", scale: 4, w: 2 },
+      { q: "q240", any: [2, 3], w: 2 },
+      { q: "q238", count: 3, w: 1 },
+      { q: "q232", any: [3, 4, 5], w: 1 },
+      { q: "q231", any: [0, 1, 2], w: 1 },
+      { q: "q118", any: [0, 3], w: 1 }
+    ],
+    detail: ["q231", "q232", "q236"] },
+  { id: "lcadata", area: "green",
+    nb: { title: "Utveksling av LCA-data og bakgrunnsdatabaser", desc: "Import og eksport i ILCD, ecoSpold2, openLCA-skjema og digitale EPD-er, med kobling til lisensierte bakgrunnsdatabaser og leverandørenes egne data." },
+    en: { title: "LCA data exchange and background databases", desc: "Import and export in ILCD, ecoSpold2, the openLCA schema and digital EPDs, with connections to licensed background databases and suppliers' own data." },
+    signals: [
+      { q: "q237", count: 1, of: [0, 1, 2, 3, 4], w: 2 },
+      { q: "q234", any: [0, 1, 2], w: 1 },
+      { q: "q234", any: [3, 4], w: 1 },
+      { q: "q231", any: [3, 5], w: 1 },
+      { q: "q120", any: [1], w: 1 }
+    ],
+    detail: ["q237", "q234"] },
   { id: "greenops", area: "green",
     nb: { title: "Plattformens eget energi- og klimaregnskap", desc: "Måler og viser plattformens og agentenes energibruk, kjører tung beregning når strømmen er ren, og setter energibudsjett." },
     en: { title: "The platform's own energy and carbon accounting", desc: "Measures and shows the energy use of the platform and its agents, runs heavy computation when power is clean, and sets energy budgets." },
@@ -540,6 +569,8 @@ var PLATFORM_PROFILE = [
   { q: "q188", nb: "Hvem drifter produktpassene", en: "Who operates the passports" },
   { q: "q196", nb: "Signering", en: "Signing" },
   { q: "q147", nb: "Avvik midt på natten", en: "Deviation in the middle of the night" },
+  { q: "q233", nb: "Allokering ved ombruk og gjenvinning", en: "Allocation for reuse and recycling" },
+  { q: "q235", nb: "Strømmiks i LCA", en: "Electricity mix in LCA" },
   { q: "q208", nb: "Åpen kildekode", en: "Open source" },
   { q: "q210", nb: "Vei til plattformen", en: "Route to the platform" },
   { q: "q198", nb: "Budsjett per år", en: "Budget per year" },
