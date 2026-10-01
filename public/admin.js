@@ -42,6 +42,12 @@
     catch (e) { return iso.slice(0, 10); }
   }
 
+  function fmtBytes(n) {
+    if (!n) return "0 B";
+    if (n < 1048576) return Math.max(1, Math.round(n / 1024)) + " kB";
+    return (n / 1048576).toFixed(1) + " MB";
+  }
+
   function flash(btn, text) {
     var old = btn.textContent;
     btn.textContent = text;
@@ -166,6 +172,7 @@
     ];
     var meta = c.id + " · created " + fmtDate(c.created_at) + " · " +
       (c.spec_updated_at ? c.spec_completion + "% complete · last change " + fmtTime(c.spec_updated_at) + " · " + c.version_count + (c.version_count === 1 ? " version" : " versions") : "not started") +
+      (c.sample_files ? " · " + c.sample_files + (c.sample_files === 1 ? " sample file" : " sample files") + " (" + fmtBytes(c.sample_bytes) + ")" : "") +
       (c.code_generations > 1 ? " · code generation " + c.code_generations : "");
 
     var verBox = el("div");
@@ -181,6 +188,7 @@
           downloadJson("baerel-kravspesifikasjon-" + c.slug + "-" + new Date().toISOString().slice(0, 10) + ".json", d.responses[0] || {});
         });
       } }) : null,
+      c.sample_files ? el("a", { class: "btn ghost", href: "/api/admin/companies/" + c.id + "/samples.zip", text: "Sample data (ZIP)" }) : null,
       c.version_count ? el("button", { class: "btn ghost", type: "button", text: "Versions", onclick: function (e) {
         var btn = e.currentTarget;
         if (verBox.childNodes.length) { verBox.textContent = ""; btn.textContent = "Versions"; return; }

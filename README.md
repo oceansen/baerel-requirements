@@ -26,6 +26,40 @@ On first start the server migrates the database in place:
 - Each company's specification is seeded from its most recently changed interview, as version 1 (`migrated`), with interviewer and interviewee names removed.
 - Older interviews stay in the database untouched, but are no longer shown.
 
+## Platform features derived from the answers
+
+The questions do more than collect opinions: they decide which features the data platform must have. `public/features.js` holds a catalogue of 46 features in seven areas (ingestion and integration, data model and storage, trust and governance, product passport and compliance, sustainability, AI and agents, operations and sharing). Each feature lists the answers that argue for it, with a weight:
+
+- **any** — one of the listed options is selected
+- **scale** — rated at or above a threshold
+- **count** — at least *n* options selected
+
+Negative weights argue against a feature; for example, "no agent access at all" counts against the agent interface. The sum gives the priority: ≥ 4 **must have**, ≥ 2 **should have**, ≥ 1 **could have**, otherwise not indicated.
+
+- **Plattformfunksjoner / Platform features** (tab in the top bar) shows every feature with its priority and the exact answers behind it. Each answer links back to its question. The view also shows options that configure the feature (e.g. which systems the connectors must reach) and a **platform profile**: latency, volume, retention, hosting, jurisdiction, agent autonomy, passport granularity, budget and so on.
+- **Under every question** a line says which features the answer shapes, and links to them.
+- The feature list goes into the JSON (`platform_features`), the readable HTML document, and the summary page. The admin analysis counts, across organisations, how many have each feature as must or should.
+
+To tune the derivation, edit the weights in `features.js`.
+
+## Sample data
+
+Section 3, **Eksempeldata / Sample data**, lets the organisation add one card per dataset. Each card records:
+
+- whether the data is **available today** or **desired**
+- name, description, source system, format and volume
+- what kind of data it is: synthetic, anonymised, real but not sensitive, or sensitive
+- which usage scenario it supports
+- the files themselves
+
+A follow-up question asks what the project may use the samples for.
+
+- **Files.** Up to 25 MB each (`MAX_SAMPLE_MB`), and 300 MB / 500 files per company (`MAX_SAMPLE_MB_PER_COMPANY`, `MAX_SAMPLE_FILES_PER_COMPANY`). Files are stored in the database per company and readable only with that company's code session or by the admin.
+- **Accepted types.** Only an allowlist of data, document, image, CAD and archive extensions. Executables are refused by their content, whatever they are called. Files are always served as downloads (`application/octet-stream`, `attachment`, CSP `sandbox`), never rendered.
+- **Sensitive data.** Choosing "sensitive" removes the upload button for that sample, so it can only be described.
+- **Feeding the features.** The formats of the samples count towards the platform features. For example, PDF samples argue for document extraction and sensor logs for a time-series store.
+- **Admin download.** **Sample data (ZIP)** on the company card downloads every file in the company's specification, one folder per sample, with a `samples.json` manifest.
+
 ## Scenario images
 
 Each usage scenario can carry up to six images, each with an optional caption. The browser downscales them to 1600 px JPEG before upload, so a 5 MB phone photo is stored at roughly 150–300 KB. The server accepts only real JPEG, PNG or WebP files (checked by their magic bytes, never SVG). Images are stored in the database and can be read only with the owning company's code session or by the admin. Limits per company: `MAX_IMAGES_PER_COMPANY` (2000) and `MAX_IMAGE_MB_PER_COMPANY` (600). Exported documents and JSON files embed the images, so they work without the server.
@@ -36,7 +70,7 @@ Requires Node 22.5 or later. There are no npm dependencies: it uses `node:http` 
 
 ```sh
 ADMIN_PASSWORD='at-least-12-characters' PUBLIC_URL=https://requirements.example.com npm start
-npm test        # 31 end-to-end checks against a throwaway database
+npm test        # 35 end-to-end checks against a throwaway database
 ```
 
 Docker: `docker build -t baerel . && docker run -p 8080:8080 -v baerel-data:/data -e ADMIN_PASSWORD=… -e PUBLIC_URL=… baerel`
@@ -81,7 +115,8 @@ Run it behind TLS (Caddy, nginx or the platform's proxy). The access code and th
 server.js            routes, database schema, auth, validation
 public/access.html   code-entry page (public/access.js)
 public/index.html    specification shell; the server injects boot data (mode, company)
-public/app.js        the specification: sync and merge, versions and restore, export, analysis
+public/app.js        the specification: sync and merge, versions and restore, features view, sample data, export, analysis
+public/features.js   feature catalogue, weights and platform profile — how answers become platform features
 public/admin.js      admin console
 public/styles.css    survey styles plus workspace/admin additions
 test/smoke.mjs       lifecycle test

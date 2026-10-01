@@ -149,6 +149,44 @@ assert.equal(subs.data.responses.length, 1); assert.equal(subs.data.responses[0]
   ok("images: only real images; isolated per company; other company's code sees nothing of ours");
 }
 
+/* ---- sample data files */
+{
+  const upS = async (cookie, name, body) => { const r = await fetch(`${BASE}/api/s/samples`, { method: "POST", headers: { cookie, "x-file-name": encodeURIComponent(name), "content-type": "application/octet-stream" }, body }); return { status: r.status, data: await r.json().catch(() => ({})) }; };
+  const csv = Buffer.from("serial,repair,date\nA123,battery,2026-01-02\n");
+  const f1 = await upS(A, "Reparasjonslogg ø.csv", csv);
+  assert.equal(f1.status, 201); assert.match(f1.data.id, /^smp_/); assert.equal(f1.data.name, "Reparasjonslogg ø.csv");
+  assert.equal((await upS(A, "../../etc/evil.csv", csv)).data.name, "evil.csv");
+  assert.equal((await upS(A, "tool.exe", Buffer.from("MZ...."))).status, 415);
+  assert.equal((await upS(A, "renamed.csv", Buffer.from([0x4d, 0x5a, 0x90, 0x00]))).status, 415);
+  assert.equal((await upS(A, "page.html", Buffer.from("<script>alert(1)</script>"))).status, 415);
+  assert.equal((await upS(A, "noext", csv)).status, 415);
+  assert.equal((await upS("", "a.csv", csv)).status, 401);
+  ok("sample upload: listed types only, executables refused by content, names cleaned, needs a session");
+  const dlS = await fetch(`${BASE}/api/s/samples/${f1.data.id}`, { headers: { cookie: B } });
+  assert.equal(dlS.status, 200); assert.equal(dlS.headers.get("content-type"), "application/octet-stream");
+  assert.match(dlS.headers.get("content-disposition"), /^attachment; filename=.*filename\*=UTF-8''Reparasjonslogg%20%C3%B8\.csv$/);
+  assert.match(dlS.headers.get("content-security-policy"), /sandbox/);
+  assert.equal(Buffer.from(await dlS.arrayBuffer()).toString(), csv.toString()); ok("sample download: always an attachment, sandboxed, byte-exact");
+  const cur = (await call("GET", "/api/s/spec", undefined, A)).data;
+  const withSamples = spec(40, { q1: "Sustainability", q79: "Data silos", q80: "Contracts" });
+  withSamples.answers.push({ id: "q228", type: "samples", selected: [0], samples: [{ status: "available", title: "Repair log", format: 0, files: [{ id: f1.data.id, name: f1.data.name, size: f1.data.size }] }, { status: "desired", title: "Field telemetry", format: 8, files: [] }] });
+  assert.equal((await call("PUT", "/api/s/spec", { response: withSamples, base_updated_at: cur.updated_at }, A)).status, 200);
+  const z = await fetch(`${BASE}/api/admin/companies/${co.id}/samples.zip`, { headers: { cookie: admin } });
+  assert.equal(z.status, 200); assert.equal(z.headers.get("content-type"), "application/zip");
+  const zb = Buffer.from(await z.arrayBuffer());
+  assert.equal(zb.readUInt32LE(0), 0x04034b50);
+  const zs = zb.toString("latin1");
+  assert.ok(zs.includes("samples.json")); assert.ok(zs.includes("01-repair-log/")); assert.ok(zs.includes("serial,repair,date"));
+  assert.ok(zs.includes("Field telemetry"));
+  assert.equal((await fetch(`${BASE}/api/admin/companies/${co.id}/samples.zip`)).status, 401);
+  const cv = (await call("GET", "/api/admin/companies")).data.companies.find((x) => x.id === co.id);
+  assert.equal(cv.sample_files, 2);
+  ok("admin: ZIP with one folder per sample plus a manifest; file counts on the company");
+  const other2 = (await call("POST", "/api/admin/companies", { name: "Third Co" })).data.company;
+  const T3 = (await signIn(other2.code)).cookie;
+  assert.equal((await fetch(`${BASE}/api/s/samples/${f1.data.id}`, { headers: { cookie: T3 } })).status, 404); ok("sample files isolated per company");
+}
+
 /* ---- close, rotate, revoke */
 assert.equal((await call("POST", `/api/admin/companies/${co.id}/close`, {})).data.company.submissions_open, false);
 assert.equal((await call("PUT", "/api/s/spec", { response: spec(50), base_updated_at: null }, A)).status, 423);

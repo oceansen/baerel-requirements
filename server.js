@@ -104,6 +104,17 @@ db.exec(`
     created_at    TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS attachments_company ON attachments(company_id);
+  -- Sample data files uploaded in the specification's sample-data section.
+  CREATE TABLE IF NOT EXISTS sample_files (
+    id            TEXT PRIMARY KEY,
+    company_id    TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    filename      TEXT NOT NULL,
+    size          INTEGER NOT NULL,
+    sha256        TEXT NOT NULL,
+    bytes         BLOB NOT NULL,
+    created_at    TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS sample_files_company ON sample_files(company_id);
 `);
 
 /* Session-signing secret: env if given, otherwise generated once and kept in the
@@ -177,7 +188,9 @@ const q = {
       s.updated_at AS spec_updated_at, s.completion AS spec_completion,
       (SELECT COUNT(*) FROM submission_versions v WHERE v.submission_id = 'spec_' || c.id) AS version_count,
       (SELECT token FROM links l WHERE l.company_id = c.id AND l.revoked_at IS NULL ORDER BY created_at DESC LIMIT 1) AS code,
-      (SELECT COUNT(*) FROM links l WHERE l.company_id = c.id) AS code_generations
+      (SELECT COUNT(*) FROM links l WHERE l.company_id = c.id) AS code_generations,
+      (SELECT COUNT(*) FROM sample_files f WHERE f.company_id = c.id) AS sample_files,
+      (SELECT COALESCE(SUM(size), 0) FROM sample_files f WHERE f.company_id = c.id) AS sample_bytes
     FROM companies c LEFT JOIN submissions s ON s.id = 'spec_' || c.id
     ORDER BY c.created_at DESC`),
   spec: db.prepare("SELECT * FROM submissions WHERE id = ?"),
@@ -194,7 +207,10 @@ const q = {
   versionGet: db.prepare("SELECT * FROM submission_versions WHERE submission_id = ? AND n = ?"),
   insertAtt: db.prepare("INSERT INTO attachments (id, company_id, content_type, size, bytes, created_at) VALUES (?, ?, ?, ?, ?, ?)"),
   getAtt: db.prepare("SELECT * FROM attachments WHERE id = ?"),
-  attStats: db.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(size), 0) AS bytes FROM attachments WHERE company_id = ?")
+  attStats: db.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(size), 0) AS bytes FROM attachments WHERE company_id = ?"),
+  insertSample: db.prepare("INSERT INTO sample_files (id, company_id, filename, size, sha256, bytes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"),
+  getSample: db.prepare("SELECT * FROM sample_files WHERE id = ?"),
+  sampleStats: db.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(size), 0) AS bytes FROM sample_files WHERE company_id = ?")
 };
 
 function tx(fn) {
@@ -377,6 +393,96 @@ function sendImage(res, a) {
   res.end(Buffer.from(a.bytes));
 }
 
+/* Sample data files. Anything a data example might reasonably be — tables, documents,
+   images, CAD, archives — but never something a browser or OS would run: the
+   extension must be on the list, executables are refused by their magic bytes, and
+   files are only ever served as downloads (application/octet-stream, attachment). */
+const MAX_SAMPLE = Number(process.env.MAX_SAMPLE_MB || 25) * 1024 * 1024;
+const MAX_SAMPLE_FILES_PER_COMPANY = Number(process.env.MAX_SAMPLE_FILES_PER_COMPANY || 500);
+const MAX_SAMPLE_BYTES_PER_COMPANY = Number(process.env.MAX_SAMPLE_MB_PER_COMPANY || 300) * 1024 * 1024;
+const SAMPLE_EXT = new Set(("csv tsv txt json jsonl ndjson xml yaml yml xlsx xls ods parquet avro feather arrow sql md log " +
+  "pdf docx odt pptx png jpg jpeg webp gif tif tiff bmp heic mp4 mov webm avi mp3 wav " +
+  "step stp iges igs stl obj 3mf dxf dwg glb gltf ply e57 las laz " +
+  "aml aasx owl ttl rdf jsonld nq nt h5 hdf5 mat zip gz tgz 7z").split(" "));
+
+function cleanFilename(raw) {
+  let n = "";
+  try { n = decodeURIComponent(String(raw || "")); } catch (e) { n = String(raw || ""); }
+  n = n.split(/[\\/]/).pop().replace(/[\u0000-\u001f\u007f"<>|:*?]/g, "").replace(/\s+/g, " ").trim();
+  if (n.length > 140) { const dot = n.lastIndexOf("."); n = n.slice(0, 120) + (dot > 0 ? n.slice(dot).slice(0, 12) : ""); }
+  return n;
+}
+
+function readSample(req) {
+  return new Promise((resolve, reject) => {
+    // A custom header cannot be sent cross-site without a CORS preflight, which this server never grants.
+    const name = cleanFilename(req.headers["x-file-name"]);
+    const ext = (name.match(/\.([a-z0-9]+)$/i) || [])[1];
+    if (!name || !ext || !SAMPLE_EXT.has(ext.toLowerCase())) return reject(Object.assign(new Error("This file type is not accepted."), { status: 415 }));
+    let size = 0;
+    const chunks = [];
+    req.on("data", (c) => {
+      size += c.length;
+      if (size > MAX_SAMPLE) { reject(Object.assign(new Error("File too large."), { status: 413 })); req.destroy(); return; }
+      chunks.push(c);
+    });
+    req.on("end", () => {
+      const b = Buffer.concat(chunks);
+      if (!b.length) return reject(Object.assign(new Error("Empty file."), { status: 400 }));
+      const h = b.subarray(0, 4);
+      const exe = (h[0] === 0x4d && h[1] === 0x5a) || h.equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46])) ||
+        (h[0] === 0x23 && h[1] === 0x21) || h.equals(Buffer.from([0xca, 0xfe, 0xba, 0xbe])) ||
+        h.equals(Buffer.from([0xcf, 0xfa, 0xed, 0xfe])) || h.equals(Buffer.from([0xfe, 0xed, 0xfa, 0xcf]));
+      if (exe) return reject(Object.assign(new Error("Executable files are not accepted."), { status: 415 }));
+      resolve({ name, bytes: b });
+    });
+    req.on("error", reject);
+  });
+}
+
+function sendSample(res, f) {
+  const ascii = f.filename.replace(/[^\x20-\x7e]/g, "_").replace(/["\\]/g, "_");
+  res.writeHead(200, Object.assign({}, SECURITY_HEADERS, {
+    "Content-Type": "application/octet-stream",
+    "Content-Length": f.size,
+    "Content-Disposition": 'attachment; filename="' + ascii + '"; filename*=UTF-8\'\'' + encodeURIComponent(f.filename),
+    "Content-Security-Policy": "sandbox; default-src 'none'",
+    "Cache-Control": "private, no-store"
+  }));
+  res.end(Buffer.from(f.bytes));
+}
+
+/* Minimal ZIP writer (stored, no compression) — enough to hand the admin every
+   sample file of a company in one download without adding a dependency. */
+const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(buf) { let c = 0xffffffff; for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+function zip(entries) {
+  const d = new Date();
+  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  const locals = [], centrals = [];
+  let offset = 0;
+  for (const e of entries) {
+    const name = Buffer.from(e.name, "utf8"), data = e.data, crc = crc32(data);
+    const lh = Buffer.alloc(30);
+    lh.writeUInt32LE(0x04034b50, 0); lh.writeUInt16LE(20, 4); lh.writeUInt16LE(0x0800, 6); lh.writeUInt16LE(0, 8);
+    lh.writeUInt16LE(time, 10); lh.writeUInt16LE(date, 12); lh.writeUInt32LE(crc, 14);
+    lh.writeUInt32LE(data.length, 18); lh.writeUInt32LE(data.length, 22); lh.writeUInt16LE(name.length, 26); lh.writeUInt16LE(0, 28);
+    const ch = Buffer.alloc(46);
+    ch.writeUInt32LE(0x02014b50, 0); ch.writeUInt16LE(20, 4); ch.writeUInt16LE(20, 6); ch.writeUInt16LE(0x0800, 8); ch.writeUInt16LE(0, 10);
+    ch.writeUInt16LE(time, 12); ch.writeUInt16LE(date, 14); ch.writeUInt32LE(crc, 16);
+    ch.writeUInt32LE(data.length, 20); ch.writeUInt32LE(data.length, 24); ch.writeUInt16LE(name.length, 28);
+    ch.writeUInt32LE(offset, 42);
+    locals.push(lh, name, data); centrals.push(ch, name);
+    offset += 30 + name.length + data.length;
+  }
+  const cd = Buffer.concat(centrals);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(entries.length, 8); end.writeUInt16LE(entries.length, 10);
+  end.writeUInt32LE(cd.length, 12); end.writeUInt32LE(offset, 16);
+  return Buffer.concat(locals.concat([cd, end]));
+}
+
 function parseCookies(req) {
   const out = {};
   (req.headers.cookie || "").split(";").forEach((p) => {
@@ -519,7 +625,9 @@ function companyView(req, row) {
     access_url: baseUrl(req) + "/",
     spec_updated_at: row.spec_updated_at || null,
     spec_completion: row.spec_updated_at ? row.spec_completion : null,
-    version_count: row.version_count || 0
+    version_count: row.version_count || 0,
+    sample_files: row.sample_files || 0,
+    sample_bytes: row.sample_bytes || 0
   };
 }
 
@@ -700,6 +808,28 @@ async function handle(req, res) {
       return fail(res, 405, "method_not_allowed", "");
     }
 
+    if ((mm = p.match(/^\/api\/s\/samples(?:\/(smp_[A-Za-z0-9_-]+))?$/))) {
+      if (m === "GET" && mm[1]) {
+        const f = q.getSample.get(mm[1]);
+        if (!f || f.company_id !== co.id) return fail(res, 404, "not_found", "No such file.");
+        return sendSample(res, f);
+      }
+      if (m === "POST" && !mm[1]) {
+        if (!co.open) return fail(res, 423, "closed", "The specification is closed for changes.");
+        if (limited("smp:" + co.id + ":" + clientIp(req), 200, 10 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many uploads — wait a few minutes.");
+        const st = q.sampleStats.get(co.id);
+        if (st.n >= MAX_SAMPLE_FILES_PER_COMPANY || st.bytes >= MAX_SAMPLE_BYTES_PER_COMPANY) return fail(res, 409, "full", "This specification has reached its storage limit for sample data.");
+        let f;
+        try { f = await readSample(req); } catch (e) { return fail(res, e.status || 400, "bad_file", e.message); }
+        if (st.bytes + f.bytes.length > MAX_SAMPLE_BYTES_PER_COMPANY) return fail(res, 409, "full", "This specification has reached its storage limit for sample data.");
+        const fid = "smp_" + rand(12), hash = crypto.createHash("sha256").update(f.bytes).digest("hex");
+        q.insertSample.run(fid, co.id, f.name, f.bytes.length, hash, f.bytes, now());
+        audit(co.id, "sample.uploaded", f.name + " (" + f.bytes.length + " bytes)");
+        return json(res, 201, { id: fid, name: f.name, size: f.bytes.length, sha256: hash });
+      }
+      return fail(res, 405, "method_not_allowed", "");
+    }
+
     if ((mm = p.match(/^\/api\/s\/attachments(?:\/(img_[A-Za-z0-9_-]+))?$/))) {
       if (m === "GET" && mm[1]) {
         const a = q.getAtt.get(mm[1]);
@@ -819,6 +949,43 @@ async function handle(req, res) {
         }
       }
       return fail(res, 405, "method_not_allowed", "");
+    }
+
+    if (m === "GET" && (mm = p.match(/^\/api\/admin\/samples\/(smp_[A-Za-z0-9_-]+)$/))) {
+      const f = q.getSample.get(mm[1]);
+      if (!f) return fail(res, 404, "not_found", "No such file.");
+      return sendSample(res, f);
+    }
+
+    /* Every sample file in a company's current specification, one folder per sample,
+       with a manifest describing each sample. */
+    if (m === "GET" && (mm = p.match(/^\/api\/admin\/companies\/(co_[a-z0-9]+)\/samples\.zip$/))) {
+      const c = q.companyById.get(mm[1]);
+      if (!c) return fail(res, 404, "not_found", "No such company.");
+      const s = q.spec.get(specId(c.id));
+      let samples = [];
+      try { const rec = (JSON.parse(s.response).answers || []).find((a) => a.type === "samples"); samples = (rec && rec.samples) || []; } catch (e) {}
+      const entries = [], manifest = [], used = new Set();
+      samples.forEach((sm, i) => {
+        const folder = String(i + 1).padStart(2, "0") + "-" + (slugify(sm.title || "") || "sample");
+        const files = [];
+        (sm.files || []).forEach((fm) => {
+          const f = q.getSample.get(String(fm.id || ""));
+          if (!f || f.company_id !== c.id) return;
+          let name = folder + "/" + f.filename, k = 2;
+          while (used.has(name)) name = folder + "/" + k++ + "-" + f.filename;
+          used.add(name);
+          entries.push({ name, data: Buffer.from(f.bytes) });
+          files.push({ path: name, size: f.size, sha256: f.sha256 });
+        });
+        manifest.push(Object.assign({}, sm, { files }));
+      });
+      entries.unshift({ name: "samples.json", data: Buffer.from(JSON.stringify({ company: c.name, exported_at: now(), samples: manifest }, null, 2)) });
+      return send(res, 200, zip(entries), {
+        "Content-Type": "application/zip",
+        "Content-Disposition": 'attachment; filename="baerel-eksempeldata-' + c.slug + "-" + now().slice(0, 10) + '.zip"',
+        "Cache-Control": "no-store"
+      });
     }
 
     if (m === "GET" && (mm = p.match(/^\/api\/admin\/attachments\/(img_[A-Za-z0-9_-]+)$/))) {

@@ -80,6 +80,23 @@ const SURVEY = {
       ]
     },
     {
+      id: "s20",
+      nb: { title: "Eksempeldata", lead: "Vis oss dataene: last opp små utdrag av data dere har i dag, eller beskriv – gjerne med en skisse eller mal – data dere skulle ønske dere hadde. Eksemplene gjør kravene konkrete og brukes til å teste plattformen. Bruk syntetiske eller anonymiserte data; last aldri opp personopplysninger, gradert eller forretningssensitivt materiale." },
+      en: { title: "Sample data", lead: "Show us the data: upload small extracts of data you have today, or describe — ideally with a sketch or template — data you wish you had. The samples make the requirements concrete and are used to test the platform. Use synthetic or anonymised data; never upload personal data or classified or commercially sensitive material." },
+      questions: [
+        { id: "q228", core: true, t: "samples",
+          nb: { q: "Hvilke eksempler på data har dere – eller ønsker dere? Legg inn ett eksempel per datasett, med filer der dere har dem.",
+            o: ["Regneark eller CSV", "JSON", "XML (også AAS, AutomationML, EPCIS)", "PDF eller andre dokumenter", "Bilder eller video", "CAD- eller 3D-modeller", "Databaseuttrekk (SQL)", "API-svar eller meldingsstrøm", "Tidsserier eller sensorlogg", "Annet"] },
+          en: { q: "Which examples of data do you have — or wish you had? Add one example per dataset, with files where you have them.",
+            o: ["Spreadsheet or CSV", "JSON", "XML (incl. AAS, AutomationML, EPCIS)", "PDF or other documents", "Images or video", "CAD or 3D models", "Database extract (SQL)", "API response or message stream", "Time series or sensor log", "Other"] } },
+        { id: "q229", core: true, t: "single",
+          nb: { q: "Hva kan prosjektet bruke eksempeldataene dere laster opp til?",
+            o: ["Teste plattformen, også sammen med de andre partnerne i prosjektet", "Teste plattformen, men bare innenfor prosjektteamet", "Bare forstå dataene – ikke bruke dem i tester", "Må avklares internt først"] },
+          en: { q: "What may the project use the sample data you upload for?",
+            o: ["Testing the platform, also together with the other project partners", "Testing the platform, but only within the project team", "Only understanding the data — not using it in tests", "Needs to be cleared internally first"] } }
+      ]
+    },
+    {
       id: "s2",
       nb: { title: "Datasikkerhet, datakvalitet og forvaltning", lead: "Hva må være på plass før data kan deles og stoles på." },
       en: { title: "Data security, quality and governance", lead: "What has to be in place before data can be shared and trusted." },
