@@ -4,7 +4,7 @@
 
   var T = {
     nb: {
-      eyebrow: "Bærel · Egenrapportert kravspesifikasjon",
+      eyebrow: "Egenrapportert kravspesifikasjon",
       title: "Kravspesifikasjon for dataplattform for sirkulær elektronikk",
       lede: "Skriv inn tilgangskoden virksomheten din har fått fra Bærel-prosjektet. Koden gir tilgang til virksomhetens egen kravspesifikasjon, som alle med koden fyller ut og oppdaterer sammen.",
       label: "Tilgangskode",
@@ -18,7 +18,7 @@
       lang: "English"
     },
     en: {
-      eyebrow: "Bærel · Self-reported requirements specification",
+      eyebrow: "Self-reported requirements specification",
       title: "Requirements specification for a circular-electronics data platform",
       lede: "Enter the access code your organisation received from the Bærel project. It opens your organisation's own requirements specification, which everyone holding the code fills in and updates together.",
       label: "Access code",
@@ -49,6 +49,19 @@
     return n;
   }
 
+  function logo() {
+    var pic = document.createElement("picture");
+    pic.className = "logo logo-lg";
+    var src = document.createElement("source");
+    src.setAttribute("srcset", "/assets/logo-light.png");
+    src.setAttribute("media", "(prefers-color-scheme: dark)");
+    pic.appendChild(src);
+    var img = document.createElement("img");
+    img.src = "/assets/logo.png"; img.alt = "Bærel"; img.width = 171; img.height = 52;
+    pic.appendChild(img);
+    return pic;
+  }
+
   /* Show the code in groups of four while typing, without fighting the caret. */
   function group(v) {
     var s = v.toUpperCase().replace(/[^0-9A-Z]/g, "").slice(0, 16);
@@ -73,7 +86,8 @@
       render(input.value);
     });
     var form = el("form", { class: "panel hero access" }, [
-      el("div", { class: "access-top" }, [el("p", { class: "eyebrow", text: t.eyebrow }), langBtn]),
+      el("div", { class: "access-top" }, [logo(), langBtn]),
+      el("p", { class: "eyebrow", style: "margin-top:22px", text: t.eyebrow }),
       el("h1", { text: t.title }),
       el("p", { class: "lede", text: t.lede }),
       el("label", { for: "code", class: "eyebrow access-label", text: t.label }),

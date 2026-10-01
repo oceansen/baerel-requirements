@@ -1105,7 +1105,7 @@
     flushDraft();
     if (kind !== "csv") {
       // Pictures stored on the server are fetched once and embedded, so the file stands on its own.
-      imageDataMap().then(function (map) { finishExport(kind, map); });
+      Promise.all([imageDataMap(), logoData()]).then(function (r) { finishExport(kind, r[0]); });
       return;
     }
     finishExport(kind, {});
@@ -1255,9 +1255,10 @@
       ".val b{font:600 18px system-ui,sans-serif}.sc li{margin-bottom:8px}" +
       ".imgs{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 4px}figure{margin:0;max-width:48%}figure img{display:block;max-width:100%;max-height:300px;border:1px solid #d4ddd6;border-radius:3px}" +
       "figcaption{font:12.5px/1.4 system-ui,sans-serif;color:#42534e;margin-top:4px}" +
-      "footer{margin-top:40px;font:12px system-ui,sans-serif;color:#6d7f79}" +
+      "footer{margin-top:40px;font:12px system-ui,sans-serif;color:#6d7f79}img.logo{display:block;height:44px;width:auto;margin:0 0 22px}" +
       "@media print{body{background:#fff}main{padding:0}h2{break-after:avoid}.q{break-inside:avoid}}" +
       "</style></head><body><main>" +
+      (logoDataUrl ? "<img class=\"logo\" src=\"" + logoDataUrl + "\" alt=\"Bærel\">" : "") +
       "<p class=\"eyebrow\">Bærel · " + esc(T0.modeForm) + "</p><h1>" + esc(title) + "</h1>" +
       "<table>" + meta.map(function (m) { return "<tr><td>" + esc(m[0]) + "</td><td>" + esc(m[1]) + "</td></tr>"; }).join("") + "</table>" +
       body +
@@ -2258,6 +2259,25 @@
 
   /* ---------------------------------------------------------------- chrome */
 
+  /* The Bærel logo, with a lighter rendering for dark mode. */
+  function logoNode(cls) {
+    var pic = document.createElement("picture");
+    pic.className = "logo" + (cls ? " " + cls : "");
+    var src = document.createElement("source");
+    src.setAttribute("srcset", "/assets/logo-light.png");
+    src.setAttribute("media", "(prefers-color-scheme: dark)");
+    pic.appendChild(src);
+    pic.appendChild(el("img", { src: "/assets/logo.png", alt: "Bærel", width: "99", height: "30" }));
+    return pic;
+  }
+
+  var logoDataUrl = null;
+  function logoData() {
+    if (logoDataUrl !== null) return Promise.resolve(logoDataUrl);
+    return fetch("/assets/logo.png").then(function (r) { if (!r.ok) throw 0; return r.blob(); }).then(blobToDataUrl)
+      .then(function (d) { logoDataUrl = d; return d; })["catch"](function () { logoDataUrl = ""; return ""; });
+  }
+
   function renderTopbar() {
     var bar = document.getElementById("topbar-in");
     bar.textContent = "";
@@ -2265,7 +2285,8 @@
       class: "brand", type: "button", title: t("home"), "aria-label": t("home"),
       onclick: ADMIN ? function () { location.href = "/admin"; } : goHome
     }, [
-      el("span", { class: "eyebrow", text: WS ? WS.company.name : t("program") }),
+      logoNode(),
+      WS ? el("span", { class: "eyebrow", text: WS.company.name }) : null,
       el("b", { text: L(SURVEY.title) })
     ]));
 
