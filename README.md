@@ -10,6 +10,9 @@ The Bærel **self-reported requirements specification** for a circular-electroni
 
 ## One living specification per company
 
+There is one version of the questionnaire: the full specification, 194 questions in 20 sections. No question is mandatory, and the work can be split between several people at the company, since they all edit the same document.
+
+
 - **Shared document.** Everyone with the code works in the same specification. It saves to the server about five seconds after each change, and a working copy is kept in the browser.
 - **Simultaneous editing.** Every save carries the timestamp of the state it was based on. If someone else saved in between, the server answers `409` with its current state, and the browser merges question by question: what changed locally wins, everything else is taken from the server, then it saves again. Two people answering different questions at the same time both keep their answers. If both change the *same* question, the last save wins, and the other value is still in the version history.
 - **Versions.** The server keeps timestamped versions. It takes one on the first save, on every export, whenever someone clicks **Save a version now**, and automatically when the latest version is older than `VERSION_EVERY_MIN` minutes (default 15). The start page and the summary page list them, and any version can be downloaded.
@@ -44,7 +47,7 @@ To tune the derivation, edit the weights in `features.js`.
 
 ## Sample data
 
-Section 3, **Eksempeldata / Sample data**, lets the organisation add one card per dataset. Each card records:
+Section 3 of the specification, **Eksempeldata / Sample data**, lets the organisation add one card per dataset. Each card records:
 
 - whether the data is **available today** or **desired**
 - name, description, source system, format and volume

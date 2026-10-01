@@ -62,14 +62,7 @@
       badFile: "Kunne ikke lese filen", notSurvey: "Filen er ikke et svar fra denne undersøkelsen",
       dupe: "Allerede lagt inn", anonymous: "Anonym", noData: "Ingen svarfiler lagt inn ennå.",
       requiredNone: "Ingen spørsmål er obligatoriske – hopp over det som ikke er relevant.",
-      pathCoreTitle: "Kjernespørsmål", pathCoreBtn: "Start kjernespørsmål",
-      pathCoreBody: "Det vi trenger fra alle virksomheter. Du kan åpne fordypningen i hver enkelt seksjon underveis hvis temaet er ditt.",
-      pathFullTitle: "Full kartlegging", pathFullBtn: "Start full kartlegging",
-      pathFullBody: "Alt, inkludert datamodell og arkitektur, teknologivalg, bærekraftsdetaljer, egosentriske data og robotisering.",
-      deepLead: "Denne seksjonen har fordypningsspørsmål for dem som jobber med temaet til daglig.",
-      openDeep: "Vis {n} fordypningsspørsmål", closeDeep: "Skjul fordypningsspørsmålene",
-      scope: "Omfang", scopeCore: "Kjerne", scopeFull: "Full",
-      home: "Til forsiden", switchKeeps: "Du kan bytte omfang uten å miste svarene du allerede har gitt.",
+      home: "Til forsiden",
       modeOpps: "Muligheter",
       oppsTitle: "Hva kan dette bli?",
       oppsLede: "Svarene dine peker mot konkrete produkter og tjenester – dataprodukter, KI-tjenester, plattform- og driftstjenester – som blir mulige hvis valgene under er på plass. Listen oppdateres mens du fyller ut.",
@@ -78,8 +71,7 @@
       st_ready: "Klar", st_near: "Nær", st_far: "Ikke ennå",
       restsOn: "Hviler på svarene dine:", stillNeeds: "Forutsetninger:",
       oppsTop: "Dette åpner svarene dine for:", oppsSeeAll: "Se alle mulighetene",
-      oppsAgg: "Muligheter på tvers av respondentene", oppsAggLede: "Antall virksomheter der alle forutsetningene for hver mulighet er på plass.",
-      moreAvailable: "Du har svart på kjernespørsmålene.", switchFull: "Åpne alle spørsmålene"
+      oppsAgg: "Muligheter på tvers av respondentene", oppsAggLede: "Antall virksomheter der alle forutsetningene for hver mulighet er på plass."
     },
     en: {
       program: "Bærel", modeForm: "Survey", modeAnalyse: "Analysis",
@@ -117,14 +109,7 @@
       badFile: "Could not read the file", notSurvey: "That file is not a response to this survey",
       dupe: "Already loaded", anonymous: "Anonymous", noData: "No response files loaded yet.",
       requiredNone: "No question is mandatory — skip anything that is not relevant.",
-      pathCoreTitle: "Core questions", pathCoreBtn: "Start the core questions",
-      pathCoreBody: "What we need from every organisation. You can open the deeper track in any section as you go, if that subject is yours.",
-      pathFullTitle: "Full survey", pathFullBtn: "Start the full survey",
-      pathFullBody: "Everything, including data model and architecture, technology choices, sustainability detail, egocentric data and robotics.",
-      deepLead: "This section has deeper questions for people who work with the subject day to day.",
-      openDeep: "Show {n} deeper questions", closeDeep: "Hide the deeper questions",
-      scope: "Scope", scopeCore: "Core", scopeFull: "Full",
-      home: "Back to the start page", switchKeeps: "You can change scope without losing the answers you have already given.",
+      home: "Back to the start page",
       modeOpps: "Opportunities",
       oppsTitle: "What could this become?",
       oppsLede: "Your answers point at concrete products and services — data products, AI services, platform and operations services — that become possible once the choices below are in place. The list updates as you fill in the survey.",
@@ -134,7 +119,6 @@
       restsOn: "Rests on your answers:", stillNeeds: "Preconditions:",
       oppsTop: "What your answers open up:", oppsSeeAll: "See all the opportunities",
       oppsAgg: "Opportunities across respondents", oppsAggLede: "Number of organisations where every precondition for an opportunity is already in place.",
-      moreAvailable: "You have answered the core questions.", switchFull: "Open all the questions"
     }
   };
 
@@ -151,10 +135,6 @@
       requiredNone: "Ingen spørsmål er obligatoriske – hopp over det som ikke er relevant for virksomheten.",
       reviewTitle: "Oppsummering av kravspesifikasjonen",
       reviewLede: "Gå gjennom hva kravspesifikasjonen dekker, og eksporter svar og kommentarer som fil.",
-      pathCoreTitle: "Kjernespørsmål", pathCoreBtn: "Start med kjernespørsmålene",
-      pathCoreBody: "Det vi trenger fra alle virksomheter. Åpne fordypningen i en seksjon underveis når dere vil gå i dybden på et tema.",
-      pathFullTitle: "Full kravspesifikasjon", pathFullBtn: "Start full kravspesifikasjon",
-      pathFullBody: "Alle temaene, inkludert datamodell og arkitektur, teknologivalg, bærekraftsdetaljer, egosentriske data og robotisering. Egner seg godt til å fordele mellom flere fagpersoner.",
       analyseTitle: "Analyse av kravspesifikasjonene",
       analyseLede: "Legg inn kravspesifikasjonsfilene. Alt regnes ut lokalt i nettleseren – ingenting lastes opp.",
       responses: "kravspesifikasjoner", respondents: "Kravspesifikasjoner", noData: "Ingen kravspesifikasjoner lagt inn ennå.",
@@ -186,7 +166,9 @@
               outcome: "utfall – f.eks. enheten repareres i stedet for å kasseres" },
       scActors: ["designeren", "innkjøperen", "produksjonslederen", "kvalitetsingeniøren", "serviceteknikeren", "reparatøren", "ombruksaktøren", "gjenvinneren", "kunden", "sluttbrukeren", "myndigheten", "revisoren", "en KI-agent"],
       scSources: ["ERP-systemet", "PLM-systemet", "MES", "leverandøren", "produktpasset", "sensorer i produksjonen", "testutstyret", "servicesystemet", "kunden", "offentlige registre"],
-      minutesCore: "ca. 45–60", minutesFull: "90–120", minutesRange: "45–120",
+      minutesRange: "90–150",
+      startTitle: "Kravspesifikasjonen", startBtn: "Start kravspesifikasjonen",
+      startBody: "Alle temaene: virksomheten, bruksscenarioer og eksempeldata, sikkerhet og styring, livsløpsdata, bærekraft, datamodell, produktpass, teknologi og kostnad, KI og agenter, modeller, robotisering og fremtidsbilder. Ingen spørsmål er obligatoriske, og arbeidet kan gjerne fordeles mellom flere fagpersoner.",
       start: "Start", notSurvey: "Filen er ikke fra dette skjemaet",
       oppsLede: "Svarene peker mot konkrete produkter og tjenester – dataprodukter, KI-tjenester, plattform- og driftstjenester – som blir mulige hvis valgene under er på plass. Listen oppdateres etter hvert som kravspesifikasjonen fylles ut."
     },
@@ -198,10 +180,6 @@
       requiredNone: "No question is mandatory — skip anything that is not relevant to your organisation.",
       reviewTitle: "Specification summary",
       reviewLede: "Check what the specification covers, then export the answers and comments as a file.",
-      pathCoreTitle: "Core questions", pathCoreBtn: "Start with the core questions",
-      pathCoreBody: "What we need from every organisation. Open a section's deeper track whenever you want to go into depth on that subject.",
-      pathFullTitle: "Full specification", pathFullBtn: "Start the full specification",
-      pathFullBody: "Every subject, including data model and architecture, technology choices, sustainability detail, egocentric data and robotics. Works well split between several specialists.",
       analyseTitle: "Analysis of the specifications",
       analyseLede: "Load the specification files. Everything is computed locally in your browser — nothing is uploaded.",
       responses: "specifications", respondents: "Specifications", noData: "No specification files loaded yet.",
@@ -233,7 +211,9 @@
               outcome: "outcome — e.g. the unit is repaired instead of scrapped" },
       scActors: ["the designer", "the buyer", "the production manager", "the quality engineer", "the service technician", "the repair technician", "the refurbisher", "the recycler", "the customer", "the end user", "the authority", "the auditor", "an AI agent"],
       scSources: ["the ERP system", "the PLM system", "MES", "the supplier", "the product passport", "sensors in production", "test equipment", "the service system", "the customer", "public registers"],
-      minutesCore: "c. 45–60", minutesFull: "90–120", minutesRange: "45–120",
+      minutesRange: "90–150",
+      startTitle: "The specification", startBtn: "Start the specification",
+      startBody: "Every subject: the organisation, usage scenarios and sample data, security and governance, lifecycle data, sustainability, data model, product passports, technology and cost, AI and agents, models, robotics and future worlds. No question is mandatory, and the work can well be split between several specialists.",
       start: "Start", notSurvey: "That file is not from this form",
       oppsLede: "The answers point at concrete products and services — data products, AI services, platform and operations services — that become possible once the choices below are in place. The list updates as the specification is filled in."
     }
@@ -399,8 +379,8 @@
     lang: "nb",
     mode: "form",
     view: "start",
-    path: "core",      // "core" = the short path, "full" = every question
-    tracks: [],        // section ids opened out to full depth while on the core path
+    path: "full",      // kept for file compatibility: there is only the full specification
+    tracks: [],
     lastView: "form",
     section: 0,
     answers: {},
@@ -505,20 +485,8 @@
 
   /* ---------------------------------------------------------------- answers */
 
-  /* On the core path a section shows its core questions, plus everything if the
-     respondent has opened that section's deep track. */
-  function visibleQs(sec) {
-    if (state.path === "full" || state.tracks.indexOf(sec.id) > -1) return sec.questions;
-    return sec.questions.filter(function (q) { return q.core; });
-  }
-
-  function hiddenCount(sec) { return sec.questions.length - visibleQs(sec).length; }
-
-  function coreTotal() {
-    var n = 0;
-    SURVEY.sections.forEach(function (s) { n += s.questions.filter(function (q) { return q.core; }).length; });
-    return n;
-  }
+  /* One full specification: every section shows all its questions. */
+  function visibleQs(sec) { return sec.questions; }
 
   function isAnswered(q) {
     var a = state.answers[q.id];
@@ -836,13 +804,9 @@
     if (hadLocal) {
       state.answers = merge3(b.answers, state.answers, s.answers);
       state.notes = merge3(b.notes, state.notes, s.notes);
-      if (s.path === "full") state.path = "full";
-      s.tracks.forEach(function (x) { if (state.tracks.indexOf(x) === -1) state.tracks.push(x); });
     } else {
       state.answers = clone(s.answers);
       state.notes = clone(s.notes);
-      state.path = s.path;
-      state.tracks = s.tracks.slice();
     }
     saveBase({ updated_at: d.updated_at || null, answers: clone(s.answers), notes: clone(s.notes) });
     state.updatedAt = d.updated_at || state.updatedAt;
@@ -972,7 +936,6 @@
       return specFetch("POST", "versions/" + n + "/restore", {}).then(function (d) {
         var s = serverDraft(d.response);
         state.answers = clone(s.answers); state.notes = clone(s.notes);
-        state.path = s.path; state.tracks = s.tracks.slice();
         saveBase({ updated_at: d.updated_at, answers: clone(s.answers), notes: clone(s.notes) });
         state.updatedAt = d.updated_at;
         sync.version = d.version; sync.last = new Date(); sync.err = ""; sync.dirty = false;
@@ -1167,7 +1130,6 @@
     var meta = [
       [T0.org, resp.respondent.organisation || T0.anonymous],
       [T0.role + " (" + (lang === "nb" ? "bidragsytere" : "contributors") + ")", resp.respondent.role],
-      [T0.scope, state.path === "full" ? T0.scopeFull : T0.scopeCore],
       [T0.answered.charAt(0).toUpperCase() + T0.answered.slice(1), resp.answered_count + " / " + resp.asked_count + " (" + resp.completion + " %)"],
       [T0.lastChanged, state.updatedAt ? longStamp(new Date(state.updatedAt)) : ""],
       [T0.exportedAt, longStamp(when) + " · " + T0.versionWord + " " + state.exportSeq]
@@ -1325,8 +1287,6 @@
     var d = draftFromExport(obj);
     state.answers = d.answers || {};
     state.notes = d.notes || {};
-    state.path = d.path === "full" ? "full" : "core";
-    state.tracks = d.tracks || [];
     state.started = d.started || new Date().toISOString();
     state.updatedAt = d.updated_at || obj.updated_at || obj.exported_at || null;
     state.exportSeq = d.export_seq || obj.export_seq || 0;
@@ -2298,7 +2258,7 @@
     var side = el("aside", { class: "hero-side" });
     side.appendChild(el("ul", { class: "facts" }, [
       el("li", {}, [el("b", { class: "num", text: String(SURVEY.sections.length) }), el("span", { text: t("sections") })]),
-      el("li", {}, [el("b", { class: "num", text: String(coreTotal()) + "–" + String(ALL_Q.length) }), el("span", { text: t("questions") })]),
+      el("li", {}, [el("b", { class: "num", text: String(ALL_Q.length) }), el("span", { text: t("questions") })]),
       el("li", {}, [el("b", { class: "num", text: t("minutesRange") }), el("span", { text: t("estimate") + " (" + t("minutes") + ")" })])
     ]));
     side.appendChild(el("p", { class: "notice", text: SURVEY.notice[state.lang] }));
@@ -2306,9 +2266,7 @@
     if (WS) side.appendChild(el("p", { class: "notice calm", text: t("specPrivacy") }));
     hero.appendChild(el("div", { class: "hero-grid" }, [intro, side]));
 
-    function begin(path) {
-      state.path = path;
-      state.tracks = [];
+    function begin() {
       if (!state.started) state.started = new Date().toISOString();
       state.section = 0;
       state.view = "form";
@@ -2317,21 +2275,17 @@
       window.scrollTo(0, 0);
     }
 
-    var paths = el("div", { class: "paths" }, [
-      el("div", { class: "path-card" }, [
-        el("h3", { text: t("pathCoreTitle") }),
-        el("p", { class: "num", text: coreTotal() + " " + t("questions") + " · " + t("minutesCore") + " " + t("minutes") }),
-        el("p", { text: t("pathCoreBody") }),
-        el("button", { class: "btn primary", type: "button", text: t("pathCoreBtn"), onclick: function () { begin("core"); } })
-      ]),
-      el("div", { class: "path-card" }, [
-        el("h3", { text: t("pathFullTitle") }),
-        el("p", { class: "num", text: ALL_Q.length + " " + t("questions") + " · " + t("minutesFull") + " " + t("minutes") }),
-        el("p", { text: t("pathFullBody") }),
-        el("button", { class: "btn", type: "button", text: t("pathFullBtn"), onclick: function () { begin("full"); } })
-      ])
-    ]);
-    hero.appendChild(paths);
+    var hasAny = Object.keys(state.answers).length > 0 || (draft && Object.keys(draft.answers).length > 0);
+    if (!hasAny) {
+      hero.appendChild(el("div", { class: "paths" }, [
+        el("div", { class: "path-card" }, [
+          el("h3", { text: t("startTitle") }),
+          el("p", { class: "num", text: ALL_Q.length + " " + t("questions") + " · " + SURVEY.sections.length + " " + t("sections") + " · " + t("minutesRange") + " " + t("minutes") }),
+          el("p", { text: t("startBody") }),
+          el("button", { class: "btn primary", type: "button", text: t("startBtn"), onclick: begin })
+        ])
+      ]));
+    }
 
     var inMemory = Object.keys(state.answers).length > 0;
     var onDisk = draft && Object.keys(draft.answers).length > 0;
@@ -2348,8 +2302,6 @@
             state.notes = draft.notes || {};
             state.updatedAt = draft.updated_at || draft.saved_at || null;
             state.exportSeq = draft.export_seq || 0;
-            state.path = draft.path === "full" ? "full" : "core";
-            state.tracks = draft.tracks || [];
             state.section = draft.section || 0;
             state.started = draft.started || new Date().toISOString();
           }
@@ -2366,7 +2318,6 @@
         }
       }));
       hero.appendChild(row);
-      hero.appendChild(el("p", { class: "a-meta", style: "margin-top:10px", text: t("switchKeeps") }));
     }
 
     if (!WS || canWrite()) hero.appendChild(el("div", { class: "row", style: "margin-top:14px" }, [importControl()]));
@@ -2556,8 +2507,6 @@
     state.notes = {};
     state.updatedAt = null;
     state.exportSeq = 0;
-    state.path = "core";
-    state.tracks = [];
     state.section = 0;
     state.started = null;
     state.view = "start";
@@ -2623,32 +2572,6 @@
     shown.forEach(function (q, i) { list.appendChild(questionNode(q, start + i + 1)); });
     main.appendChild(list);
 
-    var hidden = hiddenCount(s);
-    var opened = state.tracks.indexOf(s.id) > -1;
-    if (hidden > 0 || opened) {
-      var track = el("div", { class: "track prose" });
-      if (hidden > 0) {
-        track.appendChild(el("p", { class: "track-lead", text: t("deepLead") }));
-        track.appendChild(el("button", {
-          class: "btn", type: "button",
-          text: t("openDeep").replace("{n}", String(hidden)),
-          onclick: function () {
-            state.tracks = state.tracks.concat([s.id]);
-            saveDraft(); render();
-          }
-        }));
-      } else {
-        track.appendChild(el("button", {
-          class: "btn ghost", type: "button", text: t("closeDeep"),
-          onclick: function () {
-            state.tracks = state.tracks.filter(function (x) { return x !== s.id; });
-            saveDraft(); render();
-          }
-        }));
-      }
-      main.appendChild(track);
-    }
-
     wrap.appendChild(main);
     app.appendChild(wrap);
 
@@ -2697,7 +2620,6 @@
 
     panel.appendChild(el("ul", { class: "facts" }, [
       el("li", {}, [el("b", { class: "num", text: p.done + "/" + p.total }), el("span", { text: t("answered") })]),
-      el("li", {}, [el("b", { text: state.path === "full" ? t("scopeFull") : t("scopeCore") }), el("span", { text: t("scope") })]),
       el("li", {}, [el("b", { class: "num", text: resp.completion + "%" }), el("span", { text: state.lang === "nb" ? "utfylt" : "complete" })]),
       el("li", {}, [el("b", { text: resp.respondent.organisation || t("anonymous") }), el("span", { text: t("org") })]),
       el("li", {}, [el("b", { class: "num", text: String(noteCount()) }), el("span", { text: t("notesCount") })]),
@@ -2764,17 +2686,6 @@
 
     var raw = el("textarea", { rows: "10", class: "hidden", id: "raw", readonly: "readonly", style: "margin-top:16px;font-size:12px" });
     raw.value = json;
-
-    if (state.path !== "full") {
-      panel.appendChild(el("p", { class: "notice calm" }, [
-        el("span", { text: t("moreAvailable") + " " }),
-        el("button", {
-          class: "btn ghost", type: "button", style: "font-size:13px;text-decoration:underline",
-          text: t("switchFull"),
-          onclick: function () { state.path = "full"; state.view = "form"; state.section = 0; saveDraft(); render(); window.scrollTo(0, 0); }
-        })
-      ]));
-    }
 
     if (WS) panel.appendChild(wsSubmitBox());
 
@@ -2934,7 +2845,6 @@
     if (!q) return;
     var idx = 0;
     SURVEY.sections.forEach(function (s, i) { if (s.id === q._section) idx = i; });
-    if (state.path !== "full" && !q.core && state.tracks.indexOf(q._section) === -1) state.tracks = state.tracks.concat([q._section]);
     if (!state.started) state.started = new Date().toISOString();
     state.mode = "form"; state.view = "form"; state.section = idx;
     saveDraft(); render();
@@ -3130,13 +3040,6 @@
     });
   }
 
-  function scopeLabel(r) {
-    if (!r.path) return t("scopeFull");
-    if (r.path === "full") return t("scopeFull");
-    var extra = (r.tracks && r.tracks.length) ? " +" + r.tracks.length : "";
-    return t("scopeCore") + extra;
-  }
-
   function filtered() {
     var sel = analysis.role;
     if (sel === undefined || sel === "" || sel === null) return analysis.responses;
@@ -3323,14 +3226,13 @@
     // respondents table
     var tbl = el("table", { class: "resp" });
     tbl.appendChild(el("thead", {}, [el("tr", {}, [
-      el("th", { text: t("org") }), el("th", { text: t("role") }), el("th", { text: t("scope") }), el("th", { text: t("complete") }), el("th", { text: t("when") })
+      el("th", { text: t("org") }), el("th", { text: t("role") }), el("th", { text: t("complete") }), el("th", { text: t("when") })
     ])]));
     var tb = el("tbody");
     rows.forEach(function (r) {
       tb.appendChild(el("tr", {}, [
         el("td", { text: (r.respondent && r.respondent.organisation) || t("anonymous") }),
         el("td", { text: (r.respondent && r.respondent.role) || "—" }),
-        el("td", { text: scopeLabel(r) }),
         el("td", { class: "num", text: (r.completion || 0) + "%" }),
         el("td", { class: "num", text: (r.exported_at || "").slice(0, 10) })
       ]));
@@ -3566,8 +3468,6 @@
     state.notes = boot.notes || {};
     state.updatedAt = boot.updated_at || boot.saved_at || null;
     state.exportSeq = boot.export_seq || 0;
-    state.path = boot.path === "full" ? "full" : "core";
-    state.tracks = boot.tracks && boot.tracks.length ? boot.tracks : [];
     state.section = boot.section || 0;
     state.started = boot.started || new Date().toISOString();
     state.view = boot.view === "review" ? "review" : "form";
