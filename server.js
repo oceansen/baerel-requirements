@@ -1,13 +1,15 @@
-/* Bærel requirements — company workspaces.
+/* Bærel requirements — one self-reported requirements specification per company.
  *
  * Zero-dependency Node (>= 22.5) server: node:http + node:sqlite.
  *
- *   Admin creates a company by name  ->  company id + secret token + private URL
- *   /c/<slug>/<token>                ->  the survey, bound to that company's workspace
- *   Admin can rotate/revoke the link and close/reopen submissions.
+ *   Admin creates a company by name  ->  company id + random secret access code
+ *   The company opens the site, types the code  ->  its own specification page
+ *   Admin can generate a new code (the old one stops working at once), revoke
+ *   access, and close/reopen the specification for changes.
  *
- * The token is the only credential a company contact holds. The slug is cosmetic:
- * a stale or wrong slug redirects to the canonical one, so renaming never breaks links.
+ * Each company has exactly one living specification. Every save goes to it; the
+ * server keeps timestamped versions, and any version can be restored. A restore
+ * never loses anything: the current state is saved as a version first.
  */
 "use strict";
 
@@ -26,8 +28,9 @@ const PUBLIC_URL = (process.env.PUBLIC_URL || "").replace(/\/+$/, ""); // e.g. h
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 const COOKIE_SECURE = process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === "1" : null; // null = infer
 const SESSION_HOURS = Number(process.env.SESSION_HOURS || 12);
+const CODE_SESSION_DAYS = Number(process.env.CODE_SESSION_DAYS || 14);
 const MAX_BODY = 1.5 * 1024 * 1024;
-const MAX_SUBMISSIONS_PER_COMPANY = Number(process.env.MAX_SUBMISSIONS_PER_COMPANY || 300);
+const MAX_VERSIONS_PER_COMPANY = Number(process.env.MAX_VERSIONS_PER_COMPANY || 2000);
 const SCHEMA = "baerel-circular-electronics-requirements";
 const PUB = path.join(__dirname, "public");
 
@@ -52,6 +55,7 @@ db.exec(`
     closed_at         TEXT
   );
   CREATE UNIQUE INDEX IF NOT EXISTS companies_name ON companies(lower(name));
+  -- Access codes. "token" holds the normalised code (16 Crockford base32 characters).
   CREATE TABLE IF NOT EXISTS links (
     token       TEXT PRIMARY KEY,
     company_id  TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -59,6 +63,8 @@ db.exec(`
     revoked_at  TEXT
   );
   CREATE INDEX IF NOT EXISTS links_company ON links(company_id);
+  -- The live specification is the row with id 'spec_<company id>'. Rows with other ids
+  -- are individual interviews from the earlier multi-interview version, kept untouched.
   CREATE TABLE IF NOT EXISTS submissions (
     id             TEXT PRIMARY KEY,
     company_id     TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -101,7 +107,7 @@ db.exec(`
 `);
 
 /* Session-signing secret: env if given, otherwise generated once and kept in the
-   database so a restart does not log the admin out. */
+   database so a restart does not sign anyone out. */
 const SESSION_SECRET = process.env.SESSION_SECRET || (() => {
   const row = db.prepare("SELECT value FROM settings WHERE key = 'session_secret'").get();
   if (row) return row.value;
@@ -123,8 +129,24 @@ function newCompanyId() {
   return s;
 }
 
-/* 32 random bytes -> 43-char base64url. 256 bits: not guessable, not enumerable. */
-const newToken = () => rand(32);
+/* Access codes: 16 characters of Crockford base32 = 80 random bits, shown as
+   XXXX-XXXX-XXXX-XXXX. The alphabet has no I, L, O or U, and input is forgiving:
+   case, spaces and dashes are ignored, O reads as 0 and I/L as 1. With guessing
+   limited to 10 tries per 15 minutes per address, 80 bits is far out of reach. */
+const CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+const CODE_RE = /^[0-9A-HJKMNP-TV-Z]{16}$/;
+function newCode() {
+  let s = "";
+  for (let i = 0; i < 16; i++) s += CODE_ALPHABET[crypto.randomInt(32)];
+  return s;
+}
+function normaliseCode(input) {
+  return String(input || "").toUpperCase().replace(/[\s\-–—_.]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
+}
+const formatCode = (c) => (c ? c.match(/.{1,4}/g).join("-") : null);
+const codeFingerprint = (c) => sha256("code:" + c).slice(0, 20);
+
+const specId = (companyId) => "spec_" + companyId;
 
 function slugify(name) {
   return String(name)
@@ -143,35 +165,36 @@ function audit(companyId, action, detail) {
 const q = {
   companyById: db.prepare("SELECT * FROM companies WHERE id = ?"),
   companyByName: db.prepare("SELECT id FROM companies WHERE lower(name) = lower(?)"),
+  allCompanyIds: db.prepare("SELECT id FROM companies"),
   insertCompany: db.prepare("INSERT INTO companies (id, name, slug, submissions_open, created_at) VALUES (?, ?, ?, 1, ?)"),
   setOpen: db.prepare("UPDATE companies SET submissions_open = ?, closed_at = ? WHERE id = ?"),
-  linkByToken: db.prepare("SELECT l.*, c.name, c.slug, c.submissions_open FROM links l JOIN companies c ON c.id = l.company_id WHERE l.token = ?"),
-  activeLink: db.prepare("SELECT * FROM links WHERE company_id = ? AND revoked_at IS NULL ORDER BY created_at DESC LIMIT 1"),
-  insertLink: db.prepare("INSERT INTO links (token, company_id, created_at) VALUES (?, ?, ?)"),
-  revokeLinks: db.prepare("UPDATE links SET revoked_at = ? WHERE company_id = ? AND revoked_at IS NULL"),
+  codeLookup: db.prepare("SELECT l.*, c.name, c.slug, c.submissions_open FROM links l JOIN companies c ON c.id = l.company_id WHERE l.token = ?"),
+  activeCode: db.prepare("SELECT * FROM links WHERE company_id = ? AND revoked_at IS NULL ORDER BY created_at DESC LIMIT 1"),
+  insertCode: db.prepare("INSERT INTO links (token, company_id, created_at) VALUES (?, ?, ?)"),
+  revokeCodes: db.prepare("UPDATE links SET revoked_at = ? WHERE company_id = ? AND revoked_at IS NULL"),
   listCompanies: db.prepare(`
     SELECT c.*,
-      (SELECT COUNT(*) FROM submissions s WHERE s.company_id = c.id) AS submission_count,
-      (SELECT MAX(updated_at) FROM submissions s WHERE s.company_id = c.id) AS last_submission_at,
-      (SELECT token FROM links l WHERE l.company_id = c.id AND l.revoked_at IS NULL ORDER BY created_at DESC LIMIT 1) AS token,
-      (SELECT COUNT(*) FROM links l WHERE l.company_id = c.id) AS link_generations
-    FROM companies c ORDER BY c.created_at DESC`),
-  contributions: db.prepare("SELECT id, role, completion, created_at, updated_at FROM submissions WHERE company_id = ? ORDER BY created_at ASC"),
-  countSubs: db.prepare("SELECT COUNT(*) AS n FROM submissions WHERE company_id = ?"),
-  subById: db.prepare("SELECT * FROM submissions WHERE id = ? AND company_id = ?"),
-  insertSub: db.prepare("INSERT INTO submissions (id, company_id, link_token, edit_key_hash, role, completion, response, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"),
-  updateSub: db.prepare("UPDATE submissions SET role = ?, completion = ?, response = ?, updated_at = ?, link_token = ? WHERE id = ?"),
-  subsForCompany: db.prepare("SELECT s.*, c.name AS company_name FROM submissions s JOIN companies c ON c.id = s.company_id WHERE s.company_id = ? ORDER BY s.created_at"),
-  allSubs: db.prepare("SELECT s.*, c.name AS company_name FROM submissions s JOIN companies c ON c.id = s.company_id ORDER BY c.name, s.created_at"),
+      s.updated_at AS spec_updated_at, s.completion AS spec_completion,
+      (SELECT COUNT(*) FROM submission_versions v WHERE v.submission_id = 'spec_' || c.id) AS version_count,
+      (SELECT token FROM links l WHERE l.company_id = c.id AND l.revoked_at IS NULL ORDER BY created_at DESC LIMIT 1) AS code,
+      (SELECT COUNT(*) FROM links l WHERE l.company_id = c.id) AS code_generations
+    FROM companies c LEFT JOIN submissions s ON s.id = 'spec_' || c.id
+    ORDER BY c.created_at DESC`),
+  spec: db.prepare("SELECT * FROM submissions WHERE id = ?"),
+  insertSpec: db.prepare("INSERT INTO submissions (id, company_id, link_token, edit_key_hash, role, completion, response, created_at, updated_at) VALUES (?, ?, '', '', ?, ?, ?, ?, ?)"),
+  updateSpec: db.prepare("UPDATE submissions SET role = ?, completion = ?, response = ?, updated_at = ? WHERE id = ?"),
+  latestLegacy: db.prepare("SELECT * FROM submissions WHERE company_id = ? AND id NOT LIKE 'spec\\_%' ESCAPE '\\' ORDER BY updated_at DESC LIMIT 1"),
+  specFor: db.prepare("SELECT s.*, c.name AS company_name FROM submissions s JOIN companies c ON c.id = s.company_id WHERE s.id = 'spec_' || ?"),
+  allSpecs: db.prepare("SELECT s.*, c.name AS company_name FROM submissions s JOIN companies c ON c.id = s.company_id WHERE s.id = 'spec_' || c.id ORDER BY c.name"),
   auditFor: db.prepare("SELECT at, action, detail FROM audit WHERE company_id = ? ORDER BY id DESC LIMIT 50"),
   lastVersion: db.prepare("SELECT n, saved_at FROM submission_versions WHERE submission_id = ? ORDER BY n DESC LIMIT 1"),
+  countVersions: db.prepare("SELECT COUNT(*) AS n FROM submission_versions WHERE submission_id = ?"),
   insertVersion: db.prepare("INSERT INTO submission_versions (submission_id, n, saved_at, reason, completion, response) VALUES (?, ?, ?, ?, ?, ?)"),
   versionsFor: db.prepare("SELECT n, saved_at, reason, completion FROM submission_versions WHERE submission_id = ? ORDER BY n DESC"),
-  versionGet: db.prepare("SELECT v.*, s.company_id FROM submission_versions v JOIN submissions s ON s.id = v.submission_id WHERE v.submission_id = ? AND v.n = ?"),
+  versionGet: db.prepare("SELECT * FROM submission_versions WHERE submission_id = ? AND n = ?"),
   insertAtt: db.prepare("INSERT INTO attachments (id, company_id, content_type, size, bytes, created_at) VALUES (?, ?, ?, ?, ?, ?)"),
   getAtt: db.prepare("SELECT * FROM attachments WHERE id = ?"),
-  attStats: db.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(size), 0) AS bytes FROM attachments WHERE company_id = ?"),
-  subsMeta: db.prepare("SELECT id, role, completion, created_at, updated_at, response FROM submissions WHERE company_id = ? ORDER BY created_at")
+  attStats: db.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(size), 0) AS bytes FROM attachments WHERE company_id = ?")
 };
 
 function tx(fn) {
@@ -179,6 +202,69 @@ function tx(fn) {
   try { const r = fn(); db.exec("COMMIT"); return r; }
   catch (e) { db.exec("ROLLBACK"); throw e; }
 }
+
+/* ------------------------------------------------------------------ versions
+
+   The spec row is the live document: an open page syncs into it a few seconds after
+   each change. Versions are timestamped snapshots of it — taken on the first save,
+   whenever someone exports or saves a version, before and after every restore, and
+   automatically when the latest snapshot is more than VERSION_EVERY_MIN minutes old. */
+
+const VERSION_EVERY_MIN = Number(process.env.VERSION_EVERY_MIN || 15);
+
+function snapshot(subId, respJson, completion, reason, t) {
+  const last = q.lastVersion.get(subId);
+  const n = last ? last.n + 1 : 1;
+  q.insertVersion.run(subId, n, t, reason, completion, respJson);
+  return n;
+}
+
+function maybeSnapshot(subId, respJson, completion, requested, t) {
+  const last = q.lastVersion.get(subId);
+  if (requested) return { n: snapshot(subId, respJson, completion, requested, t), taken: true };
+  if (!last || Date.parse(t) - Date.parse(last.saved_at) >= VERSION_EVERY_MIN * 60000) {
+    return { n: snapshot(subId, respJson, completion, last ? "auto" : "first", t), taken: true };
+  }
+  return { n: last.n, taken: false };
+}
+
+/* updated_at doubles as the edit base for conflict detection, so it must move
+   forward on every write even when two writes land in the same millisecond. */
+function nextStamp(prev) {
+  const t = Date.now();
+  const p = prev ? Date.parse(prev) : 0;
+  return new Date(Math.max(t, p + 1)).toISOString();
+}
+
+/* ------------------------------------------------------------------ migration
+   From the link-per-company, many-interviews version:
+   - a company whose active credential is an old URL token gets an access code
+     instead (the old link stops working; the admin shares the new code);
+   - a company without a spec gets one seeded from its most recently changed
+     interview, so nothing visible is lost. Old interviews stay in the database. */
+
+tx(() => {
+  for (const { id } of q.allCompanyIds.all()) {
+    const active = q.activeCode.get(id);
+    if (active && !CODE_RE.test(active.token)) {
+      q.revokeCodes.run(now(), id);
+      q.insertCode.run(newCode(), id, now());
+      audit(id, "code.migrated", "private link replaced by an access code");
+    }
+    if (!q.spec.get(specId(id))) {
+      const old = q.latestLegacy.get(id);
+      if (old) {
+        let r = {};
+        try { r = JSON.parse(old.response); } catch (e) {}
+        delete r.interview;
+        const json = JSON.stringify(r), t = now();
+        q.insertSpec.run(specId(id), id, old.role, old.completion, json, old.created_at, t);
+        snapshot(specId(id), json, old.completion, "migrated", t);
+        audit(id, "spec.migrated", "seeded from " + old.id);
+      }
+    }
+  }
+});
 
 /* ------------------------------------------------------------------ http helpers */
 
@@ -194,12 +280,8 @@ function isHttps(req) {
   return (req.headers["x-forwarded-proto"] || "").startsWith("https");
 }
 
-function workspaceUrl(req, slug, token) {
-  return baseUrl(req) + "/c/" + slug + "/" + token;
-}
-
 const SECURITY_HEADERS = {
-  // The token sits in the URL path: never leak it through Referer (Google Fonts included).
+  // Never leak page URLs through Referer (Google Fonts included).
   "Referrer-Policy": "no-referrer",
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
@@ -384,6 +466,43 @@ function notice(res, status, titleNb, bodyNb, titleEn, bodyEn) {
   page(res, "notice.html", { titleNb, bodyNb, titleEn, bodyEn }, status);
 }
 
+/* ------------------------------------------------------------------ company session
+
+   Typing the access code gives a signed cookie bound to the company AND to a
+   fingerprint of the code it was opened with. When the admin generates a new code
+   or revokes access, the fingerprint no longer matches the active code, so every
+   open session ends at once and the new code is needed. SameSite=Lax so a link to
+   the site from an email still lands signed in; writes are JSON-only, which keeps
+   cross-site forms out. */
+
+const CO_COOKIE = "baerel_co";
+
+function issueCompanySession(req, companyId, code) {
+  const exp = Date.now() + CODE_SESSION_DAYS * 86400 * 1000;
+  const v = "co." + companyId + "." + codeFingerprint(code) + "." + exp;
+  return CO_COOKIE + "=" + v + "." + sign(v) + "; Path=/; HttpOnly; SameSite=Lax; Max-Age=" + CODE_SESSION_DAYS * 86400 + (isHttps(req) ? "; Secure" : "");
+}
+
+const clearCompanySession = (req) => CO_COOKIE + "=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0" + (isHttps(req) ? "; Secure" : "");
+
+/* Returns { id, name, open } or null. */
+function companySession(req) {
+  const c = parseCookies(req)[CO_COOKIE];
+  if (!c) return null;
+  const i = c.lastIndexOf(".");
+  if (i < 0) return null;
+  const v = c.slice(0, i), sig = c.slice(i + 1);
+  if (!safeEqual(sig, sign(v))) return null;
+  const parts = v.split(".");
+  if (parts.length !== 4 || parts[0] !== "co") return null;
+  const exp = Number(parts[3]);
+  if (!Number.isFinite(exp) || exp <= Date.now()) return null;
+  const company = q.companyById.get(parts[1]);
+  const active = company && q.activeCode.get(company.id);
+  if (!active || !safeEqual(codeFingerprint(active.token), parts[2])) return null;
+  return { id: company.id, name: company.name, open: !!company.submissions_open };
+}
+
 /* ------------------------------------------------------------------ views of data */
 
 function companyView(req, row) {
@@ -394,11 +513,13 @@ function companyView(req, row) {
     submissions_open: !!row.submissions_open,
     created_at: row.created_at,
     closed_at: row.closed_at,
-    submission_count: row.submission_count || 0,
-    last_submission_at: row.last_submission_at || null,
-    link_active: !!row.token,
-    link_generations: row.link_generations || 0,
-    url: row.token ? workspaceUrl(req, row.slug, row.token) : null
+    code: formatCode(row.code),
+    code_active: !!row.code,
+    code_generations: row.code_generations || 0,
+    access_url: baseUrl(req) + "/",
+    spec_updated_at: row.spec_updated_at || null,
+    spec_completion: row.spec_updated_at ? row.spec_completion : null,
+    version_count: row.version_count || 0
   };
 }
 
@@ -408,51 +529,85 @@ function companyRow(id) {
 
 function storedResponse(s) {
   const r = JSON.parse(s.response);
-  r._server = { submission_id: s.id, company_id: s.company_id, company_name: s.company_name, created_at: s.created_at, updated_at: s.updated_at };
+  const last = q.lastVersion.get(s.id);
+  r._server = { company_id: s.company_id, company_name: s.company_name, created_at: s.created_at, updated_at: s.updated_at, version: last ? last.n : null };
   return r;
 }
 
-/* Validate a submitted survey response and make the workspace authoritative for
-   which organisation it belongs to. */
+/* Validate a specification and make the server authoritative for which company
+   it belongs to. No personal names are kept: the old interview block is dropped. */
 function cleanResponse(body, company) {
   const r = body && body.response;
   if (!r || typeof r !== "object" || r.schema !== SCHEMA || !Array.isArray(r.answers)) return null;
   if (r.answers.length > 500) return null;
   const respondent = r.respondent && typeof r.respondent === "object" ? r.respondent : {};
-  r.respondent = {
-    role: String(respondent.role || "").slice(0, 200),
-    organisation: company.name,
-    organisation_stated: String(respondent.organisation || "").slice(0, 200)
-  };
-  r.workspace = { company_id: company.company_id || company.id, company_name: company.name };
+  r.respondent = { role: String(respondent.role || "").slice(0, 200), organisation: company.name };
+  delete r.interview;
+  r.format = "specification";
+  r.workspace = { company_id: company.id, company_name: company.name };
   r.submitted_at = now();
   return r;
 }
 
-/* ------------------------------------------------------------------ versions
-
-   The submission row is the live document: an open interview syncs into it every
-   few seconds. Versions are timestamped snapshots of it — taken whenever the
-   interviewer exports or saves a version, and automatically when the latest
-   snapshot is more than VERSION_EVERY_MIN minutes old — so earlier states of an
-   interview can always be recovered. */
-
-const VERSION_EVERY_MIN = Number(process.env.VERSION_EVERY_MIN || 15);
-
-function snapshot(subId, respJson, completion, reason, t) {
-  const last = q.lastVersion.get(subId);
-  const n = last ? last.n + 1 : 1;
-  q.insertVersion.run(subId, n, t, reason, completion, respJson);
-  return n;
+function specPayload(s) {
+  if (!s) return { updated_at: null, version: null, response: null };
+  const last = q.lastVersion.get(s.id);
+  return { updated_at: s.updated_at, version: last ? last.n : null, completion: s.completion, response: JSON.parse(s.response) };
 }
 
-function maybeSnapshot(subId, respJson, completion, requested, t) {
-  const last = q.lastVersion.get(subId);
-  if (requested) return { n: snapshot(subId, respJson, completion, requested, t), taken: true };
-  if (!last || Date.parse(t) - Date.parse(last.saved_at) >= VERSION_EVERY_MIN * 60000) {
-    return { n: snapshot(subId, respJson, completion, "auto", t), taken: true };
-  }
-  return { n: last.n, taken: false };
+/* Save the specification. base is the updated_at the writer last saw; if the spec
+   moved on since, nothing is written and the caller gets 409 with the current state
+   to merge into. */
+function saveSpec(company, resp, base, requested) {
+  const id = specId(company.id);
+  const role = resp.respondent.role;
+  const completion = Math.max(0, Math.min(100, Number(resp.completion) || 0));
+  return tx(() => {
+    const cur = q.spec.get(id);
+    if ((cur ? cur.updated_at : null) !== (base || null)) return { conflict: true, cur };
+    const t = nextStamp(cur && cur.updated_at);
+    resp.updated_at = t;
+    const json = JSON.stringify(resp);
+    if (cur) q.updateSpec.run(role, completion, json, t, id);
+    else q.insertSpec.run(id, company.id, role, completion, json, t, t);
+    const capped = q.countVersions.get(id).n >= MAX_VERSIONS_PER_COMPANY;
+    const v = capped ? { n: q.lastVersion.get(id).n, taken: false } : maybeSnapshot(id, json, completion, requested, t);
+    return { updated_at: t, version: v.n, snapshot: v.taken, created: !cur };
+  });
+}
+
+/* Restore version n: the current state is saved as a version first, so a restore
+   can itself be undone. */
+function restoreSpec(companyId, n, who) {
+  const id = specId(companyId);
+  return tx(() => {
+    const v = q.versionGet.get(id, n);
+    if (!v) return null;
+    const cur = q.spec.get(id);
+    const t = nextStamp(cur && cur.updated_at);
+    if (cur) snapshot(id, cur.response, cur.completion, "before-restore", t);
+    let r = {};
+    try { r = JSON.parse(v.response); } catch (e) {}
+    r.updated_at = t;
+    const json = JSON.stringify(r);
+    const role = (r.respondent && r.respondent.role) || "";
+    if (cur) q.updateSpec.run(role, v.completion, json, t, id);
+    else q.insertSpec.run(id, companyId, role, v.completion, json, t, t);
+    const nn = snapshot(id, json, v.completion, "restored-v" + n, t);
+    audit(companyId, "spec.restored", "v" + n + " → v" + nn + " (" + who + ")");
+    return { updated_at: t, version: nn, completion: v.completion, response: r };
+  });
+}
+
+function versionDownload(res, company, v) {
+  const r = JSON.parse(v.response);
+  r._server = { company_id: company.id, company_name: company.name, version: v.n, version_saved_at: v.saved_at, version_reason: v.reason };
+  const stamp = v.saved_at.replace(/[-:]/g, "").replace("T", "-").slice(0, 13);
+  return send(res, 200, JSON.stringify(r, null, 2), {
+    "Content-Type": "application/json; charset=utf-8",
+    "Content-Disposition": 'attachment; filename="baerel-kravspesifikasjon-' + company.slug + "-v" + v.n + "-" + stamp + '.json"',
+    "Cache-Control": "no-store"
+  });
 }
 
 /* ------------------------------------------------------------------ routes */
@@ -461,128 +616,111 @@ async function handle(req, res) {
   const url = new URL(req.url, "http://x");
   const p = url.pathname;
   const m = req.method;
+  let mm;
 
   if (m === "GET" && p === "/healthz") return json(res, 200, { ok: true });
 
   if (m === "GET" && p.startsWith("/assets/")) return serveAsset(res, p.slice(8), url.searchParams.has("v"));
 
+  /* ---------- access by code ---------- */
   if (m === "GET" && p === "/") {
-    return notice(res, 200,
-      "Bærel kravkartlegging",
-      "Kartleggingen er kun på invitasjon. Bruk lenken du har fått tilsendt fra prosjektet.",
-      "Bærel requirements survey",
-      "The survey is by invitation only. Use the link the project sent you.");
+    if (companySession(req)) { send(res, 302, "", { Location: "/spec", "Cache-Control": "no-store" }); return; }
+    return page(res, "access.html", {});
   }
 
-  /* ---------- company workspace page ---------- */
-  let mm;
-  if (m === "GET" && (mm = p.match(/^\/c\/([^/]+)\/([A-Za-z0-9_-]{20,100})\/?$/))) {
-    const link = q.linkByToken.get(mm[2]);
-    if (!link) {
-      return notice(res, 404,
-        "Lenken er ikke gyldig", "Sjekk at du har kopiert hele lenken, eller be kontaktpersonen din om en ny.",
-        "This link is not valid", "Check that you copied the whole link, or ask your contact for a new one.");
+  // Links from the earlier version: the code replaces them.
+  if (m === "GET" && p.startsWith("/c/")) { send(res, 302, "", { Location: "/", "Cache-Control": "no-store" }); return; }
+
+  if (m === "POST" && p === "/api/access") {
+    if (limited("code:" + clientIp(req), 10, 15 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many attempts. Try again in 15 minutes.");
+    let body;
+    try { body = await readJson(req); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
+    const code = normaliseCode(body.code);
+    const row = CODE_RE.test(code) ? q.codeLookup.get(code) : null;
+    if (!row || row.revoked_at) {
+      if (row) audit(row.company_id, "access.old_code", clientIp(req));
+      return fail(res, 401, "wrong_code", "The code is not valid.");
     }
-    if (link.revoked_at) {
-      return notice(res, 410,
-        "Lenken er trukket tilbake", "Denne lenken er erstattet eller deaktivert. Be kontaktpersonen din om den nye lenken.",
-        "This link has been withdrawn", "The link was replaced or deactivated. Ask your contact for the current one.");
-    }
-    if (mm[1] !== link.slug) {
-      send(res, 301, "", { Location: "/c/" + link.slug + "/" + link.token, "Cache-Control": "no-store" });
-      return;
-    }
-    return page(res, "index.html", {
-      mode: "workspace",
-      token: link.token,
-      company: { id: link.company_id, name: link.name, open: !!link.submissions_open }
-    });
+    audit(row.company_id, "access.signed_in", clientIp(req));
+    return json(res, 200, { ok: true, company: { name: row.name } }, { "Set-Cookie": issueCompanySession(req, row.company_id, code) });
   }
 
-  /* ---------- workspace API: scenario images ---------- */
-  if ((mm = p.match(/^\/api\/w\/([A-Za-z0-9_-]{20,100})\/attachments(?:\/(img_[A-Za-z0-9_-]+))?$/))) {
-    const link = q.linkByToken.get(mm[1]);
-    if (!link || link.revoked_at) return fail(res, link ? 410 : 404, link ? "link_revoked" : "not_found", "This link is not active.");
-    if (m === "GET" && mm[2]) {
-      const a = q.getAtt.get(mm[2]);
-      if (!a || a.company_id !== link.company_id) return fail(res, 404, "not_found", "No such image.");
-      return sendImage(res, a);
-    }
-    if (m === "POST" && !mm[2]) {
-      if (!link.submissions_open) return fail(res, 423, "closed", "Submissions for this workspace are closed.");
-      if (limited("img:" + link.token + ":" + clientIp(req), 120, 10 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many uploads — wait a few minutes.");
-      const st = q.attStats.get(link.company_id);
-      if (st.n >= MAX_IMAGES_PER_COMPANY || st.bytes >= MAX_IMAGE_BYTES_PER_COMPANY) return fail(res, 409, "full", "This workspace has reached its image limit.");
-      let img;
-      try { img = await readImage(req); } catch (e) { return fail(res, e.status || 400, "bad_image", e.message); }
-      const id = "img_" + rand(12);
-      q.insertAtt.run(id, link.company_id, img.type, img.bytes.length, img.bytes, now());
-      return json(res, 201, { id, size: img.bytes.length, type: img.type });
-    }
-    return fail(res, 405, "method_not_allowed", "");
+  if (m === "POST" && p === "/api/access/logout") {
+    return json(res, 200, { ok: true }, { "Set-Cookie": clearCompanySession(req) });
   }
 
-  /* ---------- workspace API ---------- */
-  if ((mm = p.match(/^\/api\/w\/([A-Za-z0-9_-]{20,100})(\/submissions(?:\/([A-Za-z0-9_-]+))?)?$/))) {
-    const link = q.linkByToken.get(mm[1]);
-    if (!link || link.revoked_at) return fail(res, link ? 410 : 404, link ? "link_revoked" : "not_found", "This link is not active.");
-    const company = { id: link.company_id, name: link.name, open: !!link.submissions_open };
+  if (m === "GET" && (p === "/spec" || p === "/spec/")) {
+    const co = companySession(req);
+    if (!co) { send(res, 302, "", { Location: "/", "Cache-Control": "no-store" }); return; }
+    return page(res, "index.html", { mode: "spec", company: co });
+  }
 
-    // Everyone with the company link sees only how many interviews exist — never
-    // who gave them or what was said. Each interview is reachable only with its own key.
-    if (m === "GET" && !mm[2]) {
-      return json(res, 200, { company, count: q.countSubs.get(link.company_id).n });
-    }
+  /* ---------- specification API (company session) ---------- */
+  if (p.startsWith("/api/s/")) {
+    const co = companySession(req);
+    if (!co) return fail(res, 401, "signed_out", "Enter the access code again.");
+    if (limited("s:" + co.id + ":" + clientIp(req), 600, 10 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many requests — wait a few minutes.");
+    const id = specId(co.id);
 
-    if (m === "GET" && mm[3]) {
-      if (limited("r:" + link.token + ":" + clientIp(req), 120, 10 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many requests — wait a few minutes.");
-      const s = q.subById.get(mm[3], link.company_id);
-      const key = String(req.headers["x-edit-key"] || "");
-      if (!s || !key || !safeEqual(sha256(key), s.edit_key_hash)) return fail(res, 404, "not_found", "No such interview.");
-      const last = q.lastVersion.get(s.id);
-      return json(res, 200, { id: s.id, updated_at: s.updated_at, version: last ? last.n : null, response: JSON.parse(s.response) });
-    }
-
-    if (mm[2] && (m === "POST" || m === "PUT")) {
-      // Live sync writes every few seconds while an interview is open.
-      if (limited("w:" + link.token + ":" + clientIp(req), 400, 10 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many saves — wait a few minutes.");
-      if (!company.open) return fail(res, 423, "closed", "Submissions for this workspace are closed.");
-      let body;
-      try { body = await readJson(req); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
-      const resp = cleanResponse(body, company);
-      if (!resp) return fail(res, 422, "invalid_response", "Not a response to this survey.");
-      const role = resp.respondent.role;
-      const completion = Math.max(0, Math.min(100, Number(resp.completion) || 0));
-      const t = now();
-      const requested = ["export", "manual"].includes(body.snapshot) ? body.snapshot : null;
-      const respJson = JSON.stringify(resp);
-
-      if (m === "POST" && !mm[3]) {
-        if (q.countSubs.get(link.company_id).n >= MAX_SUBMISSIONS_PER_COMPANY) return fail(res, 409, "full", "This workspace has reached its submission limit.");
-        const id = "sub_" + rand(9);
-        const key = rand(24);
-        const v = tx(() => {
-          q.insertSub.run(id, link.company_id, link.token, sha256(key), role, completion, respJson, t, t);
-          return snapshot(id, respJson, completion, requested || "first", t);
-        });
-        audit(link.company_id, "submission.created", id);
-        return json(res, 201, { id, edit_key: key, updated_at: t, version: v, snapshot: true });
+    if (p === "/api/s/spec") {
+      if (m === "GET") return json(res, 200, Object.assign({ company: co }, specPayload(q.spec.get(id))));
+      if (m === "PUT") {
+        if (!co.open) return fail(res, 423, "closed", "The specification is closed for changes.");
+        let body;
+        try { body = await readJson(req); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
+        const resp = cleanResponse(body, co);
+        if (!resp) return fail(res, 422, "invalid_response", "Not a specification for this survey.");
+        const requested = ["export", "manual"].includes(body.snapshot) ? body.snapshot : null;
+        const r = saveSpec(co, resp, body.base_updated_at, requested);
+        if (r.conflict) return json(res, 409, Object.assign({ error: "conflict", message: "Someone else saved in the meantime." }, specPayload(r.cur)));
+        if (r.created) audit(co.id, "spec.created", "");
+        if (r.snapshot) audit(co.id, "spec.version", "v" + r.version + " (" + (requested || "auto") + ")");
+        return json(res, 200, r);
       }
-
-      if (m === "PUT" && mm[3]) {
-        const s = q.subById.get(mm[3], link.company_id);
-        if (!s || !body.edit_key || !safeEqual(sha256(String(body.edit_key)), s.edit_key_hash)) {
-          return fail(res, 403, "not_yours", "This submission cannot be changed from here.");
-        }
-        const v = tx(() => {
-          q.updateSub.run(role, completion, respJson, t, link.token, s.id);
-          return maybeSnapshot(s.id, respJson, completion, requested, t);
-        });
-        if (v.taken) audit(link.company_id, "submission.version", s.id + " v" + v.n + " (" + (requested || "auto") + ")");
-        return json(res, 200, { id: s.id, updated_at: t, version: v.n, snapshot: v.taken });
-      }
+      return fail(res, 405, "method_not_allowed", "");
     }
-    return fail(res, 405, "method_not_allowed", "");
+
+    if (m === "GET" && p === "/api/s/versions") return json(res, 200, { versions: q.versionsFor.all(id) });
+
+    if ((mm = p.match(/^\/api\/s\/versions\/(\d+)(\/restore)?$/))) {
+      const n = Number(mm[1]);
+      if (m === "GET" && !mm[2]) {
+        const v = q.versionGet.get(id, n);
+        if (!v) return fail(res, 404, "not_found", "No such version.");
+        if (url.searchParams.has("download")) return versionDownload(res, q.companyById.get(co.id), v);
+        return json(res, 200, { n: v.n, saved_at: v.saved_at, reason: v.reason, completion: v.completion, response: JSON.parse(v.response) });
+      }
+      if (m === "POST" && mm[2]) {
+        if (!co.open) return fail(res, 423, "closed", "The specification is closed for changes.");
+        try { await readJson(req); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
+        const r = restoreSpec(co.id, n, "company");
+        if (!r) return fail(res, 404, "not_found", "No such version.");
+        return json(res, 200, r);
+      }
+      return fail(res, 405, "method_not_allowed", "");
+    }
+
+    if ((mm = p.match(/^\/api\/s\/attachments(?:\/(img_[A-Za-z0-9_-]+))?$/))) {
+      if (m === "GET" && mm[1]) {
+        const a = q.getAtt.get(mm[1]);
+        if (!a || a.company_id !== co.id) return fail(res, 404, "not_found", "No such image.");
+        return sendImage(res, a);
+      }
+      if (m === "POST" && !mm[1]) {
+        if (!co.open) return fail(res, 423, "closed", "The specification is closed for changes.");
+        if (limited("img:" + co.id + ":" + clientIp(req), 120, 10 * 60 * 1000)) return fail(res, 429, "rate_limited", "Too many uploads — wait a few minutes.");
+        const st = q.attStats.get(co.id);
+        if (st.n >= MAX_IMAGES_PER_COMPANY || st.bytes >= MAX_IMAGE_BYTES_PER_COMPANY) return fail(res, 409, "full", "This specification has reached its image limit.");
+        let img;
+        try { img = await readImage(req); } catch (e) { return fail(res, e.status || 400, "bad_image", e.message); }
+        const aid = "img_" + rand(12);
+        q.insertAtt.run(aid, co.id, img.type, img.bytes.length, img.bytes, now());
+        return json(res, 201, { id: aid, size: img.bytes.length, type: img.type });
+      }
+      return fail(res, 405, "method_not_allowed", "");
+    }
+
+    return fail(res, 404, "not_found", "");
   }
 
   /* ---------- admin pages ---------- */
@@ -627,67 +765,60 @@ async function handle(req, res) {
       if (name.length < 2 || name.length > 120) return fail(res, 422, "bad_name", "Give the company a name (2–120 characters).");
       if (q.companyByName.get(name)) return fail(res, 409, "exists", "A company with that name already exists.");
       const id = newCompanyId();
-      const token = newToken();
       tx(() => {
         q.insertCompany.run(id, name, slugify(name), now());
-        q.insertLink.run(token, id, now());
+        q.insertCode.run(newCode(), id, now());
         audit(id, "company.created", name);
       });
       return json(res, 201, { company: companyView(req, companyRow(id)) });
     }
 
-    if ((mm = p.match(/^\/api\/admin\/companies\/(co_[a-z0-9]+)(?:\/([a-z-]+))?$/))) {
+    if ((mm = p.match(/^\/api\/admin\/companies\/(co_[a-z0-9]+)(?:\/([a-z-]+))?(?:\/(\d+)(?:\/(restore))?)?$/))) {
       const c = q.companyById.get(mm[1]);
       if (!c) return fail(res, 404, "not_found", "No such company.");
       const action = mm[2] || "";
+      const view = () => json(res, 200, { company: companyView(req, companyRow(c.id)) });
 
       if (m === "GET" && action === "") {
         return json(res, 200, { company: companyView(req, companyRow(c.id)), audit: q.auditFor.all(c.id) });
       }
-      if (m === "POST" && action === "rotate") {
-        const token = newToken();
-        tx(() => { q.revokeLinks.run(now(), c.id); q.insertLink.run(token, c.id, now()); audit(c.id, "link.rotated", ""); });
-        return json(res, 200, { company: companyView(req, companyRow(c.id)) });
+      if (m === "POST" && action === "rotate" && !mm[3]) {
+        tx(() => { q.revokeCodes.run(now(), c.id); q.insertCode.run(newCode(), c.id, now()); audit(c.id, "code.rotated", ""); });
+        return view();
       }
-      if (m === "POST" && action === "revoke") {
-        tx(() => { q.revokeLinks.run(now(), c.id); audit(c.id, "link.revoked", ""); });
-        return json(res, 200, { company: companyView(req, companyRow(c.id)) });
+      if (m === "POST" && action === "revoke" && !mm[3]) {
+        tx(() => { q.revokeCodes.run(now(), c.id); audit(c.id, "code.revoked", ""); });
+        return view();
       }
-      if (m === "POST" && (action === "close" || action === "reopen")) {
+      if (m === "POST" && (action === "close" || action === "reopen") && !mm[3]) {
         const open = action === "reopen";
         q.setOpen.run(open ? 1 : 0, open ? null : now(), c.id);
-        audit(c.id, open ? "submissions.reopened" : "submissions.closed", "");
-        return json(res, 200, { company: companyView(req, companyRow(c.id)) });
+        audit(c.id, open ? "spec.reopened" : "spec.closed", "");
+        return view();
       }
-      if (m === "GET" && action === "submissions") {
-        return json(res, 200, { responses: q.subsForCompany.all(c.id).map(storedResponse) });
+      // Analysis input: the company's specification as a one-element list.
+      if (m === "GET" && action === "submissions" && !mm[3]) {
+        const s = q.specFor.get(c.id);
+        return json(res, 200, { responses: s ? [storedResponse(s)] : [] });
       }
-      if (m === "GET" && action === "interviews") {
-        return json(res, 200, { interviews: q.subsMeta.all(c.id).map((s) => {
-          let iv = {};
-          try { iv = JSON.parse(s.response).interview || {}; } catch (e) {}
-          return {
-            id: s.id, role: s.role, completion: s.completion, created_at: s.created_at, updated_at: s.updated_at,
-            interviewer: iv.interviewer || "", interviewee: iv.interviewee || "", date: iv.date || "",
-            versions: q.versionsFor.all(s.id)
-          };
-        }) });
+      if (m === "GET" && action === "versions" && !mm[3]) {
+        return json(res, 200, { versions: q.versionsFor.all(specId(c.id)) });
+      }
+      if (action === "versions" && mm[3]) {
+        const n = Number(mm[3]);
+        if (m === "GET" && !mm[4]) {
+          const v = q.versionGet.get(specId(c.id), n);
+          if (!v) return fail(res, 404, "not_found", "No such version.");
+          return versionDownload(res, c, v);
+        }
+        if (m === "POST" && mm[4]) {
+          try { await readJson(req); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
+          const r = restoreSpec(c.id, n, "admin");
+          if (!r) return fail(res, 404, "not_found", "No such version.");
+          return json(res, 200, { updated_at: r.updated_at, version: r.version });
+        }
       }
       return fail(res, 405, "method_not_allowed", "");
-    }
-
-    if (m === "GET" && (mm = p.match(/^\/api\/admin\/submissions\/(sub_[A-Za-z0-9_-]+)\/versions\/(\d+)$/))) {
-      const v = q.versionGet.get(mm[1], Number(mm[2]));
-      if (!v) return fail(res, 404, "not_found", "No such version.");
-      const r = JSON.parse(v.response);
-      const c = q.companyById.get(v.company_id);
-      r._server = { submission_id: v.submission_id, company_id: v.company_id, company_name: c ? c.name : "", version: v.n, version_saved_at: v.saved_at, version_reason: v.reason };
-      const stamp = v.saved_at.replace(/[-:]/g, "").replace("T", "-").slice(0, 13);
-      return send(res, 200, JSON.stringify(r, null, 2), {
-        "Content-Type": "application/json; charset=utf-8",
-        "Content-Disposition": 'attachment; filename="baerel-' + (c ? c.slug : "interview") + "-" + v.submission_id.slice(4, 10) + "-v" + v.n + "-" + stamp + '.json"',
-        "Cache-Control": "no-store"
-      });
     }
 
     if (m === "GET" && (mm = p.match(/^\/api\/admin\/attachments\/(img_[A-Za-z0-9_-]+)$/))) {
@@ -697,14 +828,14 @@ async function handle(req, res) {
     }
 
     if (m === "GET" && p === "/api/admin/submissions") {
-      return json(res, 200, { responses: q.allSubs.all().map(storedResponse) });
+      return json(res, 200, { responses: q.allSpecs.all().map(storedResponse) });
     }
 
     if (m === "GET" && p === "/api/admin/export") {
-      const bundle = { schema: SCHEMA + "-bundle", exported_at: now(), responses: q.allSubs.all().map(storedResponse) };
+      const bundle = { schema: SCHEMA + "-bundle", exported_at: now(), responses: q.allSpecs.all().map(storedResponse) };
       return send(res, 200, JSON.stringify(bundle, null, 2), {
         "Content-Type": "application/json; charset=utf-8",
-        "Content-Disposition": 'attachment; filename="baerel-all-responses-' + now().slice(0, 10) + '.json"',
+        "Content-Disposition": 'attachment; filename="baerel-alle-kravspesifikasjoner-' + now().slice(0, 10) + '.json"',
         "Cache-Control": "no-store"
       });
     }
@@ -723,7 +854,7 @@ const server = http.createServer((req, res) => {
 });
 
 if (require.main === module) {
-  server.listen(PORT, HOST, () => console.log("Bærel workspaces on http://" + HOST + ":" + PORT + (PUBLIC_URL ? "  (links use " + PUBLIC_URL + ")" : "")));
+  server.listen(PORT, HOST, () => console.log("Bærel specifications on http://" + HOST + ":" + PORT + (PUBLIC_URL ? "  (public URL " + PUBLIC_URL + ")" : "")));
 }
 
-module.exports = { server, slugify };
+module.exports = { server, slugify, normaliseCode };

@@ -1,7 +1,7 @@
 /* Bilingual question bank — Bærel / circular electronics data platform requirements survey.
    Primary language: nb (Norwegian bokmål). Secondary: en.
    Question and option identity is positional: answers store option indices, so a
-   respondent can switch language mid-form without losing anything. */
+   the person filling it in can switch language mid-form without losing anything. */
 
 const SCALE_LABELS = {
   nb: ["1 – Svært lav / Ikke viktig", "2", "3", "4", "5 – Svært høy / Kritisk"],
@@ -10,26 +10,26 @@ const SCALE_LABELS = {
 
 const SURVEY = {
   title: {
-    nb: "Intervjuguide – dataplattform for sirkulær elektronikk",
-    en: "Interview guide – Circular Electronics Data Platform"
+    nb: "Kravspesifikasjon – dataplattform for sirkulær elektronikk",
+    en: "Requirements specification – Circular Electronics Data Platform"
   },
   intro: {
     nb: [
       "Formål: kartlegge krav til en bærekraftig digital infrastruktur for integrerte, sirkulære verdikjeder i elektronikk – datasikkerhet, datakvalitet og forvaltning, integrasjon av livsløpsdata på tvers av virksomheter, registrering av klima- og ressursavtrykk gjennom livsløpet, underliggende datamodell og arkitektur, digitale produktpass etter standardene EN 18216–18223, teknologi- og tillitsvalg, kostnad, modenhet og bygg-eller-kjøp, KI-agenter og applikasjoner på toppen av dataene, selvoppdaterende matematiske og fysikkbaserte modeller, datavolum og agent-til-agent-trafikk – og hvordan den skal styres og gjøres tillitsverdig, bekymringer knyttet til teknologimakt, geopolitikk, svarte bokser og energibruk, fangst av taus kunnskap med bærbare enheter og AR-briller, robotisering av oppgaver mennesker gjør i dag, ubemannet drift, edge-databehandling og datadeling, og hvilke framtidsbilder plattformen må tåle.",
-      "Intervjuet er ment for alle typer virksomheter i elektronikkens verdikjede – fra material- og komponentleverandører, kretskort- og kontraktsprodusenter, OEM-er og systemintegratorer, via eiere, drift-, service- og reparasjonsaktører, til ombruksaktører, returlogistikk og gjenvinnere – og for myndigheter, forskning og teknologileverandører."
+      "Kravspesifikasjonen fylles ut av virksomheten selv, og er ment for alle typer virksomheter i elektronikkens verdikjede – fra material- og komponentleverandører, kretskort- og kontraktsprodusenter, OEM-er og systemintegratorer, via eiere, drift-, service- og reparasjonsaktører, til ombruksaktører, returlogistikk og gjenvinnere – og for myndigheter, forskning og teknologileverandører."
     ],
     en: [
       "Purpose: collect requirements for a sustainable digital infrastructure supporting integrated, circular electronics value chains — covering data security, quality and governance; integration of lifecycle data across organisations; recording of carbon and resource footprints across the lifecycle; the underlying data model and architecture; Digital Product Passports under EN 18216–18223; technology and trust choices; cost, maturity and build versus buy; AI agents and applications built on the data; self-updating mathematical and physics-based models; data volume and agent-to-agent traffic, and how to govern it and make it trustworthy; concerns about tech power, geopolitics, black boxes and energy use; capture of tacit knowledge through wearables and AR glasses; robotic automation of work people do today; unattended operation; edge data fusion and data sharing; and the future worlds the platform must withstand.",
-      "The interview is intended for any organisation in the electronics value chain — from materials and component suppliers, PCB and EMS manufacturers, OEMs and system integrators, through operators, service and repair providers, to refurbishers, reverse logistics and recyclers — as well as regulators, researchers and technology providers."
+      "The specification is filled in by each organisation itself, and is intended for any organisation in the electronics value chain — from materials and component suppliers, PCB and EMS manufacturers, OEMs and system integrators, through operators, service and repair providers, to refurbishers, reverse logistics and recyclers — as well as regulators, researchers and technology providers."
     ]
   },
   notice: {
-    nb: "Minn intervjuobjektet på at gradert, eksportkontrollert, kundebeskyttet, forretningssensitiv eller på annen måte beskyttet informasjon ikke skal deles. Noter behov, begrensninger og temaer for oppfølging – ikke detaljene.",
-    en: "Remind the interviewee not to share classified, export-controlled, customer-restricted, commercially sensitive or otherwise protected information. Note needs, constraints and follow-up topics — not the specifics."
+    nb: "Ikke legg inn gradert, eksportkontrollert, kundebeskyttet, forretningssensitiv eller på annen måte beskyttet informasjon, og ikke personnavn. Beskriv behov, begrensninger og temaer for oppfølging – ikke detaljene.",
+    en: "Do not enter classified, export-controlled, customer-restricted, commercially sensitive or otherwise protected information, and no personal names. Describe needs, constraints and follow-up topics — not the specifics."
   },
   techNote: {
-    nb: "Spørsmål merket «Teknisk – valgfritt» går dypere inn i arkitektur og implementasjon. Hopp over dem hvis de ligger utenfor intervjuobjektets område.",
-    en: "Questions marked “Technical – optional” go deeper into architecture and implementation. Skip them if they fall outside the interviewee’s area."
+    nb: "Spørsmål merket «Teknisk – valgfritt» går dypere inn i arkitektur og implementasjon. Hopp over dem hvis de ligger utenfor det dere har oversikt over – eller få en kollega med riktig fagområde til å fylle dem ut.",
+    en: "Questions marked “Technical – optional” go deeper into architecture and implementation. Skip them if they fall outside what you know — or ask a colleague from that field to fill them in."
   },
   privacy: {
     nb: "Svar og notater lagres kun i denne nettleseren til du eksporterer dem. Ingenting sendes automatisk til noen server.",
@@ -38,15 +38,12 @@ const SURVEY = {
   sections: [
     {
       id: "s1",
-      nb: { title: "Respondent og virksomhet", lead: "Litt om deg og virksomheten din, og hvilke sirkulære mål som betyr mest." },
-      en: { title: "Respondent and organisation", lead: "A little about you and your organisation, and which circular outcomes matter most." },
+      nb: { title: "Virksomheten", lead: "Litt om virksomheten, hvilke funksjoner som har bidratt, og hvilke sirkulære mål som betyr mest." },
+      en: { title: "The organisation", lead: "A little about your organisation, which functions contributed, and which circular outcomes matter most." },
       questions: [
         { id: "q1", core: true, t: "text",
-          nb: { q: "Hva er din rolle eller funksjon?" },
-          en: { q: "What is your role or function?" } },
-        { id: "q2", core: true, t: "text",
-          nb: { q: "Hvilken virksomhet representerer intervjuobjektet?" },
-          en: { q: "Which organisation does the interviewee represent?" } },
+          nb: { q: "Hvilke roller eller funksjoner i virksomheten har bidratt til kravspesifikasjonen? Oppgi roller, ikke navn." },
+          en: { q: "Which roles or functions in your organisation contributed to this specification? Give roles, not names." } },
         { id: "q3", core: true, t: "multi", other: true,
           nb: { q: "Hvor i elektronikkens verdikjede hører virksomheten hjemme?",
             o: ["Råvare- eller kjemikalieleverandør", "Komponentprodusent (halvledere, passive komponenter, kontakter, skjermer)", "Kretskort- eller kretskortmontasjeprodusent (PCB/PCBA)", "Kontraktsprodusent / elektronikkproduksjonstjenester (EMS)", "OEM / produkteier og merkevare", "Systemintegrator / løsningsleverandør", "Distributør, grossist eller logistikkaktør", "Eier, driftsansvarlig eller profesjonell sluttbruker", "Installasjon, service, reparasjon eller vedlikehold", "Ombruks- og reparasjonsaktør / remanufacturing", "Returlogistikk, innsamling eller retursystem", "Gjenvinner / materialgjenvinning", "Myndighet, standardiseringsorgan, sertifisering eller revisjon", "Forskning, akademia eller teknologileverandør", "Programvare-, IT- eller dataplattformleverandør", "Annet"] },
@@ -58,9 +55,9 @@ const SURVEY = {
           en: { q: "How large is your organisation?",
             o: ["Micro (fewer than 10 employees)", "Small (10–49)", "Medium (50–249)", "Large (250–4 999)", "Very large (5 000+)"] } },
         { id: "q5", core: true, t: "single",
-          nb: { q: "Hvilken livsløpsfase er mest relevant for arbeidet ditt?",
+          nb: { q: "Hvilken livsløpsfase er mest relevant for virksomheten?",
             o: ["Design / FoU", "Innkjøp og anskaffelser", "Produksjon", "Montasje", "Test / verifikasjon", "Kvalitet", "Distribusjon / logistikk", "Drift og bruk", "Vedlikehold, reparasjon og oppgradering", "Innsamling / returlogistikk", "Ombruk / oppussing / remanufacturing", "Materialgjenvinning", "Avhending / sluttbehandling", "På tvers av hele livsløpet"] },
-          en: { q: "Which lifecycle stage is most relevant to your work?",
+          en: { q: "Which lifecycle stage is most relevant to your organisation?",
             o: ["Design / R&D", "Sourcing / procurement", "Manufacturing", "Assembly", "Testing / validation", "Quality", "Distribution / logistics", "Operation / use", "Maintenance, repair and upgrade", "Collection / reverse logistics", "Reuse / refurbishment / remanufacturing", "Recycling / material recovery", "End-of-life / disposal", "Cross-lifecycle"] } },
         { id: "q10", core: true, t: "multi", other: true,
           nb: { q: "Hvilke sirkulæritetsmål betyr mest for virksomheten?",
@@ -71,8 +68,8 @@ const SURVEY = {
     },
     {
       id: "s18",
-      nb: { title: "Bruksscenarioer", lead: "Konkrete situasjoner der plattformen skal gjøre en forskjell. Beskriv så mange som samtalen gir – hver som én setning: når, hvem, hva de skal få til, med hvilke data, fra hvor, og hvorfor." },
-      en: { title: "Usage scenarios", lead: "Concrete situations where the platform should make a difference. Capture as many as the conversation yields — each as one sentence: when, who, what they need to achieve, with which data, from where, and why." },
+      nb: { title: "Bruksscenarioer", lead: "Konkrete situasjoner der plattformen skal gjøre en forskjell. Beskriv så mange dere har – hver som én setning: når, hvem, hva de skal få til, med hvilke data, fra hvor, og hvorfor." },
+      en: { title: "Usage scenarios", lead: "Concrete situations where the platform should make a difference. Describe as many as you have — each as one sentence: when, who, what they need to achieve, with which data, from where, and why." },
       questions: [
         { id: "q217", core: true, t: "scenarios",
           nb: { q: "Beskriv situasjoner der noen i verdikjeden trenger data for å ta en beslutning eller gjøre en jobb." },
@@ -236,12 +233,12 @@ const SURVEY = {
           en: { q: "How is lifecycle data mainly stored and exchanged in your organisation today?",
             o: ["Paper or non-digital records", "PDFs, scans and other documents", "Spreadsheets and ad-hoc files", "Structured files with metadata (CSV, JSON, XML, Parquet with a defined schema)", "Relational database (PostgreSQL, SQL Server, MySQL, SQLite)", "Time-series database or process historian (InfluxDB, TimescaleDB, PI, Aspen)", "Document or NoSQL store", "Data lake / lakehouse (object storage, Delta, Iceberg)", "Graph database or knowledge graph", "Vendor cloud platform or SaaS", "Don’t know"] } },
         { id: "q34", core: true, t: "multi",
-          nb: { q: "Hvilke lagrings- og modelleringsformer mener du passer for den delte plattformen?",
+          nb: { q: "Hvilke lagrings- og modelleringsformer mener dere passer for den delte plattformen?",
             o: ["Strukturerte filer med standardiserte metadata – enkelt, portabelt, lav terskel", "Relasjonsdatabase med fast, veldefinert skjema", "Tidsseriedatabase for sensor-, prosess- og tilstandsdata", "Dokumentdatabase for rapporter, sertifikater og deklarasjoner", "Data lake / lakehouse for store eller rå datasett", "Kunnskapsgraf som knytter sammen produkter, komponenter, materialer, virksomheter og hendelser", "Temporal (bitemporal) kunnskapsgraf som også registrerer hvordan kunnskapen har endret seg over tid", "En kombinasjon – ulike lagre for ulike datatyper, bak et felles grensesnitt", "Ingen preferanse, så lenge grensesnitt og formater er åpne", "Vet ikke"] },
           en: { q: "Which storage and modelling approaches do you consider appropriate for the shared platform?",
             o: ["Structured files with standardised metadata — simple, portable, low barrier to entry", "Relational database with a fixed, well-defined schema", "Time-series database for sensor, process and condition data", "Document store for reports, certificates and declarations", "Data lake / lakehouse for large or raw datasets", "Knowledge graph linking products, components, materials, organisations and events", "Temporal (bitemporal) knowledge graph that also records how knowledge changed over time", "A combination — different stores for different data types, behind a common interface", "No preference, as long as interfaces and formats are open", "Don’t know"] } },
         { id: "q35", t: "longtext",
-          nb: { q: "Hvis du valgte flere over: hvilken bør være den primære tilnærmingen, og hvorfor?" },
+          nb: { q: "Hvis dere valgte flere over: hvilken bør være den primære tilnærmingen, og hvorfor?" },
           en: { q: "If you selected more than one above, which should be the primary approach, and why?" } },
         { id: "q36", t: "scale",
           nb: { q: "Hvor viktig er det at plattformen kan svare på: «hva visste vi om dette produktet på et gitt tidspunkt?» (versjonerte, tidsbevisste data)" },
@@ -267,7 +264,7 @@ const SURVEY = {
           en: { q: "Which existing standards or information models should the platform build on?",
             o: ["Digital Product Passport (ESPR, CIRPASS)", "GS1 standards and EPCIS event data", "IPC standards (1752A material declarations, 2581 design data, 175x)", "ECLASS / IEC 61360 property dictionaries", "Asset Administration Shell (Industrie 4.0 / IDTA)", "OPC UA information models", "IMDS and SCIP substance databases", "W3C semantic web standards (RDF, OWL, SHACL, JSON-LD)", "Gaia-X, IDSA or Eclipse Dataspace Components", "Industry- or customer-specific models", "Company-internal models only", "None / don’t know", "Other"] } },
         { id: "q42", t: "multi", tech: true,
-          nb: { q: "Hvilket integrasjonsmønster foretrekker du?",
+          nb: { q: "Hvilket integrasjonsmønster foretrekker dere?",
             o: ["Sentralt lager – data kopieres inn i én plattform", "Føderert – data blir liggende i kildesystemene og spørres der de er", "Hendelsesstrømmer / publiser–abonner", "Planlagte batcheksporter og -importer", "Punkt-til-punkt-utveksling ved forespørsel", "Hybrid – sentral indeks eller katalog, fødererte nyttelaster", "Ingen preferanse"] },
           en: { q: "Which integration pattern do you prefer?",
             o: ["Central repository — data is copied into one platform", "Federated — data stays in source systems and is queried where it lives", "Event streaming / publish-subscribe", "Scheduled batch exports and imports", "Peer-to-peer exchange on request", "Hybrid — central index or catalogue, federated payloads", "No preference"] } },
@@ -280,7 +277,7 @@ const SURVEY = {
           nb: { q: "Hvor viktig er skjemafleksibilitet – å kunne legge til nye attributter, produkttyper eller partnere uten å redesigne datamodellen?" },
           en: { q: "How important is schema flexibility — being able to add new attributes, product types or partners without redesigning the data model?" } },
         { id: "q45", t: "longtext", tech: true,
-          nb: { q: "Har du synspunkter på en konkret foretrukket teknologistack? Beskriv den her." },
+          nb: { q: "Har dere synspunkter på en konkret foretrukket teknologistack? Beskriv den her." },
           en: { q: "If you have a view on a preferred concrete technology stack, describe it here." } }
       ]
     },
@@ -371,7 +368,7 @@ const SURVEY = {
       en: { title: "Technology choices, trust and hosting", lead: "How much machinery is actually needed to create trust between parties that do not own each other’s data." },
       questions: [
         { id: "q46", core: true, t: "single",
-          nb: { q: "Hva er ditt syn på blokkjede eller distribuert hovedbok (DLT) for denne plattformen?",
+          nb: { q: "Hva er deres syn på blokkjede eller distribuert hovedbok (DLT) for denne plattformen?",
             o: ["Nødvendig – tillit mellom parter kan ikke etableres uten", "Nyttig kun for spesifikke data, som eierskapsoverføring eller sertifikater", "Kanskje nyttig, men uprøvd – signerte og reviderte poster holder trolig", "Ikke nødvendig – signaturer, revisjonsspor og avtaler er nok", "Uønsket – kostnad, kompleksitet, konfidensialitet eller energibruk", "Vet ikke / ingen formening"] },
           en: { q: "What is your view on blockchain or distributed-ledger technology for this platform?",
             o: ["Essential — trust between parties cannot be established without it", "Useful for specific data only, such as ownership transfer or certificates", "Possibly useful, but unproven — conventional signed and audited records are probably sufficient", "Not needed — signatures, audit logs and contracts are enough", "Undesirable — cost, complexity, confidentiality or energy concerns", "Don’t know / no opinion"] } },
@@ -681,7 +678,7 @@ const SURVEY = {
             o: ["Use smaller, specialised models where they suffice", "Run heavy computation where and when renewable power is available", "Nordic data centres with renewable power and waste-heat reuse", "Avoid unnecessary storage and duplicated data", "Keep raw sensor data for a limited period and retain aggregates", "Process at the edge to avoid transferring raw data", "Limit retention of video and images", "Delete derived data that is no longer used", "Energy budget per service or agent", "Show the footprint to the user before heavy operations", "Report the platform’s own energy and carbon footprint to participants", "Share on request (pull) instead of copying everything (push)", "Purpose limitation — collect only data with a defined use", "Compression and efficient data formats", "No special considerations — the gains are far larger", "Other"] } },
 
         { id: "q179", core: true, t: "longtext",
-          nb: { q: "Hva er den største bekymringen du hører i virksomheten om teknologi, KI og data i verdikjeden – og hva skal til for å møte den?" },
+          nb: { q: "Hva er den største bekymringen dere hører i virksomheten om teknologi, KI og data i verdikjeden – og hva skal til for å møte den?" },
           en: { q: "What is the biggest concern you hear in the organisation about technology, AI and data in the value chain — and what would it take to address it?" } },
         { id: "q180", t: "longtext",
           nb: { q: "Finnes det teknologier, leverandører, land eller driftsformer dere ikke kan eller vil at plattformen skal være avhengig av – av hensyn til policy, regelverk, IT-sikkerhet eller annet? Hvorfor?" },
@@ -914,7 +911,7 @@ const SURVEY = {
       en: { title: "Future worlds the platform must withstand", lead: "The platform is built now but has to work in a world we do not know. Which developments are plausible, which would do the most damage, and what must therefore be built in from the start." },
       questions: [
         { id: "q127", t: "multi", core: true, other: true,
-          nb: { q: "Hvilke av disse utviklingstrekkene vurderer du som sannsynlige innen 2035?",
+          nb: { q: "Hvilke av disse utviklingstrekkene vurderer dere som sannsynlige innen 2035?",
             o: ["Strengere regelverk – digitalt produktpass blir obligatorisk for det meste av elektronikk, med håndheving", "Regelverket svekkes eller utsettes, og frivillig deltakelse faller bort", "Regelverket spriker mellom EU, USA og Asia, og samme produkt må dokumenteres på flere måter", "Datasuverenitet – ikke-europeisk sky blir politisk eller juridisk uholdbar for industridata", "Knapphet på kritiske råmaterialer gjør innholdet i brukt utstyr kommersielt verdifullt", "Det meste av trafikken på plattformen blir maskin-til-maskin – agenter som spør, oppdaterer og forhandler", "En dominerende aktør tilbyr det samme gratis og trekker deltakerne til seg", "En stor lekkasje eller et løsepengeangrep rammer delt infrastruktur i bransjen", "En skandale med forfalskede bærekraftsdata ødelegger tilliten til slike påstander", "Energi- og beregningskostnader gjør alltid-på skyanalyse ulønnsomt", "Kompetansen forsvinner raskere enn ventet, og automatisering blir nødvendig, ikke valgfritt", "Fysiske klimahendelser forstyrrer anlegg, logistikk og nettforbindelse", "Prosjektet som bygger plattformen tar slutt, og ingen overtar driften", "Annet"] },
           en: { q: "Which of these developments do you consider plausible by 2035?",
             o: ["Stricter regulation — the Digital Product Passport becomes mandatory for most electronics, with enforcement", "Regulation weakens or is delayed, and voluntary participation falls away", "Rules diverge between the EU, the US and Asia, and the same product must be documented several ways", "Data sovereignty — non-European cloud becomes politically or legally untenable for industrial data", "Critical raw material scarcity makes the content of used equipment commercially valuable", "Most platform traffic becomes machine-to-machine — agents querying, updating and negotiating", "A dominant player offers the same thing for free and pulls participants away", "A major breach or ransomware attack hits shared infrastructure in the sector", "A scandal over falsified sustainability data destroys trust in such claims", "Energy and compute costs make always-on cloud analytics uneconomic", "Competence disappears faster than expected, and automation becomes necessary rather than optional", "Physical climate events disrupt sites, logistics and connectivity", "The project that builds the platform ends and nobody takes over operations", "Other"] } },
@@ -983,7 +980,7 @@ const SURVEY = {
           nb: { q: "Hva må demonstreres for at dataplattformen skal regnes som validert?" },
           en: { q: "What must be demonstrated for the data platform to be considered validated?" } },
         { id: "q79", t: "longtext",
-          nb: { q: "Hva er den største tekniske barrieren du ser for deg?" },
+          nb: { q: "Hva er den største tekniske barrieren dere ser for dere?" },
           en: { q: "What is the largest technical barrier you foresee?" } },
         { id: "q80", core: true, t: "longtext",
           nb: { q: "Hva er den største organisatoriske, kommersielle eller juridiske barrieren – og hvordan kan den håndteres?" },
@@ -995,8 +992,8 @@ const SURVEY = {
           nb: { q: "Er det noe annet som bør inn i kravspesifikasjonen?" },
           en: { q: "Is there anything else that should be included in the requirements specification?" } },
         { id: "q83", core: true, t: "text",
-          nb: { q: "Kan vi kontakte deg for et oppfølgingsintervju? Oppgi i så fall e-postadresse." },
-          en: { q: "May we contact you for a follow-up interview? If yes, please provide an email address." } }
+          nb: { q: "Hvor kan prosjektet ta kontakt for oppfølging? Oppgi en funksjonsadresse eller rolle – f.eks. baerel@virksomhet.no – ikke personnavn." },
+          en: { q: "Where can the project get in touch for follow-up? Give a functional address or role — e.g. baerel@company.com — not personal names." } }
       ]
     }
   ]

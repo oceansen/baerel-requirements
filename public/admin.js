@@ -1,4 +1,4 @@
-/* Bærel admin console: create company workspaces and manage their links. */
+/* Bærel admin console: create companies, manage their access codes and specification versions. */
 (function () {
   "use strict";
 
@@ -65,19 +65,23 @@
     return [
       "Hei,",
       "",
-      "Her er lenken til arbeidsområdet for " + c.name + " i Bærel-kravkartleggingen:",
-      c.url,
+      "Her er tilgangen til " + c.name + " sin egenrapporterte kravspesifikasjon i Bærel-prosjektet.",
       "",
-      "Alle i virksomheten som har lenken kan åpne den og bidra – del den gjerne internt, men ikke utenfor virksomheten. Hver person fyller ut sitt eget svar, og kan oppdatere det senere fra samme nettleser.",
+      "Nettside: " + c.access_url,
+      "Tilgangskode: " + c.code,
+      "",
+      "Alle i virksomheten som har koden, fyller ut og oppdaterer den samme kravspesifikasjonen. Alt lagres fortløpende, og tidligere versjoner kan hentes fram igjen. Del koden bare internt, og behandle den som et passord.",
       "",
       "—",
       "",
       "Hi,",
       "",
-      "Here is the link to the " + c.name + " workspace in the Bærel requirements survey:",
-      c.url,
+      "Here is access to the self-reported requirements specification for " + c.name + " in the Bærel project.",
       "",
-      "Anyone in your organisation with the link can open it and contribute — share it internally, but not outside the organisation. Each person fills in their own response and can update it later from the same browser."
+      "Website: " + c.access_url,
+      "Access code: " + c.code,
+      "",
+      "Everyone in your organisation holding the code fills in and updates the same specification. Everything is saved as you go, and earlier versions can be restored. Share the code only internally and treat it like a password."
     ].join("\n");
   }
 
@@ -141,64 +145,56 @@
 
   /* ------------------------------------------------------------ console */
 
-  function linkBox(c) {
-    if (!c.url) return el("p", { class: "co-meta", text: "No active link — nobody can open this workspace. Generate a new link to share it again." });
-    return el("div", { class: "linkbox" }, [
-      el("code", { text: c.url, title: c.url }),
-      el("button", { class: "btn primary", type: "button", text: "Copy link", onclick: function (e) { copy(c.url, e.currentTarget); } }),
+  function codeBox(c) {
+    if (!c.code) return el("p", { class: "co-meta", text: "No active code — nobody can open this specification. Generate a new code to give the company access again." });
+    return el("div", { class: "codebox" }, [
+      el("code", { class: "code", text: c.code }),
+      el("button", { class: "btn primary", type: "button", text: "Copy code", onclick: function (e) { copy(c.code, e.currentTarget); } }),
       el("button", { class: "btn", type: "button", text: "Copy invitation", onclick: function (e) { copy(invitation(c), e.currentTarget); } }),
-      el("a", { class: "btn", href: c.url, target: "_blank", rel: "noreferrer noopener", text: "Open" })
+      el("span", { class: "where", text: "Entered at " + c.access_url })
     ]);
+  }
+
+  function post(c, action) {
+    return api("POST", "/api/admin/companies/" + c.id + "/" + action, {}).then(function (d) { replaceCompany(d.company); });
   }
 
   function companyCard(c) {
     var pills = [
-      el("span", { class: "pill " + (c.submissions_open ? "ok" : "warn"), text: c.submissions_open ? "Accepting submissions" : "Submissions closed" }),
-      el("span", { class: "pill " + (c.link_active ? "ok" : "warn"), text: c.link_active ? "Link active" : "No active link" })
+      el("span", { class: "pill " + (c.submissions_open ? "ok" : "warn"), text: c.submissions_open ? "Open for changes" : "Closed for changes" }),
+      el("span", { class: "pill " + (c.code_active ? "ok" : "warn"), text: c.code_active ? "Code active" : "No active code" })
     ];
     var meta = c.id + " · created " + fmtDate(c.created_at) + " · " +
-      c.submission_count + (c.submission_count === 1 ? " contribution" : " contributions") +
-      (c.last_submission_at ? " · last " + fmtDate(c.last_submission_at) : "") +
-      (c.link_generations > 1 ? " · link generation " + c.link_generations : "");
+      (c.spec_updated_at ? c.spec_completion + "% complete · last change " + fmtTime(c.spec_updated_at) + " · " + c.version_count + (c.version_count === 1 ? " version" : " versions") : "not started") +
+      (c.code_generations > 1 ? " · code generation " + c.code_generations : "");
 
+    var verBox = el("div");
     var actions = el("div", { class: "co-actions" }, [
-      armed(c.link_active ? "Generate new link" : "Generate link", "Confirm — old link stops working", "", function () {
-        return api("POST", "/api/admin/companies/" + c.id + "/rotate").then(function (d) { replaceCompany(d.company); });
-      }),
-      c.link_active ? armed("Revoke link", "Confirm revoke", "danger", function () {
-        return api("POST", "/api/admin/companies/" + c.id + "/revoke").then(function (d) { replaceCompany(d.company); });
-      }) : null,
+      armed(c.code_active ? "Generate new code" : "Generate code", "Confirm — the old code stops working", "", function () { return post(c, "rotate"); }),
+      c.code_active ? armed("Revoke access", "Confirm revoke", "danger", function () { return post(c, "revoke"); }) : null,
       c.submissions_open
-        ? armed("Close submissions", "Confirm close", "danger", function () {
-            return api("POST", "/api/admin/companies/" + c.id + "/close").then(function (d) { replaceCompany(d.company); });
-          })
-        : el("button", { class: "btn", type: "button", text: "Reopen submissions", onclick: function () {
-            api("POST", "/api/admin/companies/" + c.id + "/reopen").then(function (d) { replaceCompany(d.company); });
-          } }),
-      c.submission_count ? el("a", { class: "btn", href: "/admin/analysis?company=" + encodeURIComponent(c.id), text: "Analysis" }) : null,
-      c.submission_count ? el("button", { class: "btn ghost", type: "button", text: "Download responses", onclick: function () {
+        ? armed("Close for changes", "Confirm close", "danger", function () { return post(c, "close"); })
+        : el("button", { class: "btn", type: "button", text: "Reopen for changes", onclick: function () { post(c, "reopen"); } }),
+      c.spec_updated_at ? el("a", { class: "btn", href: "/admin/analysis?company=" + encodeURIComponent(c.id), text: "Analysis" }) : null,
+      c.spec_updated_at ? el("button", { class: "btn ghost", type: "button", text: "Download (JSON)", onclick: function () {
         api("GET", "/api/admin/companies/" + c.id + "/submissions").then(function (d) {
-          downloadJson("baerel-" + c.slug + "-" + new Date().toISOString().slice(0, 10) + ".json", d.responses);
+          downloadJson("baerel-kravspesifikasjon-" + c.slug + "-" + new Date().toISOString().slice(0, 10) + ".json", d.responses[0] || {});
         });
+      } }) : null,
+      c.version_count ? el("button", { class: "btn ghost", type: "button", text: "Versions", onclick: function (e) {
+        var btn = e.currentTarget;
+        if (verBox.childNodes.length) { verBox.textContent = ""; btn.textContent = "Versions"; return; }
+        btn.textContent = "Hide versions";
+        api("GET", "/api/admin/companies/" + c.id + "/versions").then(function (d) { verBox.appendChild(versionList(c, d.versions)); });
       } }) : null
     ]);
-
-    var ivBox = el("div");
-    if (c.submission_count) {
-      actions.appendChild(el("button", { class: "btn ghost", type: "button", text: "Interviews and versions", onclick: function (e) {
-        var btn = e.currentTarget;
-        if (ivBox.childNodes.length) { ivBox.textContent = ""; btn.textContent = "Interviews and versions"; return; }
-        btn.textContent = "Hide interviews";
-        api("GET", "/api/admin/companies/" + c.id + "/interviews").then(function (d) { ivBox.appendChild(interviewList(d.interviews)); });
-      } }));
-    }
 
     return el("li", { class: "co" }, [
       el("div", { class: "co-top" }, [el("h3", { text: c.name })].concat(pills)),
       el("p", { class: "co-meta mono", text: meta }),
-      linkBox(c),
+      codeBox(c),
       actions,
-      ivBox
+      verBox
     ]);
   }
 
@@ -207,25 +203,25 @@
     catch (e) { return iso; }
   }
 
-  /* Each interview is a living document; every version is a timestamped snapshot. */
-  function interviewList(list) {
-    var ul = el("ul", { class: "iv-list" });
-    list.forEach(function (iv) {
-      var who = [iv.role || "Role not given", iv.interviewer && ("interviewer " + iv.interviewer), iv.interviewee && ("interviewee " + iv.interviewee)].filter(Boolean).join(" · ");
-      var vers = el("div", { class: "iv-vers" });
-      iv.versions.forEach(function (v) {
-        vers.appendChild(el("a", {
-          href: "/api/admin/submissions/" + iv.id + "/versions/" + v.n,
-          title: v.reason + " · " + v.completion + "% complete",
-          text: "v" + v.n + " · " + fmtTime(v.saved_at) + (v.reason === "export" ? " · export" : v.reason === "manual" ? " · saved" : "")
-        }));
-      });
-      ul.appendChild(el("li", { class: "iv" }, [
-        el("div", { class: "iv-top" }, [
-          el("b", { text: who }),
-          el("span", { class: "co-meta mono", text: iv.completion + "% · last change " + fmtTime(iv.updated_at) + " · " + iv.versions.length + (iv.versions.length === 1 ? " version" : " versions") })
-        ]),
-        vers
+  var REASON = { first: "first save", auto: "auto", manual: "saved", "export": "export", migrated: "migrated", "before-restore": "before restore" };
+  function reasonText(r) { return REASON[r] || (/^restored-v(\d+)$/.test(r) ? "restored v" + r.slice(10) : r); }
+
+  /* The specification is one living document; every version is a timestamped snapshot.
+     Restoring saves the current state as a version first, so it can be undone. */
+  function versionList(c, list) {
+    var ul = el("ul", { class: "ver-list" });
+    list.forEach(function (v, i) {
+      ul.appendChild(el("li", {}, [
+        el("span", { class: "mono", text: "v" + v.n }),
+        el("span", { text: fmtTime(v.saved_at) + " · " + reasonText(v.reason) + " · " + v.completion + "%" }),
+        el("span", { class: "ver-acts" }, [
+          el("a", { class: "btn ghost", href: "/api/admin/companies/" + c.id + "/versions/" + v.n, text: "Download" }),
+          i === 0 ? el("span", { class: "pill", text: "latest" }) : armed("Restore", "Confirm restore v" + v.n, "", function () {
+            return api("POST", "/api/admin/companies/" + c.id + "/versions/" + v.n + "/restore", {}).then(function () {
+              return api("GET", "/api/admin/companies").then(function (d) { state.companies = d.companies; render(); });
+            });
+          })
+        ])
       ]));
     });
     return ul;
@@ -234,7 +230,7 @@
   function renderConsole() {
     main.textContent = "";
     top.textContent = "";
-    var total = state.companies.reduce(function (n, c) { return n + c.submission_count; }, 0);
+    var total = state.companies.filter(function (c) { return c.spec_updated_at; }).length;
     if (total) {
       top.appendChild(el("a", { class: "btn", href: "/admin/analysis", text: "Analysis — all companies" }));
       top.appendChild(el("a", { class: "btn ghost", href: "/api/admin/export", text: "Download all (JSON)" }));
@@ -244,9 +240,9 @@
     } }));
 
     var head = el("section", { class: "panel" });
-    head.appendChild(el("p", { class: "eyebrow", text: state.companies.length + (state.companies.length === 1 ? " workspace" : " workspaces") + " · " + total + " contributions" }));
+    head.appendChild(el("p", { class: "eyebrow", text: state.companies.length + (state.companies.length === 1 ? " company" : " companies") + " · " + total + (total === 1 ? " specification started" : " specifications started") }));
     head.appendChild(el("h2", { style: "font-size:clamp(24px,3.4vw,33px);margin-top:6px", text: "Add a company" }));
-    head.appendChild(el("p", { style: "color:var(--ink-2);max-width:62ch;margin:8px 0 0", text: "Enter the company name. The workspace, internal ID, secret token and private link are generated for you." }));
+    head.appendChild(el("p", { style: "color:var(--ink-2);max-width:62ch;margin:8px 0 0", text: "Enter the company name. Its specification, internal ID and a random secret access code are generated for you." }));
 
     var name = el("input", { type: "text", placeholder: "e.g. Kongsberg Maritime", "aria-label": "Company name", maxlength: "120", autocomplete: "off" });
     var err = el("p", { class: "err", role: "alert" });
@@ -269,8 +265,8 @@
       var f = state.fresh;
       head.appendChild(el("div", { class: "adm-fresh", role: "status" }, [
         el("h3", { text: f.name + " is ready" }),
-        el("p", { text: "Send this link to the company's contact. Anyone holding it can open the workspace and contribute, so treat it like a password." }),
-        linkBox(f)
+        el("p", { text: "Send the code to the company's contact, ideally by a different channel than the website address. Anyone holding it can open and change the specification, so treat it like a password." }),
+        codeBox(f)
       ]));
     }
     main.appendChild(head);
