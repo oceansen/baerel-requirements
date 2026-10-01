@@ -235,7 +235,7 @@
       featAgg: "Plattformfunksjoner på tvers av virksomhetene", featAggLede: "Antall virksomheter der funksjonen er «må ha»; «bør ha» i parentes.",
       featShowNone: "Funksjoner uten indikasjon ennå ({n})",
       featOr: " eller ", featRated: "vurdert {v} av 5", featRatedMin: "vurdert {v} eller høyere", featChosen: "{n} valgt", featChooseMin: "minst {n} valgt",
-      smTitle: "Eksempel", smStatus: "Status", smAvailable: "Finnes i dag", smDesired: "Ønsket",
+      smTitle: "Eksempeldata", smStatus: "Status", smAvailable: "Finnes i dag", smDesired: "Ønsket",
       smName: "Navn", smNamePh: "f.eks. Reparasjonslogg fra servicesystemet",
       smDesc: "Beskrivelse", smDescPh: "Hva viser dataene, hva brukes de til, hva mangler i dem?",
       smSource: "Kilde", smSourcePh: "Kildesystem, eller hvem som har dataene",
@@ -243,15 +243,18 @@
       smSens: "Hva slags data", smSensOpts: ["Syntetiske eller fiktive", "Anonymiserte eller maskerte", "Ekte, men ikke sensitive", "Sensitive – beskriv bare, ikke last opp"],
       smScenario: "Støtter scenario", smFiles: "Filer", smAddFile: "+ Legg til filer", smAddTemplate: "+ Legg til skisse eller mal",
       smUploading: "Laster opp …", smUploadFail: "Kunne ikke laste opp", smTooBig: "filen er for stor (maks 25 MB)",
-      smBadType: "filtypen tas ikke imot", smAdd: "+ Legg til eksempel",
-      smHint: "Ett eksempel per datasett. Små utdrag holder – noen hundre rader eller et par sider. Maks 25 MB per fil.",
+      smBadType: "filtypen tas ikke imot", smAdd: "+ Legg til eksempeldata",
+      smHint: "Legg til eksempeldata og metadata hver for seg – ett kort per datasett eller metadatabeskrivelse. Metadata kan være skjema, dataordbok eller katalogpost, og kan deles selv om dataene ikke kan det. Små utdrag holder. Maks 25 MB per fil.",
       smNoUpload: "Filopplasting er tilgjengelig når kravspesifikasjonen åpnes med tilgangskoden. Her kan dere beskrive eksemplene.",
       smSensBlocked: "Sensitive data skal ikke lastes opp. Beskriv datasettet i stedet – eller lag en syntetisk variant.",
       smCount: "eksempeldata", smWhich: "Formater i eksemplene",
       smMeta: "Metadata", smMetaStd: "Metadatastandard", smMetaDesc: "Hvilke metadata finnes",
       smMetaDescPh: "f.eks. enheter, tidsstempler, kilde og opphav, eier, lisens, kvalitet, kobling til produkt-ID",
-      smMetaFiles: "Eksempler på metadata", smAddMeta: "+ Legg til metadataeksempel",
-      smMetaHint: "Skjema, dataordbok, katalogpost eller annen beskrivelse av dataene – også alene, uten selve dataene.",
+      smMetaFiles: "Metadatafiler", smAddMeta: "+ Legg til metadata", smAddMetaFile: "+ Legg til metadatafiler",
+      smMetaTitle: "Metadata", smMetaNamePh: "f.eks. Dataordbok for reparasjonslogg",
+      smDescribes: "Beskriver", smDescribesPh: "Hvilket datasett eller system metadataene gjelder (valgfritt)",
+      smEmpty: "Ingen eksempler ennå. Legg til eksempeldata, metadata – eller begge, hver for seg.",
+      smMetaCount: "metadataeksempler",
       smMetaOpts: ["DCAT-AP-NO / DCAT-AP (Felles datakatalog)", "Dublin Core", "JSON Schema", "XML Schema (XSD)", "SHACL eller OWL-ontologi", "AAS-delmodellmaler (IDTA)", "ECLASS / IEC 61360-egenskaper", "CSV on the Web (CSVW)", "Dataordbok eller kodebok i regneark", "Egen intern modell", "Ingen metadata i dag"],
       smMetaWhich: "Metadatastandarder i eksemplene"
     },
@@ -268,7 +271,7 @@
       featAgg: "Platform features across organisations", featAggLede: "Number of organisations where the feature is “must have”; “should have” in brackets.",
       featShowNone: "Features not indicated yet ({n})",
       featOr: " or ", featRated: "rated {v} of 5", featRatedMin: "rated {v} or higher", featChosen: "{n} selected", featChooseMin: "at least {n} selected",
-      smTitle: "Sample", smStatus: "Status", smAvailable: "Available today", smDesired: "Desired",
+      smTitle: "Sample data", smStatus: "Status", smAvailable: "Available today", smDesired: "Desired",
       smName: "Name", smNamePh: "e.g. Repair log from the service system",
       smDesc: "Description", smDescPh: "What does the data show, what is it used for, what is missing from it?",
       smSource: "Source", smSourcePh: "Source system, or who holds the data",
@@ -276,15 +279,18 @@
       smSens: "Kind of data", smSensOpts: ["Synthetic or fictional", "Anonymised or masked", "Real, but not sensitive", "Sensitive — describe only, do not upload"],
       smScenario: "Supports scenario", smFiles: "Files", smAddFile: "+ Add files", smAddTemplate: "+ Add sketch or template",
       smUploading: "Uploading …", smUploadFail: "Could not upload", smTooBig: "the file is too large (max 25 MB)",
-      smBadType: "this file type is not accepted", smAdd: "+ Add sample",
-      smHint: "One sample per dataset. Small extracts are enough — a few hundred rows or a couple of pages. Max 25 MB per file.",
+      smBadType: "this file type is not accepted", smAdd: "+ Add sample data",
+      smHint: "Add sample data and metadata separately — one card per dataset or metadata description. Metadata can be a schema, data dictionary or catalogue record, and can be shared even when the data cannot. Small extracts are enough. Max 25 MB per file.",
       smNoUpload: "File upload is available when the specification is opened with the access code. Here you can describe the samples.",
       smSensBlocked: "Sensitive data must not be uploaded. Describe the dataset instead — or make a synthetic version.",
       smCount: "data samples", smWhich: "Formats in the samples",
       smMeta: "Metadata", smMetaStd: "Metadata standard", smMetaDesc: "Which metadata exists",
       smMetaDescPh: "e.g. units, timestamps, source and provenance, owner, licence, quality, link to product ID",
-      smMetaFiles: "Metadata examples", smAddMeta: "+ Add metadata example",
-      smMetaHint: "A schema, data dictionary, catalogue record or other description of the data — also on its own, without the data itself.",
+      smMetaFiles: "Metadata files", smAddMeta: "+ Add metadata", smAddMetaFile: "+ Add metadata files",
+      smMetaTitle: "Metadata", smMetaNamePh: "e.g. Data dictionary for the repair log",
+      smDescribes: "Describes", smDescribesPh: "Which dataset or system the metadata is about (optional)",
+      smEmpty: "No samples yet. Add sample data, metadata — or both, each on its own.",
+      smMetaCount: "metadata examples",
       smMetaOpts: ["DCAT-AP-NO / DCAT-AP (Norwegian national data catalogue)", "Dublin Core", "JSON Schema", "XML Schema (XSD)", "SHACL or OWL ontology", "AAS submodel templates (IDTA)", "ECLASS / IEC 61360 properties", "CSV on the Web (CSVW)", "Data dictionary or codebook in a spreadsheet", "Own internal model", "No metadata today"],
       smMetaWhich: "Metadata standards in the samples"
     }
@@ -622,11 +628,13 @@
       }).join(" || ");
     }
     if (rec.type === "samples") {
-      return (rec.samples || []).map(function (sm, i) {
-        var st = sm.status === "desired" ? (lang === "nb" ? "ønsket" : "desired") : (lang === "nb" ? "finnes" : "available");
-        var bits = [sm.title, lang === "nb" ? sm.format_nb : sm.format_en, sm.source, sm.volume].filter(Boolean).join(", ");
-        var md = sm.metadata ? " {" + [lang === "nb" ? sm.metadata.standard_nb : sm.metadata.standard_en, sm.metadata.description, (sm.metadata.files || []).map(function (f) { return f.name; }).join("; ")].filter(Boolean).join(" | ") + "}" : "";
-        return (i + 1) + " [" + st + "] " + bits + (sm.description ? ": " + sm.description : "") + (sm.files && sm.files.length ? " [" + sm.files.map(function (f) { return f.name; }).join("; ") + "]" : "") + md;
+      return sampleRecs(rec.samples).map(function (sm, i) {
+        var meta = sm.kind === "metadata";
+        var st = (meta ? "metadata, " : "") + (sm.status === "desired" ? (lang === "nb" ? "ønsket" : "desired") : (lang === "nb" ? "finnes" : "available"));
+        var bits = (meta
+          ? [sm.title, lang === "nb" ? sm.standard_nb : sm.standard_en, sm.describes ? "→ " + sm.describes : "", sm.source]
+          : [sm.title, lang === "nb" ? sm.format_nb : sm.format_en, sm.source, sm.volume]).filter(Boolean).join(", ");
+        return (i + 1) + " [" + st + "] " + bits + (sm.description ? ": " + sm.description : "") + (sm.files && sm.files.length ? " [" + sm.files.map(function (f) { return f.name; }).join("; ") + "]" : "");
       }).join(" || ");
     }
     if (rec.type === "scale") s = rec.value == null ? "" : String(rec.value);
@@ -1162,16 +1170,20 @@
         } else if (q.t === "samples") {
           if (r.samples && r.samples.length) {
             has = true;
-            ans = "<ol class=\"sc\">" + r.samples.map(function (sm) {
-              var st = sm.status === "desired" ? T0.smDesired : T0.smAvailable;
-              var meta = [lang === "nb" ? sm.format_nb : sm.format_en, sm.source, sm.volume, lang === "nb" ? sm.sensitivity_nb : sm.sensitivity_en].filter(Boolean).join(" · ");
-              return "<li><b>" + esc(sm.title || T0.smTitle) + "</b> <span class=\"tag\">" + esc(st) + "</span>" +
-                (meta ? "<div class=\"note\">" + esc(meta) + "</div>" : "") +
-                (sm.description ? "<p>" + esc(sm.description) + "</p>" : "") +
-                (sm.files && sm.files.length ? "<p class=\"uns\">" + esc(T0.smFiles + ": " + sm.files.map(function (f) { return f.name + " (" + fmtSize(f.size) + ")"; }).join(", ")) + "</p>" : "") +
-                (sm.metadata ? "<div class=\"note\">" + esc(T0.smMeta + ": " + [lang === "nb" ? sm.metadata.standard_nb : sm.metadata.standard_en, sm.metadata.description,
-                  (sm.metadata.files || []).map(function (f) { return f.name + " (" + fmtSize(f.size) + ")"; }).join(", ")].filter(Boolean).join(" · ")) + "</div>" : "") + "</li>";
-            }).join("") + "</ol>";
+            ans = ["data", "metadata"].map(function (kind) {
+              var items = sampleRecs(r.samples).filter(function (sm) { return sm.kind === kind; });
+              if (!items.length) return "";
+              return "<p class=\"uns\"><b>" + esc(kind === "metadata" ? T0.smMeta : T0.smTitle) + "</b></p><ol class=\"sc\">" + items.map(function (sm) {
+                var st = sm.status === "desired" ? T0.smDesired : T0.smAvailable;
+                var meta = (kind === "metadata"
+                  ? [lang === "nb" ? sm.standard_nb : sm.standard_en, sm.describes ? T0.smDescribes + ": " + sm.describes : "", sm.source]
+                  : [lang === "nb" ? sm.format_nb : sm.format_en, sm.source, sm.volume, lang === "nb" ? sm.sensitivity_nb : sm.sensitivity_en]).filter(Boolean).join(" · ");
+                return "<li><b>" + esc(sm.title || (kind === "metadata" ? T0.smMetaTitle : T0.smTitle)) + "</b> <span class=\"tag\">" + esc(st) + "</span>" +
+                  (meta ? "<div class=\"note\">" + esc(meta) + "</div>" : "") +
+                  (sm.description ? "<p>" + esc(sm.description) + "</p>" : "") +
+                  (sm.files && sm.files.length ? "<p class=\"uns\">" + esc((kind === "metadata" ? T0.smMetaFiles : T0.smFiles) + ": " + sm.files.map(function (f) { return f.name + " (" + fmtSize(f.size) + ")"; }).join(", ")) + "</p>" : "") + "</li>";
+              }).join("") + "</ol>";
+            }).join("");
           }
         } else if (q.t === "scenarios") {
           if (r.scenarios && r.scenarios.length) {
@@ -1270,17 +1282,18 @@
         if ((r.selected && r.selected.length) || r.other) answers[q.id] = { i: (r.selected || []).slice() };
         if (r.other) answers[q.id].other = r.other;
       } else if (q.t === "samples") {
-        if (r.samples && r.samples.length) answers[q.id] = r.samples.map(function (sm) {
-          var o = { status: sm.status === "desired" ? "desired" : "available", title: sm.title || "", desc: sm.description || "", source: sm.source || "", volume: sm.volume || "" };
-          if (typeof sm.format === "number") o.format = sm.format;
-          if (typeof sm.sensitivity === "number") o.sensitivity = sm.sensitivity;
-          if (typeof sm.scenario === "number") o.scenario = sm.scenario - 1;
-          if (sm.files && sm.files.length) o.files = sm.files.map(function (f) { return { id: f.id, name: f.name, size: f.size }; });
-          if (sm.metadata) {
-            if (typeof sm.metadata.standard === "number") o.metaStd = sm.metadata.standard;
-            if (sm.metadata.description) o.metaDesc = sm.metadata.description;
-            if (sm.metadata.files && sm.metadata.files.length) o.metaFiles = sm.metadata.files.map(function (f) { return { id: f.id, name: f.name, size: f.size }; });
+        if (r.samples && r.samples.length) answers[q.id] = sampleRecs(r.samples).map(function (sm) {
+          var o = { kind: sm.kind === "metadata" ? "metadata" : "data", status: sm.status === "desired" ? "desired" : "available", title: sm.title || "", desc: sm.description || "", source: sm.source || "" };
+          if (o.kind === "metadata") {
+            o.describes = sm.describes || "";
+            if (typeof sm.standard === "number") o.metaStd = sm.standard;
+          } else {
+            o.volume = sm.volume || "";
+            if (typeof sm.format === "number") o.format = sm.format;
+            if (typeof sm.sensitivity === "number") o.sensitivity = sm.sensitivity;
+            if (typeof sm.scenario === "number") o.scenario = sm.scenario - 1;
           }
+          if (sm.files && sm.files.length) o.files = sm.files.map(function (f) { return { id: f.id, name: f.name, size: f.size }; });
           return o;
         });
       } else if (q.t === "scenarios") {
@@ -1686,22 +1699,32 @@
 
   /* ---------------------------------------------------------------- sample data
 
-     One card per dataset: whether it exists today or is wished for, what it is,
-     where it comes from, and — when it exists and is not sensitive — the files
-     themselves, uploaded to the company's specification on the server. */
+     Two kinds of entry, added separately:
+       data      — one dataset: available today or desired, what it is, where it
+                   comes from, and (when not sensitive) the files themselves
+       metadata  — a description of data: the metadata standard, what metadata
+                   exists, which dataset it describes (optional), and example files
+                   such as schemas, data dictionaries or catalogue records
+     Files are uploaded to the company's specification on the server. */
 
-  var SM_TEXT = ["title", "desc", "source", "volume", "metaDesc"];
+  var SM_DATA_TEXT = ["title", "desc", "source", "volume"];
+  var SM_META_TEXT = ["title", "desc", "source", "describes"];
   var META_BASE = 100;   // metadata standards are reported to the feature rules as 100 + index
   var SENSITIVE = 3;
 
+  function isMeta(sm) { return !!sm && sm.kind === "metadata"; }
+
   function sampleFilled(sm) {
-    return !!sm && (SM_TEXT.some(function (f) { return sm[f] && String(sm[f]).trim(); }) || !!(sm.files && sm.files.length) || !!(sm.metaFiles && sm.metaFiles.length));
+    if (!sm) return false;
+    var fields = isMeta(sm) ? SM_META_TEXT : SM_DATA_TEXT;
+    return fields.some(function (f) { return sm[f] && String(sm[f]).trim(); }) || !!(sm.files && sm.files.length);
   }
 
-  function sampleCount() {
+  function sampleCount(kind) {
     var n = 0;
     ALL_Q.forEach(function (q) {
-      if (q.t === "samples" && Array.isArray(state.answers[q.id])) n += state.answers[q.id].filter(sampleFilled).length;
+      if (q.t !== "samples" || !Array.isArray(state.answers[q.id])) return;
+      n += state.answers[q.id].filter(function (sm) { return sampleFilled(sm) && (!kind || (kind === "metadata") === isMeta(sm)); }).length;
     });
     return n;
   }
@@ -1710,10 +1733,27 @@
     var out = [];
     (list || []).forEach(function (sm) {
       if (!sampleFilled(sm)) return;
-      if (typeof sm.format === "number" && out.indexOf(sm.format) === -1) out.push(sm.format);
-      if (typeof sm.metaStd === "number" && out.indexOf(META_BASE + sm.metaStd) === -1) out.push(META_BASE + sm.metaStd);
+      var v = isMeta(sm) ? (typeof sm.metaStd === "number" ? META_BASE + sm.metaStd : null) : (typeof sm.format === "number" ? sm.format : null);
+      if (v !== null && out.indexOf(v) === -1) out.push(v);
     });
     return out.sort(function (a, b) { return a - b; });
+  }
+
+  /* Cards saved by the earlier version carried metadata inside a data card;
+     split them into a data card and a metadata card that describes it. */
+  function splitLegacy(list) {
+    var changed = false;
+    for (var i = 0; i < list.length; i++) {
+      var sm = list[i];
+      if (isMeta(sm) || !(typeof sm.metaStd === "number" || (sm.metaDesc && sm.metaDesc.trim()) || (sm.metaFiles && sm.metaFiles.length))) continue;
+      var m = { kind: "metadata", status: sm.status || "available", describes: sm.title || "" };
+      if (typeof sm.metaStd === "number") m.metaStd = sm.metaStd;
+      if (sm.metaDesc) m.desc = sm.metaDesc;
+      if (sm.metaFiles && sm.metaFiles.length) m.files = sm.metaFiles;
+      delete sm.metaStd; delete sm.metaDesc; delete sm.metaFiles;
+      list.splice(i + 1, 0, m); i++; changed = true;
+    }
+    return changed;
   }
 
   function fmtSize(n) {
@@ -1769,15 +1809,17 @@
     }
     function commit() { persist(); refreshSpine(); }
 
-    function card(sm, idx) {
-      function keep() { if (arr().indexOf(sm) === -1) arr().push(sm); }
+    function card(sm, nth) {
+      var meta = isMeta(sm);
       if (!sm.status) sm.status = "available";
-      var c = el("article", { class: "sc-card sm-card" + (sm.status === "desired" ? " sm-desired" : "") });
+      var c = el("article", { class: "sc-card sm-card" + (meta ? " sm-metacard" : "") + (sm.status === "desired" ? " sm-desired" : "") });
+      var idx = arr().indexOf(sm);
+      var pfx = q.id + "-" + (meta ? "md" : "sm") + nth + "-";
 
       var status = el("div", { class: "seg sm-status", role: "group", "aria-label": t("smStatus") });
       [["available", t("smAvailable")], ["desired", t("smDesired")]].forEach(function (o) {
         status.appendChild(el("button", { type: "button", "aria-pressed": String(sm.status === o[0]), text: o[1], onclick: function () {
-          keep(); sm.status = o[0]; commit(); draw();
+          sm.status = o[0]; commit(); draw();
         } }));
       });
       var rm = el("button", { class: "btn ghost sc-rm", type: "button", text: t("scRemove") });
@@ -1789,30 +1831,32 @@
         }
         var a = arr(), at = a.indexOf(sm); if (at > -1) a.splice(at, 1); commit(); draw();
       });
-      c.appendChild(el("header", { class: "sc-head" }, [el("span", { class: "eyebrow", text: t("smTitle") + " " + (idx + 1) }), status, rm]));
+      c.appendChild(el("header", { class: "sc-head" }, [
+        el("span", { class: "eyebrow", text: (meta ? t("smMetaTitle") : t("smTitle")) + " " + nth }), status, rm
+      ]));
 
       var grid = el("div", { class: "sc-grid" });
-      function text(f, labKey, phKey, long) {
-        var id = q.id + "-sm" + idx + "-" + f;
-        var inp = long ? el("textarea", { id: id, rows: "2", placeholder: t(phKey) }) : el("input", { id: id, type: "text", placeholder: t(phKey) });
+      function text(f, labKey, phKey, long, listId) {
+        var id = pfx + f;
+        var inp = long ? el("textarea", { id: id, rows: "2", placeholder: t(phKey) })
+          : el("input", { id: id, type: "text", placeholder: t(phKey), list: listId || null });
         inp.value = sm[f] || "";
-        inp.addEventListener("input", function () { keep(); sm[f] = inp.value; persist(); });
+        inp.addEventListener("input", function () { sm[f] = inp.value; persist(); });
         inp.addEventListener("change", refreshSpine);
         inp.addEventListener("blur", flushDraft);
         grid.appendChild(el("label", { class: "sc-lab", "for": id, text: t(labKey) }));
         grid.appendChild(inp);
       }
-      function select(f, labKey, options, withBlank) {
-        var id = q.id + "-sm" + idx + "-" + f;
+      function select(f, labKey, options) {
+        var id = pfx + f;
         var s = el("select", { id: id });
-        if (withBlank) s.appendChild(el("option", { value: "", text: "–" }));
+        s.appendChild(el("option", { value: "", text: "–" }));
         options.forEach(function (o) {
           var op = el("option", { value: String(o.v), text: o.label });
           if (sm[f] === o.v) op.selected = true;
           s.appendChild(op);
         });
         s.addEventListener("change", function () {
-          keep();
           if (s.value === "") delete sm[f]; else sm[f] = Number(s.value);
           commit();
           if (f === "sensitivity") draw();
@@ -1820,136 +1864,133 @@
         grid.appendChild(el("label", { class: "sc-lab", "for": id, text: t(labKey) }));
         grid.appendChild(s);
       }
-      text("title", "smName", "smNamePh");
-      text("desc", "smDesc", "smDescPh", true);
-      text("source", "smSource", "smSourcePh");
-      select("format", "smFormat", L(q).o.map(function (l, i) { return { v: i, label: l }; }), true);
-      text("volume", "smVolume", "smVolumePh");
-      select("sensitivity", "smSens", t("smSensOpts").map(function (l, i) { return { v: i, label: l }; }), true);
-      var scs = scenarioOptions();
-      if (scs.length) select("scenario", "smScenario", scs.map(function (o) { return { v: o.i, label: o.label }; }), true);
+
+      if (meta) {
+        // Which dataset the metadata describes: pick from the data samples or type freely.
+        var dlId = q.id + "-dl-data-" + idx;
+        var dl = el("datalist", { id: dlId });
+        arr().forEach(function (x) { if (!isMeta(x) && x.title && x.title.trim()) dl.appendChild(el("option", { value: x.title.trim() })); });
+        c.appendChild(dl);
+        text("title", "smName", "smMetaNamePh");
+        text("describes", "smDescribes", "smDescribesPh", false, dlId);
+        select("metaStd", "smMetaStd", t("smMetaOpts").map(function (l, i) { return { v: i, label: l }; }));
+        text("desc", "smMetaDesc", "smMetaDescPh", true);
+        text("source", "smSource", "smSourcePh");
+      } else {
+        text("title", "smName", "smNamePh");
+        text("desc", "smDesc", "smDescPh", true);
+        text("source", "smSource", "smSourcePh");
+        select("format", "smFormat", L(q).o.map(function (l, i) { return { v: i, label: l }; }));
+        text("volume", "smVolume", "smVolumePh");
+        select("sensitivity", "smSens", t("smSensOpts").map(function (l, i) { return { v: i, label: l }; }));
+        var scs = scenarioOptions();
+        if (scs.length) select("scenario", "smScenario", scs.map(function (o) { return { v: o.i, label: o.label }; }));
+      }
       c.appendChild(grid);
 
-      /* A list of uploaded files under sm[key], with an upload button. */
-      function fileList(key, addLabel) {
-        var pending = 0, errs = [];
-        var wrap = el("ul", { class: "sm-files" });
-        var input = el("input", { type: "file", multiple: "multiple", class: "sr" });
-        var btn = el("button", { type: "button", class: "btn ghost", text: addLabel });
-        function drawList() {
-          wrap.textContent = "";
-          (sm[key] || []).forEach(function (f, k) {
-            var href = sampleHref(f);
-            var x = el("button", { type: "button", class: "sc-img-x sm-x", title: t("scRemove"), "aria-label": t("scRemove") + " " + f.name, text: "×" });
-            x.addEventListener("click", function () { sm[key].splice(k, 1); if (!sm[key].length) delete sm[key]; commit(); drawList(); });
-            wrap.appendChild(el("li", {}, [
-              href ? el("a", { href: href, text: f.name, download: f.name }) : el("span", { text: f.name }),
-              el("span", { class: "count", text: fmtSize(f.size) }),
-              canWrite() || !WS ? x : null
-            ]));
-          });
-          for (var i = 0; i < pending; i++) wrap.appendChild(el("li", { class: "pending" }, [el("span", { text: t("smUploading") })]));
-          errs.forEach(function (e) { wrap.appendChild(el("li", { class: "err" }, [el("span", { text: e })])); });
-        }
-        btn.addEventListener("click", function () { input.click(); });
-        input.addEventListener("change", function () {
-          var files = Array.prototype.slice.call(input.files || []);
-          input.value = ""; errs = [];
-          keep();
-          files.forEach(function (file) {
-            pending++; drawList();
-            uploadSample(file).then(function (d) {
-              sm[key] = sm[key] || [];
-              sm[key].push({ id: d.id, name: d.name, size: d.size });
-              commit();
-            })["catch"](function (e) {
-              errs.push(t("smUploadFail") + " " + file.name + " — " + (e.status === 413 ? t("smTooBig") : e.status === 415 ? t("smBadType") : e.message));
-            }).then(function () { pending--; drawList(); });
-          });
+      /* Files */
+      var pending = 0, errs = [];
+      var wrap = el("ul", { class: "sm-files" });
+      var input = el("input", { type: "file", multiple: "multiple", class: "sr" });
+      var btn = el("button", { type: "button", class: "btn ghost",
+        text: meta ? t("smAddMetaFile") : (sm.status === "desired" ? t("smAddTemplate") : t("smAddFile")) });
+      function drawFiles() {
+        wrap.textContent = "";
+        (sm.files || []).forEach(function (f, k) {
+          var href = sampleHref(f);
+          var x = el("button", { type: "button", class: "sc-img-x sm-x", title: t("scRemove"), "aria-label": t("scRemove") + " " + f.name, text: "×" });
+          x.addEventListener("click", function () { sm.files.splice(k, 1); if (!sm.files.length) delete sm.files; commit(); drawFiles(); });
+          wrap.appendChild(el("li", {}, [
+            href ? el("a", { href: href, text: f.name, download: f.name }) : el("span", { text: f.name }),
+            el("span", { class: "count", text: fmtSize(f.size) }),
+            canWrite() || !WS ? x : null
+          ]));
         });
-        drawList();
-        return { list: wrap, btn: btn, input: input };
+        for (var i = 0; i < pending; i++) wrap.appendChild(el("li", { class: "pending" }, [el("span", { text: t("smUploading") })]));
+        errs.forEach(function (e) { wrap.appendChild(el("li", { class: "err" }, [el("span", { text: e })])); });
       }
-
-      var blocked = sm.sensitivity === SENSITIVE;
-      var data = fileList("files", sm.status === "desired" ? t("smAddTemplate") : t("smAddFile"));
-      var fileRow = el("div", { class: "sc-imgrow" }, [el("p", { class: "eyebrow sc-prev-l", text: t("smFiles") }), data.list]);
-      if (blocked) fileRow.appendChild(el("p", { class: "notice", style: "margin:6px 0 0", text: t("smSensBlocked") }));
-      else if (WS && canWrite()) { fileRow.appendChild(data.btn); fileRow.appendChild(data.input); }
-      c.appendChild(fileRow);
-
-      /* Metadata: the standard used, what exists, and example files. Metadata may be
-         shared even when the data itself is too sensitive to upload. */
-      var meta = el("div", { class: "sm-meta" });
-      meta.appendChild(el("p", { class: "eyebrow sc-prev-l", text: t("smMeta") }));
-      meta.appendChild(el("p", { class: "a-meta", style: "margin:0 0 8px", text: t("smMetaHint") }));
-      var mgrid = el("div", { class: "sc-grid" });
-      var msId = q.id + "-sm" + idx + "-metaStd";
-      var ms = el("select", { id: msId });
-      ms.appendChild(el("option", { value: "", text: "–" }));
-      t("smMetaOpts").forEach(function (l, k) {
-        var op = el("option", { value: String(k), text: l });
-        if (sm.metaStd === k) op.selected = true;
-        ms.appendChild(op);
+      btn.addEventListener("click", function () { input.click(); });
+      input.addEventListener("change", function () {
+        var files = Array.prototype.slice.call(input.files || []);
+        input.value = ""; errs = [];
+        files.forEach(function (file) {
+          pending++; drawFiles();
+          uploadSample(file).then(function (d) {
+            sm.files = sm.files || [];
+            sm.files.push({ id: d.id, name: d.name, size: d.size });
+            commit();
+          })["catch"](function (e) {
+            errs.push(t("smUploadFail") + " " + file.name + " — " + (e.status === 413 ? t("smTooBig") : e.status === 415 ? t("smBadType") : e.message));
+          }).then(function () { pending--; drawFiles(); });
+        });
       });
-      ms.addEventListener("change", function () { keep(); if (ms.value === "") delete sm.metaStd; else sm.metaStd = Number(ms.value); commit(); });
-      mgrid.appendChild(el("label", { class: "sc-lab", "for": msId, text: t("smMetaStd") }));
-      mgrid.appendChild(ms);
-      var mdId = q.id + "-sm" + idx + "-metaDesc";
-      var md = el("textarea", { id: mdId, rows: "2", placeholder: t("smMetaDescPh") });
-      md.value = sm.metaDesc || "";
-      md.addEventListener("input", function () { keep(); sm.metaDesc = md.value; persist(); });
-      md.addEventListener("change", refreshSpine);
-      md.addEventListener("blur", flushDraft);
-      mgrid.appendChild(el("label", { class: "sc-lab", "for": mdId, text: t("smMetaDesc") }));
-      mgrid.appendChild(md);
-      meta.appendChild(mgrid);
-      var mf = fileList("metaFiles", t("smAddMeta"));
-      meta.appendChild(el("p", { class: "eyebrow sc-prev-l", text: t("smMetaFiles") }));
-      meta.appendChild(mf.list);
-      if (WS && canWrite()) { meta.appendChild(mf.btn); meta.appendChild(mf.input); }
-      c.appendChild(meta);
+      var blocked = !meta && sm.sensitivity === SENSITIVE;
+      var row = el("div", { class: "sc-imgrow" }, [el("p", { class: "eyebrow sc-prev-l", text: meta ? t("smMetaFiles") : t("smFiles") }), wrap]);
+      if (blocked) row.appendChild(el("p", { class: "notice", style: "margin:6px 0 0", text: t("smSensBlocked") }));
+      else if (WS && canWrite()) { row.appendChild(btn); row.appendChild(input); }
+      c.appendChild(row);
+      drawFiles();
       return c;
     }
 
     function draw() {
       list.textContent = "";
-      var a = Array.isArray(state.answers[q.id]) ? state.answers[q.id] : [];
-      (a.length ? a : [{}]).forEach(function (sm, i) { list.appendChild(card(sm, i)); });
+      var a = arr();
+      if (splitLegacy(a)) persist();
+      var nData = 0, nMeta = 0;
+      a.forEach(function (sm) { list.appendChild(card(sm, isMeta(sm) ? ++nMeta : ++nData)); });
+      if (!a.length) list.appendChild(el("p", { class: "a-meta sm-empty", text: t("smEmpty") }));
     }
 
-    var add = el("button", { class: "btn sc-add", type: "button", text: t("smAdd") });
-    add.addEventListener("click", function () {
-      var a = arr();
-      if (!a.length && list.querySelector(".sm-card")) a.push({ status: "available" });
-      a.push({ status: "available" }); commit(); draw();
+    function addEntry(kind) {
+      var sm = { kind: kind, status: "available" };
+      arr().push(sm); commit(); draw();
       var cards = list.querySelectorAll(".sm-card"), last = cards[cards.length - 1];
-      if (last) { last.scrollIntoView({ block: "nearest" }); var f = last.querySelector("input"); if (f) f.focus(); }
-    });
-    box.appendChild(add);
+      if (last) { last.scrollIntoView({ block: "nearest" }); var f = last.querySelector("input[type=text]"); if (f) f.focus(); }
+    }
+    box.appendChild(el("div", { class: "row sm-adds" }, [
+      el("button", { class: "btn sc-add", type: "button", text: t("smAdd"), onclick: function () { addEntry("data"); } }),
+      el("button", { class: "btn sc-add", type: "button", text: t("smAddMeta"), onclick: function () { addEntry("metadata"); } })
+    ]));
     draw();
     return box;
   }
 
-  /* Answer record for a samples question (export, server, analysis). */
+  /* Answer records for a samples question (export, server, analysis). */
   function sampleRecords(q, list) {
     var sens = { nb: T.nb.smSensOpts, en: T.en.smSensOpts };
-    return (Array.isArray(list) ? list : []).filter(sampleFilled).map(function (sm) {
-      var o = { status: sm.status === "desired" ? "desired" : "available" };
+    var arr = Array.isArray(list) ? JSON.parse(JSON.stringify(list)) : [];
+    splitLegacy(arr);
+    return arr.filter(sampleFilled).map(function (sm) {
+      var o = { kind: isMeta(sm) ? "metadata" : "data", status: sm.status === "desired" ? "desired" : "available" };
       o.title = String(sm.title || "").trim();
       o.description = String(sm.desc || "").trim();
       o.source = String(sm.source || "").trim();
-      o.volume = String(sm.volume || "").trim();
-      if (typeof sm.format === "number") { o.format = sm.format; o.format_en = q.en.o[sm.format]; o.format_nb = q.nb.o[sm.format]; }
-      if (typeof sm.sensitivity === "number") { o.sensitivity = sm.sensitivity; o.sensitivity_en = sens.en[sm.sensitivity]; o.sensitivity_nb = sens.nb[sm.sensitivity]; }
-      if (typeof sm.scenario === "number") o.scenario = sm.scenario + 1;
-      o.files = (sm.files || []).map(function (f) { return { id: f.id, name: f.name, size: f.size }; });
-      if (typeof sm.metaStd === "number" || (sm.metaDesc && sm.metaDesc.trim()) || (sm.metaFiles && sm.metaFiles.length)) {
-        o.metadata = { description: String(sm.metaDesc || "").trim(), files: (sm.metaFiles || []).map(function (f) { return { id: f.id, name: f.name, size: f.size }; }) };
-        if (typeof sm.metaStd === "number") { o.metadata.standard = sm.metaStd; o.metadata.standard_en = T.en.smMetaOpts[sm.metaStd]; o.metadata.standard_nb = T.nb.smMetaOpts[sm.metaStd]; }
+      if (isMeta(sm)) {
+        o.describes = String(sm.describes || "").trim();
+        if (typeof sm.metaStd === "number") { o.standard = sm.metaStd; o.standard_en = T.en.smMetaOpts[sm.metaStd]; o.standard_nb = T.nb.smMetaOpts[sm.metaStd]; }
+      } else {
+        o.volume = String(sm.volume || "").trim();
+        if (typeof sm.format === "number") { o.format = sm.format; o.format_en = q.en.o[sm.format]; o.format_nb = q.nb.o[sm.format]; }
+        if (typeof sm.sensitivity === "number") { o.sensitivity = sm.sensitivity; o.sensitivity_en = sens.en[sm.sensitivity]; o.sensitivity_nb = sens.nb[sm.sensitivity]; }
+        if (typeof sm.scenario === "number") o.scenario = sm.scenario + 1;
       }
+      o.files = (sm.files || []).map(function (f) { return { id: f.id, name: f.name, size: f.size }; });
       return o;
     });
+  }
+
+  /* Stored records, normalised: older records nested metadata inside a data record. */
+  function sampleRecs(list) {
+    var out = [];
+    (list || []).forEach(function (sm) {
+      var d = {}; Object.keys(sm).forEach(function (k) { if (k !== "metadata") d[k] = sm[k]; });
+      if (!d.kind) d.kind = "data";
+      out.push(d);
+      if (sm.metadata) out.push({ kind: "metadata", status: sm.status, title: "", describes: sm.title || "", description: sm.metadata.description || "",
+        standard: sm.metadata.standard, standard_en: sm.metadata.standard_en, standard_nb: sm.metadata.standard_nb, files: sm.metadata.files || [] });
+    });
+    return out;
   }
 
   /* ---------------------------------------------------------------- comments */
@@ -2688,7 +2729,8 @@
       el("li", {}, [el("b", { text: resp.respondent.organisation || t("anonymous") }), el("span", { text: t("org") })]),
       el("li", {}, [el("b", { class: "num", text: String(noteCount()) }), el("span", { text: t("notesCount") })]),
       scenarioCount() ? el("li", {}, [el("b", { class: "num", text: String(scenarioCount()) }), el("span", { text: t("scCount") })]) : null,
-      sampleCount() ? el("li", {}, [el("b", { class: "num", text: String(sampleCount()) }), el("span", { text: t("smCount") })]) : null
+      sampleCount("data") ? el("li", {}, [el("b", { class: "num", text: String(sampleCount("data")) }), el("span", { text: t("smCount") })]) : null,
+      sampleCount("metadata") ? el("li", {}, [el("b", { class: "num", text: String(sampleCount("metadata")) }), el("span", { text: t("smMetaCount") })]) : null
     ]));
 
     var toc = el("ol", { class: "toc" });
@@ -3371,16 +3413,16 @@
             var rec = r.answers.filter(function (x) { return x.id === q.id; })[0];
             if (!rec || !rec.samples) return;
             var who = (r.respondent && r.respondent.organisation) || t("anonymous");
-            rec.samples.forEach(function (sm) {
+            sampleRecs(rec.samples).forEach(function (sm) {
               sms.push({ sm: sm, who: who });
-              if (typeof sm.format === "number" && fmt[sm.format]) fmt[sm.format].n++;
-              if (sm.metadata && typeof sm.metadata.standard === "number" && mst[sm.metadata.standard]) mst[sm.metadata.standard].n++;
+              if (sm.kind === "metadata") { if (typeof sm.standard === "number" && mst[sm.standard]) mst[sm.standard].n++; }
+              else if (typeof sm.format === "number" && fmt[sm.format]) fmt[sm.format].n++;
             });
           });
           if (!sms.length) block.appendChild(el("p", { class: "a-meta", text: t("noAnswers") }));
           else {
             block.appendChild(el("p", { class: "a-meta", text: t("smWhich") }));
-            block.appendChild(bars(fmt.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; }), sms.length, ""));
+            if (fmt.some(function (x) { return x.n > 0; })) block.appendChild(bars(fmt.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; }), sms.length, ""));
             if (mst.some(function (x) { return x.n > 0; })) {
               block.appendChild(el("p", { class: "a-meta", style: "margin-top:12px", text: t("smMetaWhich") }));
               block.appendChild(bars(mst.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; }), sms.length, "copper"));
@@ -3392,22 +3434,19 @@
                 var href = sampleHref(f);
                 return el("li", {}, [href ? el("a", { href: href, download: f.name, text: f.name }) : el("span", { text: f.name }), el("span", { class: "count", text: fmtSize(f.size) })]);
               })) : null;
-              smv.appendChild(el("blockquote", { class: "verbatim", style: "margin:0" }, [
+              var meta = sm.kind === "metadata";
+              smv.appendChild(el("blockquote", { class: "verbatim" + (meta ? " sm-meta-v" : ""), style: "margin:0" }, [
                 el("span", {}, [
-                  el("b", { text: (sm.title || t("smTitle")) + " " }),
+                  el("span", { class: "eyebrow", text: (meta ? t("smMetaTitle") : t("smTitle")) + " · " }),
+                  el("b", { text: (sm.title || "") + " " }),
                   el("span", { class: "pill " + (sm.status === "desired" ? "" : "ok"), text: sm.status === "desired" ? t("smDesired") : t("smAvailable") })
                 ]),
+                meta && sm.describes ? el("p", { class: "a-meta", style: "margin:4px 0 0", text: t("smDescribes") + ": " + sm.describes }) : null,
                 sm.description ? el("p", { style: "margin:4px 0 0", text: sm.description }) : null,
                 files,
-                sm.metadata ? el("div", { class: "sm-meta-v" }, [
-                  el("span", { class: "eyebrow", text: t("smMeta") + " " }),
-                  el("span", { text: [state.lang === "nb" ? sm.metadata.standard_nb : sm.metadata.standard_en, sm.metadata.description].filter(Boolean).join(" · ") }),
-                  (sm.metadata.files || []).length ? el("ul", { class: "sm-files" }, sm.metadata.files.map(function (f) {
-                    var href = sampleHref(f);
-                    return el("li", {}, [href ? el("a", { href: href, download: f.name, text: f.name }) : el("span", { text: f.name }), el("span", { class: "count", text: fmtSize(f.size) })]);
-                  })) : null
-                ]) : null,
-                el("cite", { text: [x.who, state.lang === "nb" ? sm.format_nb : sm.format_en, sm.source, sm.volume].filter(Boolean).join(" · ") })
+                el("cite", { text: (meta
+                  ? [x.who, state.lang === "nb" ? sm.standard_nb : sm.standard_en, sm.source]
+                  : [x.who, state.lang === "nb" ? sm.format_nb : sm.format_en, sm.source, sm.volume]).filter(Boolean).join(" · ") })
               ]));
             });
             block.appendChild(smv);

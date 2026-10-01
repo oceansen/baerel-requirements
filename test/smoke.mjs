@@ -171,7 +171,7 @@ assert.equal(subs.data.responses.length, 1); assert.equal(subs.data.responses[0]
   assert.equal(xsd.status, 201); ok("metadata example (XSD schema) accepted");
   const cur = (await call("GET", "/api/s/spec", undefined, A)).data;
   const withSamples = spec(40, { q1: "Sustainability", q79: "Data silos", q80: "Contracts" });
-  withSamples.answers.push({ id: "q228", type: "samples", selected: [0], samples: [{ status: "available", title: "Repair log", format: 0, files: [{ id: f1.data.id, name: f1.data.name, size: f1.data.size }], metadata: { standard: 3, standard_en: "XML Schema (XSD)", description: "Units in SI", files: [{ id: xsd.data.id, name: xsd.data.name, size: xsd.data.size }] } }, { status: "desired", title: "Field telemetry", format: 8, files: [] }] });
+  withSamples.answers.push({ id: "q228", type: "samples", selected: [0], samples: [{ status: "available", title: "Repair log", format: 0, kind: "data", files: [{ id: f1.data.id, name: f1.data.name, size: f1.data.size }] }, { kind: "metadata", status: "available", title: "Repair log schema", describes: "Repair log", standard: 3, standard_en: "XML Schema (XSD)", description: "Units in SI", files: [{ id: xsd.data.id, name: xsd.data.name, size: xsd.data.size }] }, { kind: "data", status: "desired", title: "Field telemetry", format: 8, files: [] }] });
   assert.equal((await call("PUT", "/api/s/spec", { response: withSamples, base_updated_at: cur.updated_at }, A)).status, 200);
   const z = await fetch(`${BASE}/api/admin/companies/${co.id}/samples.zip`, { headers: { cookie: admin } });
   assert.equal(z.status, 200); assert.equal(z.headers.get("content-type"), "application/zip");
@@ -180,11 +180,11 @@ assert.equal(subs.data.responses.length, 1); assert.equal(subs.data.responses[0]
   const zs = zb.toString("latin1");
   assert.ok(zs.includes("samples.json")); assert.ok(zs.includes("01-repair-log/")); assert.ok(zs.includes("serial,repair,date"));
   assert.ok(zs.includes("Field telemetry"));
-  assert.ok(zs.includes("01-repair-log/metadata/repair-log.xsd")); assert.ok(zs.includes("Units in SI"));
+  assert.ok(zs.includes("02-metadata-repair-log-schema/repair-log.xsd")); assert.ok(zs.includes("Units in SI"));
   assert.equal((await fetch(`${BASE}/api/admin/companies/${co.id}/samples.zip`)).status, 401);
   const cv = (await call("GET", "/api/admin/companies")).data.companies.find((x) => x.id === co.id);
   assert.equal(cv.sample_files, 3);
-  ok("admin: ZIP with one folder per sample, metadata subfolder and a manifest; file counts on the company");
+  ok("admin: ZIP with one folder per data sample and per metadata entry, plus a manifest");
   const other2 = (await call("POST", "/api/admin/companies", { name: "Third Co" })).data.company;
   const T3 = (await signIn(other2.code)).cookie;
   assert.equal((await fetch(`${BASE}/api/s/samples/${f1.data.id}`, { headers: { cookie: T3 } })).status, 404); ok("sample files isolated per company");

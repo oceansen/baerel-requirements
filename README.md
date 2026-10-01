@@ -59,14 +59,12 @@ Every standard has a glossary entry with a source link. The answers feed two fea
 
 ## Sample data
 
-Section 3, **Eksempeldata / Sample data**, lets the organisation add one card per dataset. Each card records:
+Section 3, **Eksempeldata / Sample data**, has two kinds of entry, added separately with their own buttons:
 
-- whether the data is **available today** or **desired**
-- name, description, source system, format and volume
-- what kind of data it is: synthetic, anonymised, real but not sensitive, or sensitive
-- which usage scenario it supports
-- the files themselves
-- **metadata**: the metadata standard used (DCAT-AP-NO / DCAT-AP, Dublin Core, JSON Schema, XSD, SHACL/OWL, AAS submodel templates, ECLASS, CSVW, a data dictionary, an internal model or none), what metadata exists, and example metadata files such as schemas, data dictionaries or catalogue records. Metadata can be uploaded even when the data itself is marked sensitive.
+- **Sample data**, one card per dataset: whether it is **available today** or **desired**; name, description, source system, format and volume; what kind of data it is (synthetic, anonymised, real but not sensitive, or sensitive); the usage scenario it supports; and the files.
+- **Metadata**, one card per metadata description: available or desired; name; which dataset or system it describes (optional, with the data samples' names offered); the metadata standard (DCAT-AP-NO / DCAT-AP, Dublin Core, JSON Schema, XSD, SHACL/OWL, AAS submodel templates, ECLASS, CSVW, a data dictionary, an internal model or none); what metadata exists; and example files such as schemas, data dictionaries or catalogue records.
+
+Metadata can be given without any data, for example when the data itself is sensitive. Entries saved in the earlier combined format are split into a data card and a metadata card automatically.
 
 A follow-up question asks what the project may use the samples for.
 
@@ -74,7 +72,7 @@ A follow-up question asks what the project may use the samples for.
 - **Accepted types.** Only an allowlist of data, document, image, CAD and archive extensions. Executables are refused by their content, whatever they are called. Files are always served as downloads (`application/octet-stream`, `attachment`, CSP `sandbox`), never rendered.
 - **Sensitive data.** Choosing "sensitive" removes the upload button for that sample, so it can only be described.
 - **Feeding the features.** The formats of the samples count towards the platform features: PDF samples argue for document extraction, and sensor logs for a time-series store. Named metadata standards count towards the data catalogue and standards-based models.
-- **Admin download.** **Sample data (ZIP)** on the company card downloads every file in the company's specification, one folder per sample (metadata files in a `metadata/` subfolder), with a `samples.json` manifest.
+- **Admin download.** **Sample data (ZIP)** on the company card downloads every file in the company's specification, one folder per data sample and one per metadata entry, with a `samples.json` manifest.
 
 ## Scenario images
 

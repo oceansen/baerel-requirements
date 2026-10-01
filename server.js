@@ -967,7 +967,8 @@ async function handle(req, res) {
       try { const rec = (JSON.parse(s.response).answers || []).find((a) => a.type === "samples"); samples = (rec && rec.samples) || []; } catch (e) {}
       const entries = [], manifest = [], used = new Set();
       samples.forEach((sm, i) => {
-        const folder = String(i + 1).padStart(2, "0") + "-" + (slugify(sm.title || "") || "sample");
+        const meta = sm.kind === "metadata";
+        const folder = String(i + 1).padStart(2, "0") + "-" + (meta ? "metadata-" : "") + (slugify(sm.title || sm.describes || "") || (meta ? "description" : "sample"));
         const add = (list, dir) => {
           const out = [];
           (list || []).forEach((fm) => {

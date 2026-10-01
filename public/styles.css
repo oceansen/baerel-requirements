@@ -901,3 +901,8 @@ table.profile td:last-child { width: 1%; white-space: nowrap; font-size: 12.5px;
 .sm-meta .sc-grid select, .sm-meta textarea { font-size: 14px; padding: 7px 10px; }
 .sm-meta textarea { resize: vertical; min-height: 3em; }
 .sm-meta-v { margin-top: 6px; font-size: 13px; color: var(--ink-2); }
+.sm-card.sm-metacard { border-left-color: var(--patina); }
+.sm-card.sm-metacard .sc-head > .eyebrow { color: var(--patina); }
+.sm-adds { margin-top: 12px; gap: 8px; }
+.sm-adds .sc-add { margin-top: 0; }
+.sm-empty { margin: 4px 0 0; }

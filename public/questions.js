@@ -81,13 +81,13 @@ const SURVEY = {
     },
     {
       id: "s20",
-      nb: { title: "Eksempeldata", lead: "Vis oss dataene: last opp små utdrag av data dere har i dag, eller beskriv – gjerne med en skisse eller mal – data dere skulle ønske dere hadde. Del gjerne også metadata – skjema, dataordbok eller katalogpost – også der selve dataene ikke kan deles. Eksemplene gjør kravene konkrete og brukes til å teste plattformen. Bruk syntetiske eller anonymiserte data; last aldri opp personopplysninger, gradert eller forretningssensitivt materiale." },
-      en: { title: "Sample data", lead: "Show us the data: upload small extracts of data you have today, or describe — ideally with a sketch or template — data you wish you had. Share metadata too — a schema, data dictionary or catalogue record — even where the data itself cannot be shared. The samples make the requirements concrete and are used to test the platform. Use synthetic or anonymised data; never upload personal data or classified or commercially sensitive material." },
+      nb: { title: "Eksempeldata", lead: "Vis oss dataene: last opp små utdrag av data dere har i dag, eller beskriv – gjerne med en skisse eller mal – data dere skulle ønske dere hadde. Metadata – skjema, dataordbok eller katalogpost – legges inn for seg, og kan deles også der selve dataene ikke kan det. Eksemplene gjør kravene konkrete og brukes til å teste plattformen. Bruk syntetiske eller anonymiserte data; last aldri opp personopplysninger, gradert eller forretningssensitivt materiale." },
+      en: { title: "Sample data", lead: "Show us the data: upload small extracts of data you have today, or describe — ideally with a sketch or template — data you wish you had. Metadata — a schema, data dictionary or catalogue record — is added on its own, and can be shared even where the data itself cannot. The samples make the requirements concrete and are used to test the platform. Use synthetic or anonymised data; never upload personal data or classified or commercially sensitive material." },
       questions: [
         { id: "q228", t: "samples",
-          nb: { q: "Hvilke eksempler på data har dere – eller ønsker dere? Legg inn ett eksempel per datasett, med filer der dere har dem.",
+          nb: { q: "Hvilke eksempler på data og metadata har dere – eller ønsker dere? Legg inn eksempeldata og metadata hver for seg, med filer der dere har dem.",
             o: ["Regneark eller CSV", "JSON", "XML (også AAS, AutomationML, EPCIS)", "PDF eller andre dokumenter", "Bilder eller video", "CAD- eller 3D-modeller", "Databaseuttrekk (SQL)", "API-svar eller meldingsstrøm", "Tidsserier eller sensorlogg", "Annet"] },
-          en: { q: "Which examples of data do you have — or wish you had? Add one example per dataset, with files where you have them.",
+          en: { q: "Which examples of data and metadata do you have — or wish you had? Add sample data and metadata separately, with files where you have them.",
             o: ["Spreadsheet or CSV", "JSON", "XML (incl. AAS, AutomationML, EPCIS)", "PDF or other documents", "Images or video", "CAD or 3D models", "Database extract (SQL)", "API response or message stream", "Time series or sensor log", "Other"] } },
         { id: "q229", t: "single",
           nb: { q: "Hva kan prosjektet bruke eksempeldataene dere laster opp til?",
