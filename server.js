@@ -135,7 +135,12 @@ const now = () => new Date().toISOString();
 const getSetting = (k, d) => { const r = db.prepare("SELECT value FROM settings WHERE key = ?").get(k); return r ? r.value : d; };
 const setSetting = (k, v) => db.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(k, v);
 const questionSet = () => (getSetting("question_set", "full") === "lean" ? "lean" : "full");
-const settingsView = () => ({ question_set: questionSet(), example_company: getSetting("example_company", "") || null });
+const settingsView = () => ({
+  question_set: questionSet(),
+  example_company: getSetting("example_company", "") || null,
+  invite_deadline: getSetting("invite_deadline", "") || null,   // YYYY-MM-DD, shown in the invitation text
+  invite_sender: getSetting("invite_sender", "") || null        // signature under the invitation
+});
 const rand = (bytes) => crypto.randomBytes(bytes).toString("base64url");
 const sha256 = (s) => crypto.createHash("sha256").update(s).digest("hex");
 
@@ -1030,8 +1035,14 @@ async function handle(req, res) {
         // The company whose specification is offered as a read-only example in invitations.
         const ex = "example_company" in body ? (body.example_company === null ? "" : String(body.example_company)) : undefined;
         if (ex && !q.companyById.get(ex)) return fail(res, 422, "bad_value", "example_company must be an existing company or empty.");
+        const dl = "invite_deadline" in body ? String(body.invite_deadline || "") : undefined;
+        if (dl && !/^\d{4}-\d{2}-\d{2}$/.test(dl)) return fail(res, 422, "bad_value", "invite_deadline must be a date (YYYY-MM-DD) or empty.");
+        const snd = "invite_sender" in body ? String(body.invite_sender || "").replace(/\s+/g, " ").trim() : undefined;
+        if (snd && snd.length > 120) return fail(res, 422, "bad_value", "invite_sender must be at most 120 characters.");
         if ("question_set" in body) { setSetting("question_set", qs); audit(null, "settings.question_set", qs); }
         if (ex !== undefined) { setSetting("example_company", ex); audit(ex || null, "settings.example_company", ex || "none"); }
+        if (dl !== undefined) { setSetting("invite_deadline", dl); audit(null, "settings.invite_deadline", dl || "none"); }
+        if (snd !== undefined) { setSetting("invite_sender", snd); audit(null, "settings.invite_sender", snd || "none"); }
         return json(res, 200, settingsView());
       }
       return fail(res, 405, "method_not_allowed", "");

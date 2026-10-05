@@ -74,42 +74,53 @@
     return ex && ex.id !== c.id && ex.code_active ? ex : null;
   }
 
-  function invitation(c) {
-    var ex = exampleFor(c);
-    var exNb = ex ? [
-      "Vil dere se et ferdig utfylt eksempel før dere begynner? Bruk koden " + ex.code + " på den samme nettsiden. Den åpner en oppdiktet, men realistisk kravspesifikasjon for " + ex.name + ", laget for å prøve ut plattformen – med bruksscenarioer, eksempeldata og metadata." +
-        (ex.submissions_open ? "" : " Eksempelet er skrivebeskyttet og inneholder ingen ekte data fra virksomheten.") +
-        " Velg «Logg ut» når dere er ferdige, og skriv inn deres egen kode.",
-      ""
-    ] : [];
-    var exEn = ex ? [
-      "",
-      "Would you like to see a completed example before you start? Enter the code " + ex.code + " on the same website. It opens a fictional but realistic specification for " + ex.name + ", made to try out the platform — with usage scenarios, sample data and metadata." +
-        (ex.submissions_open ? "" : " The example is read-only and contains no real data from the company.") +
-        " Choose “Sign out” when you are done, then enter your own code."
-    ] : [];
+  /* Norwegian genitive: "Safrans", but "Hydro Aluminium AS'" for names ending in s, x or z. */
+  function genitive(name) { return /[sxz]$/i.test(name) ? name + "\u2019" : name + "s"; }
+
+  var MONTHS = {
+    nb: ["januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"],
+    en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+  };
+  function deadlineText(iso, lang) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+    if (!m) return "";
+    var d = Number(m[3]), mo = MONTHS[lang][Number(m[2]) - 1];
+    return lang === "nb" ? d + ". " + mo : d + " " + mo;
+  }
+
+  /* The invitation, following the project's template. The recipient's name stays as
+     [navn] / [name] to fill in; deadline and signature come from the Invitation panel. */
+  function invitation(c, lang) {
+    var ex = exampleFor(c), sender = state.inviteSender || (lang === "en" ? "[name]" : "[navn]");
+    var deadline = deadlineText(state.inviteDeadline, lang || "nb");
+    if (lang === "en") {
+      return [
+        "Hi [name],",
+        "We have been working on a digital tool for collecting self-reported requirements for the data platform to be developed in H2, including a reference architecture that will build further on your input.",
+        "Here is access to " + c.name + "\u2019s self-reported requirements specification in the Bærel project:",
+        "Website:",
+        c.access_url,
+        "Access code: " + c.code,
+        "",
+        "Feel free to share this with relevant people at " + c.name + "."
+      ].concat(ex ? ["If you would like to see a completed example before you start, you can use the code " + ex.code + " on the same website. It opens a fictional but realistic requirements specification for " + ex.name + ", made to demonstrate how the tool can be used, including usage scenarios, sample data and metadata." +
+        (ex.submissions_open ? "" : " The example is read-only and contains no real company data.")] : [],
+        deadline ? ["We hope to receive your input by " + deadline + ", if that suits you."] : [],
+        ["Please get in touch if you have any questions or anything is unclear.", "Best regards,", sender]).join("\n");
+    }
     return [
-      "Hei,",
-      "",
-      "Her er tilgangen til " + c.name + " sin egenrapporterte kravspesifikasjon i Bærel-prosjektet.",
-      "",
-      "Nettside: " + c.access_url,
+      "Hei [navn],",
+      "Vi har jobbet med et digitalt verktøy for innhenting av egenrapporterte krav til dataplattformen som skal utvikles i H2, inkludert en referansearkitektur som vil bygges videre på innspillene deres.",
+      "Her er tilgangen til " + genitive(c.name) + " egenrapporterte kravspesifikasjon i Bærel-prosjektet:",
+      "Nettside:",
+      c.access_url,
       "Tilgangskode: " + c.code,
       "",
-      "Alle i virksomheten som har koden, fyller ut og oppdaterer den samme kravspesifikasjonen. Alt lagres fortløpende, og tidligere versjoner kan hentes fram igjen. Del koden bare internt, og behandle den som et passord.",
-      ""
-    ].concat(exNb, [
-      "—",
-      "",
-      "Hi,",
-      "",
-      "Here is access to the self-reported requirements specification for " + c.name + " in the Bærel project.",
-      "",
-      "Website: " + c.access_url,
-      "Access code: " + c.code,
-      "",
-      "Everyone in your organisation holding the code fills in and updates the same specification. Everything is saved as you go, and earlier versions can be restored. Share the code only internally and treat it like a password."
-    ], exEn).join("\n");
+      "Del gjerne denne videre med relevante personer hos " + c.name + "."
+    ].concat(ex ? ["Dersom dere ønsker å se et ferdig utfylt eksempel før dere begynner, kan dere bruke koden " + ex.code + " på samme nettside. Denne åpner en oppdiktet, men realistisk kravspesifikasjon for " + ex.name + ", laget for å demonstrere hvordan verktøyet kan brukes, inkludert bruksscenarioer, eksempeldata og metadata." +
+      (ex.submissions_open ? "" : " Eksempelet er skrivebeskyttet og inneholder ingen reelle virksomhetsdata.")] : [],
+      deadline ? ["Vi håper å få innspill innen " + deadline + ", dersom det passer."] : [],
+      ["Ta gjerne kontakt dersom det er spørsmål eller noe som er uklart.", "Mvh,", sender]).join("\n");
   }
 
   /* Two-step confirm without a modal: first click arms, second click acts. */
@@ -170,7 +181,8 @@
     return el("div", { class: "codebox" }, [
       el("code", { class: "code", text: c.code }),
       el("button", { class: "btn primary", type: "button", text: "Copy code", onclick: function (e) { copy(c.code, e.currentTarget); } }),
-      el("button", { class: "btn", type: "button", text: "Copy invitation", onclick: function (e) { copy(invitation(c), e.currentTarget); } }),
+      el("button", { class: "btn", type: "button", text: "Copy invitation", title: "Norwegian, from the project template", onclick: function (e) { copy(invitation(c, "nb"), e.currentTarget); } }),
+      el("button", { class: "btn ghost", type: "button", text: "English", title: "The same invitation in English", onclick: function (e) { copy(invitation(c, "en"), e.currentTarget); } }),
       el("span", { class: "where", text: "Entered at " + c.access_url })
     ]);
   }
@@ -327,6 +339,7 @@
     main.appendChild(questionSetPanel());
     main.appendChild(accessPanel());
     main.appendChild(examplePanel());
+    main.appendChild(invitePanel());
 
     if (!state.companies.length) {
       main.appendChild(el("p", { class: "co-empty", text: "No companies yet." }));
@@ -412,11 +425,39 @@
     return box;
   }
 
+  /* Deadline and signature used in every copied invitation. */
+  function invitePanel() {
+    var box = el("section", { class: "panel qset" });
+    box.appendChild(el("p", { class: "eyebrow", text: "Invitation" }));
+    var dl = el("input", { type: "date", id: "invite-deadline", value: state.inviteDeadline || "" });
+    var who = el("input", { type: "text", id: "invite-sender", maxlength: "120", placeholder: "Your name — signs the invitation", value: state.inviteSender || "" });
+    var err = el("p", { class: "err", role: "alert" });
+    var saved = el("span", { class: "co-meta" });
+    function save(body) {
+      err.textContent = "";
+      api("POST", "/api/admin/settings", body).then(function (d) {
+        state.inviteDeadline = d.invite_deadline; state.inviteSender = d.invite_sender;
+        saved.textContent = "Saved"; setTimeout(function () { saved.textContent = ""; }, 1500);
+      }).catch(function (x) { err.textContent = x.message; });
+    }
+    dl.addEventListener("change", function () { save({ invite_deadline: dl.value || "" }); });
+    who.addEventListener("change", function () { save({ invite_sender: who.value }); });
+    box.appendChild(el("div", { style: "display:flex;flex-wrap:wrap;gap:12px;align-items:end" }, [
+      el("label", { "for": "invite-deadline", style: "display:flex;flex-direction:column;gap:4px" }, [el("span", { class: "co-meta", text: "Input wanted by" }), dl]),
+      el("label", { "for": "invite-sender", style: "display:flex;flex-direction:column;gap:4px;flex:1;min-width:220px" }, [el("span", { class: "co-meta", text: "Signed by" }), who]),
+      saved
+    ]));
+    box.appendChild(err);
+    box.appendChild(el("p", { class: "co-meta", style: "margin-top:10px", text:
+      "Copy invitation gives the Norwegian text from the project template; English gives the same text in English. Replace [navn] / [name] with the recipient before sending. Without a date, the line about the deadline is left out." }));
+    return box;
+  }
+
   function render() { if (boot.authed) renderConsole(); else renderLogin(); }
 
   if (boot.authed) {
     Promise.all([api("GET", "/api/admin/companies"), api("GET", "/api/admin/settings")]).then(function (r) {
-      state.companies = r[0].companies; state.questionSet = r[1].question_set; state.example = r[1].example_company; render();
+      state.companies = r[0].companies; state.questionSet = r[1].question_set; state.example = r[1].example_company; state.inviteDeadline = r[1].invite_deadline; state.inviteSender = r[1].invite_sender; render();
     });
   } else {
     render();

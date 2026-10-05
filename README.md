@@ -8,6 +8,10 @@ The Bærel **self-reported requirements specification** for a circular-electroni
 4. Anyone at the company opens the site, types the code and lands on the company's specification. Case, spaces and dashes don't matter; O is read as 0 and I/L as 1.
 5. The admin can **Generate new code** (the old code stops working at once and every open session is signed out), **Revoke access**, **Close / Reopen for changes**, open **Analysis**, download the JSON, and list, download or restore **Versions**.
 
+## The invitation
+
+**Copy invitation** on a company card copies the invitation in Norwegian, following the project's template; **English** next to it copies the same text in English. Each copy fills in the company's name (with the Norwegian genitive, e.g. "Safrans"), the site address and the company's code, and — when an example is chosen — the example's code and a sentence saying it is read-only. The **Invitation** panel sets the reply-by date (written as "16. oktober" / "16 October"; left out when empty) and who signs it. The recipient's name stays as `[navn]` / `[name]` to fill in before sending.
+
 ## Admin: export, import and access for all
 
 - **Export (JSON)** on a company card downloads its complete specification with all files and images embedded. **Import (JSON)** loads such a file into any company — the same one, another company, or a company on another Bærel site — and saves it as a new version. Importing over existing content asks for a second click. A bundle from **Download all** holding one specification can be imported too.
@@ -117,7 +121,7 @@ Requires Node 22.5 or later. There are no npm dependencies: it uses `node:http` 
 
 ```sh
 ADMIN_PASSWORD='at-least-12-characters' PUBLIC_URL=https://requirements.example.com npm start
-npm test        # 40 end-to-end checks against a throwaway database
+npm test        # 41 end-to-end checks against a throwaway database
 ```
 
 Docker: `docker build -t baerel . && docker run -p 8080:8080 -v baerel-data:/data -e ADMIN_PASSWORD=… -e PUBLIC_URL=… baerel`

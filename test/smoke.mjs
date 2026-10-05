@@ -124,6 +124,12 @@ assert.equal((await call("POST", "/api/admin/settings", { example_company: null 
 assert.equal((await call("POST", "/api/admin/settings", { question_set: "tiny", example_company: co.id })).status, 422);
 assert.equal((await call("GET", "/api/admin/settings")).data.example_company, null);
 ok("example company: admin-only, must exist, can be cleared, never half-applied");
+assert.equal((await call("POST", "/api/admin/settings", { invite_deadline: "16. oktober" })).status, 422);
+assert.equal((await call("POST", "/api/admin/settings", { invite_sender: "x".repeat(121) })).status, 422);
+const inv = (await call("POST", "/api/admin/settings", { invite_deadline: "2026-10-16", invite_sender: "  Sagar   Sen " })).data;
+assert.equal(inv.invite_deadline, "2026-10-16"); assert.equal(inv.invite_sender, "Sagar Sen");
+assert.equal((await call("POST", "/api/admin/settings", { invite_deadline: "" })).data.invite_deadline, null);
+ok("invitation deadline (a date) and signature are admin settings");
 
 /* ---- versions and restore */
 const vl = await call("GET", "/api/s/versions", undefined, A);
