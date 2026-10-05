@@ -133,13 +133,6 @@
     return b;
   }
 
-  function downloadJson(filename, obj) {
-    var blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
-    var a = el("a", { href: URL.createObjectURL(blob), download: filename });
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
-  }
-
   function replaceCompany(c) {
     state.companies = state.companies.map(function (x) { return x.id === c.id ? c : x; });
     if (state.fresh && state.fresh.id === c.id) state.fresh = c;
@@ -204,11 +197,10 @@
         ? armed("Close for changes", "Confirm close", "danger", function () { return post(c, "close"); })
         : el("button", { class: "btn", type: "button", text: "Reopen for changes", onclick: function () { post(c, "reopen"); } }),
       c.spec_updated_at ? el("a", { class: "btn", href: "/admin/analysis?company=" + encodeURIComponent(c.id), text: "Analysis" }) : null,
-      c.spec_updated_at ? el("button", { class: "btn ghost", type: "button", text: "Download (JSON)", onclick: function () {
-        api("GET", "/api/admin/companies/" + c.id + "/submissions").then(function (d) {
-          downloadJson("baerel-kravspesifikasjon-" + c.slug + "-" + new Date().toISOString().slice(0, 10) + ".json", d.responses[0] || {});
-        });
-      } }) : null,
+      c.spec_updated_at ? el("a", { class: "btn ghost", href: "/api/admin/companies/" + c.id + "/export",
+        title: "The specification with every sample file and scenario image embedded — can be imported again here or on another site",
+        text: "Export (JSON)" }) : null,
+      importButton(c),
       c.sample_files ? el("a", { class: "btn ghost", href: "/api/admin/companies/" + c.id + "/samples.zip", text: "Sample data (ZIP)" }) : null,
       c.version_count ? el("button", { class: "btn ghost", type: "button", text: "Versions", onclick: function (e) {
         var btn = e.currentTarget;
@@ -218,7 +210,7 @@
       } }) : null
     ]);
 
-    return el("li", { class: "co" }, [
+    return el("li", { class: "co", "data-co": c.id }, [
       el("div", { class: "co-top" }, [el("h3", { text: c.name })].concat(pills)),
       el("p", { class: "co-meta mono", text: meta }),
       codeBox(c),
@@ -227,12 +219,44 @@
     ]);
   }
 
+  /* Import an exported specification (JSON) into this company. Embedded files and images are
+     stored again, and the import becomes a new version — the previous one can be restored. */
+  function importButton(c) {
+    var msg = el("span", { class: "co-meta", style: "margin-left:6px" });
+    function pick() {
+      var input = el("input", { type: "file", accept: ".json,application/json", style: "display:none" });
+      input.addEventListener("change", function () {
+        var f = input.files && input.files[0];
+        input.remove();
+        if (!f) return;
+        msg.textContent = "Importing …";
+        f.text().then(function (txt) {
+          var obj;
+          try { obj = JSON.parse(txt); } catch (e) { throw new Error("That file is not JSON."); }
+          if (obj && Array.isArray(obj.responses) && obj.responses.length === 1) obj = obj.responses[0];
+          return api("POST", "/api/admin/companies/" + c.id + "/import", { response: obj });
+        }).then(function (d) {
+          replaceCompany(d.company);
+          var m = "Imported as version " + d.version + (d.files_added ? " · " + d.files_added + " files and images" : "") + (d.skipped && d.skipped.length ? " · " + d.skipped.length + " skipped" : "");
+          var card = document.querySelector('[data-co="' + c.id + '"] .co-meta.mono');
+          if (card) card.textContent += " · " + m;
+        }).catch(function (x) { msg.textContent = "Import failed: " + x.message; });
+      });
+      document.body.appendChild(input);
+      input.click();
+    }
+    var b = c.spec_updated_at
+      ? armed("Import (JSON)", "Confirm — replaces the current content (kept as a version)", "", function () { pick(); return Promise.resolve(); })
+      : el("button", { class: "btn ghost", type: "button", text: "Import (JSON)", onclick: pick });
+    return el("span", {}, [b, msg]);
+  }
+
   function fmtTime(iso) {
     try { return new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
     catch (e) { return iso; }
   }
 
-  var REASON = { first: "first save", auto: "auto", manual: "saved", "export": "export", migrated: "migrated", "before-restore": "before restore" };
+  var REASON = { "import": "imported", first: "first save", auto: "auto", manual: "saved", "export": "export", migrated: "migrated", "before-restore": "before restore" };
   function reasonText(r) { return REASON[r] || (/^restored-v(\d+)$/.test(r) ? "restored v" + r.slice(10) : r); }
 
   /* The specification is one living document; every version is a timestamped snapshot.
@@ -301,6 +325,7 @@
     main.appendChild(head);
 
     main.appendChild(questionSetPanel());
+    main.appendChild(accessPanel());
     main.appendChild(examplePanel());
 
     if (!state.companies.length) {
@@ -327,6 +352,33 @@
     box.appendChild(seg);
     box.appendChild(el("p", { class: "co-meta", style: "margin-top:10px", text:
       "Applies to every company the next time they open or reload their page. Switching never deletes anything: answers to questions outside the lean set are kept and reappear with the full set. Analysis follows the same setting." }));
+    return box;
+  }
+
+  /* Read-only or read/write for every specification at once. Opening all leaves the
+     invitation example read-only unless the box is ticked. */
+  function accessPanel() {
+    var box = el("section", { class: "panel qset" });
+    var open = state.companies.filter(function (c) { return c.submissions_open; }).length;
+    var closed = state.companies.length - open;
+    box.appendChild(el("p", { class: "eyebrow", text: "Access for all specifications" }));
+    box.appendChild(el("p", { class: "co-meta", style: "margin:4px 0 12px", text: open + " open for changes · " + closed + " read-only" }));
+    var incl = el("input", { type: "checkbox", id: "access-include-example" });
+    var ex = state.companies.filter(function (x) { return x.id === state.example; })[0];
+    var err = el("p", { class: "err", role: "alert" });
+    function setAll(isOpen) {
+      return api("POST", "/api/admin/access-all", { open: isOpen, include_example: incl.checked })
+        .then(function (d) { state.companies = d.companies; render(); })
+        .catch(function (x) { err.textContent = x.message; });
+    }
+    box.appendChild(el("div", { class: "row", style: "display:flex;flex-wrap:wrap;gap:10px;align-items:center" }, [
+      armed("Make all read-only", "Confirm — nobody can change any specification", "danger", function () { return setAll(false); }),
+      armed("Make all read/write", "Confirm — every specification opens for changes", "", function () { return setAll(true); }),
+      ex ? el("label", { "for": "access-include-example", style: "display:inline-flex;gap:6px;align-items:center" }, [incl, "Also open the invitation example (" + ex.name + ")"]) : null
+    ]));
+    box.appendChild(err);
+    box.appendChild(el("p", { class: "co-meta", style: "margin-top:10px", text:
+      "Read-only specifications can still be opened, read and exported with their code. Each company can also be switched on its own card below." }));
     return box;
   }
 

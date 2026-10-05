@@ -8,6 +8,12 @@ The Bærel **self-reported requirements specification** for a circular-electroni
 4. Anyone at the company opens the site, types the code and lands on the company's specification. Case, spaces and dashes don't matter; O is read as 0 and I/L as 1.
 5. The admin can **Generate new code** (the old code stops working at once and every open session is signed out), **Revoke access**, **Close / Reopen for changes**, open **Analysis**, download the JSON, and list, download or restore **Versions**.
 
+## Admin: export, import and access for all
+
+- **Export (JSON)** on a company card downloads its complete specification with all files and images embedded. **Import (JSON)** loads such a file into any company — the same one, another company, or a company on another Bærel site — and saves it as a new version. Importing over existing content asks for a second click. A bundle from **Download all** holding one specification can be imported too.
+- **Access for all specifications** makes every specification read-only, or opens all for changes, with one confirmed click. Opening all leaves the invitation example read-only unless **Also open the invitation example** is ticked. Each company can still be switched on its own card.
+- `MAX_IMPORT_MB` (default 200) caps the size of an imported file.
+
 ## An example in every invitation
 
 The admin console has an **Example in invitations** panel. Choose a filled-in specification (for example a fictional test company) and every **Copy invitation** text gets an extra paragraph, in Norwegian and English, with that company's code. Invited companies can then open a completed example before they start, and sign out to enter their own code.
@@ -46,7 +52,7 @@ There is one version of the questionnaire: the full specification, 207 questions
 - **Restore.** **Restore** on an older version first saves the current state as a version (`before-restore`) and then makes the chosen version live (`restored-vN`). Nothing is lost, and a restore can itself be undone. The admin can restore from the console too.
 - **Signed out mid-work.** If the code is replaced while someone is working, their next save is refused. The page says so, and the unsaved changes stay in the browser and are merged in once a valid code is entered.
 - **Sign out.** **Logg ut / Sign out** saves, ends the session and removes the local copy from the browser (useful on shared devices).
-- **Export.** **Export ▾** in the top bar works on every page. It offers a readable document (HTML), data (JSON) and a table (CSV), e.g. `baerel-kravspesifikasjon-kongsberg-maritime-20261001-1401-v3.json`. A JSON export can be opened again with **Open an exported specification**. Importing replaces the content as a new save, so earlier versions remain restorable.
+- **Export and import.** **Export ▾** in the top bar works on every page, also on a read-only specification. It offers a readable document (HTML), the complete specification (JSON) and a table (CSV), e.g. `baerel-kravspesifikasjon-kongsberg-maritime-20261001-1401-v3.json`. The JSON is complete: every scenario image and every sample and metadata file is embedded, so nothing is lost on the way. **Export ▾ → Open an exported specification** (or the button on the start page) loads such a file: the server stores its files and images again under new ids for this company and saves the result as a new version (`import`), so earlier versions remain restorable. Import is offered only while the specification is open for changes. Files that are not on the allowed list, or are executables, are left out and counted in the message.
 
 ## Upgrading from the link/interview version
 
@@ -111,7 +117,7 @@ Requires Node 22.5 or later. There are no npm dependencies: it uses `node:http` 
 
 ```sh
 ADMIN_PASSWORD='at-least-12-characters' PUBLIC_URL=https://requirements.example.com npm start
-npm test        # 36 end-to-end checks against a throwaway database
+npm test        # 40 end-to-end checks against a throwaway database
 ```
 
 Docker: `docker build -t baerel . && docker run -p 8080:8080 -v baerel-data:/data -e ADMIN_PASSWORD=… -e PUBLIC_URL=… baerel`
@@ -138,6 +144,7 @@ Run it behind TLS (Caddy, nginx or the platform's proxy). The access code and th
 | `CODE_SESSION_DAYS` | `14` | how long a code sign-in lasts |
 | `VERSION_EVERY_MIN` | `15` | minutes between automatic versions |
 | `MAX_VERSIONS_PER_COMPANY` | `2000` | caps stored versions |
+| `MAX_IMPORT_MB` | `200` | largest complete specification (JSON with embedded files) that can be imported |
 
 ## Design decisions
 

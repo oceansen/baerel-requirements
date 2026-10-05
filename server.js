@@ -30,6 +30,7 @@ const COOKIE_SECURE = process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === 
 const SESSION_HOURS = Number(process.env.SESSION_HOURS || 12);
 const CODE_SESSION_DAYS = Number(process.env.CODE_SESSION_DAYS || 14);
 const MAX_BODY = 1.5 * 1024 * 1024;
+const MAX_IMPORT = Number(process.env.MAX_IMPORT_MB || 200) * 1024 * 1024;   // a complete specification with its files
 const MAX_VERSIONS_PER_COMPANY = Number(process.env.MAX_VERSIONS_PER_COMPANY || 2000);
 const SCHEMA = "baerel-circular-electronics-requirements";
 const PUB = path.join(__dirname, "public");
@@ -337,7 +338,8 @@ function json(res, status, obj, extra) {
 
 const fail = (res, status, code, message) => json(res, status, { error: code, message });
 
-function readJson(req) {
+function readJson(req, limit) {
+  const max = limit || MAX_BODY;
   return new Promise((resolve, reject) => {
     const ct = (req.headers["content-type"] || "").toLowerCase();
     // JSON-only bodies: a cross-site HTML form cannot send this content type
@@ -348,7 +350,7 @@ function readJson(req) {
     const chunks = [];
     req.on("data", (c) => {
       size += c.length;
-      if (size > MAX_BODY) { reject(Object.assign(new Error("too large"), { status: 413 })); req.destroy(); return; }
+      if (size > max) { reject(Object.assign(new Error("too large"), { status: 413 })); req.destroy(); return; }
       chunks.push(c);
     });
     req.on("end", () => {
@@ -366,6 +368,14 @@ const MAX_IMAGE = 4 * 1024 * 1024;
 const MAX_IMAGES_PER_COMPANY = Number(process.env.MAX_IMAGES_PER_COMPANY || 2000);
 const MAX_IMAGE_BYTES_PER_COMPANY = Number(process.env.MAX_IMAGE_MB_PER_COMPANY || 600) * 1024 * 1024;
 
+/* The real type of an image, from its magic bytes — or null if it is not JPEG/PNG/WebP. */
+function imageType(b) {
+  if (b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";
+  if (b.length > 8 && b.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png";
+  if (b.length > 12 && b.slice(0, 4).toString() === "RIFF" && b.slice(8, 12).toString() === "WEBP") return "image/webp";
+  return null;
+}
+
 function readImage(req) {
   return new Promise((resolve, reject) => {
     const ct = (req.headers["content-type"] || "").toLowerCase().split(";")[0].trim();
@@ -379,10 +389,7 @@ function readImage(req) {
     });
     req.on("end", () => {
       const b = Buffer.concat(chunks);
-      const isJpeg = b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
-      const isPng = b.length > 8 && b.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
-      const isWebp = b.length > 12 && b.slice(0, 4).toString() === "RIFF" && b.slice(8, 12).toString() === "WEBP";
-      const real = isJpeg ? "image/jpeg" : isPng ? "image/png" : isWebp ? "image/webp" : null;
+      const real = imageType(b);
       if (!real) return reject(Object.assign(new Error("not an image"), { status: 415 }));
       resolve({ type: real, bytes: b });
     });
@@ -420,6 +427,14 @@ function cleanFilename(raw) {
   return n;
 }
 
+function isExecutable(b) {
+  const h = b.subarray(0, 4);
+  return (h[0] === 0x4d && h[1] === 0x5a) || h.equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46])) ||
+    (h[0] === 0x23 && h[1] === 0x21) || h.equals(Buffer.from([0xca, 0xfe, 0xba, 0xbe])) ||
+    h.equals(Buffer.from([0xcf, 0xfa, 0xed, 0xfe])) || h.equals(Buffer.from([0xfe, 0xed, 0xfa, 0xcf]));
+}
+const sampleExtOk = (name) => { const ext = (name.match(/\.([a-z0-9]+)$/i) || [])[1]; return !!ext && SAMPLE_EXT.has(ext.toLowerCase()); };
+
 function readSample(req) {
   return new Promise((resolve, reject) => {
     // A custom header cannot be sent cross-site without a CORS preflight, which this server never grants.
@@ -436,11 +451,7 @@ function readSample(req) {
     req.on("end", () => {
       const b = Buffer.concat(chunks);
       if (!b.length) return reject(Object.assign(new Error("Empty file."), { status: 400 }));
-      const h = b.subarray(0, 4);
-      const exe = (h[0] === 0x4d && h[1] === 0x5a) || h.equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46])) ||
-        (h[0] === 0x23 && h[1] === 0x21) || h.equals(Buffer.from([0xca, 0xfe, 0xba, 0xbe])) ||
-        h.equals(Buffer.from([0xcf, 0xfa, 0xed, 0xfe])) || h.equals(Buffer.from([0xfe, 0xed, 0xfa, 0xcf]));
-      if (exe) return reject(Object.assign(new Error("Executable files are not accepted."), { status: 415 }));
+      if (isExecutable(b)) return reject(Object.assign(new Error("Executable files are not accepted."), { status: 415 }));
       resolve({ name, bytes: b });
     });
     req.on("error", reject);
@@ -457,6 +468,107 @@ function sendSample(res, f) {
     "Cache-Control": "private, no-store"
   }));
   res.end(Buffer.from(f.bytes));
+}
+
+/* ---------- complete specification: export with embedded files, import that restores them
+
+   The exported JSON is the specification itself plus every scenario image and sample
+   file it refers to, embedded as data: URIs on the object that refers to it. Importing
+   uploads each embedded file again under a new id for the receiving company and saves
+   the result as a new version, so the import can be undone by restoring. */
+
+function walk(x, fn) {
+  if (Array.isArray(x)) x.forEach((v) => walk(v, fn));
+  else if (x && typeof x === "object") { fn(x); Object.keys(x).forEach((k) => walk(x[k], fn)); }
+}
+
+function embedFiles(resp, companyId) {
+  const r = JSON.parse(JSON.stringify(resp));
+  let bytes = 0;
+  walk(r, (o) => {
+    if (typeof o.id !== "string" || o.data) return;
+    if (o.id.startsWith("img_")) {
+      const a = q.getAtt.get(o.id);
+      if (a && a.company_id === companyId) { o.data = "data:" + a.content_type + ";base64," + Buffer.from(a.bytes).toString("base64"); bytes += a.size; }
+    } else if (o.id.startsWith("smp_")) {
+      const f = q.getSample.get(o.id);
+      if (f && f.company_id === companyId) { o.data = "data:application/octet-stream;base64," + Buffer.from(f.bytes).toString("base64"); bytes += f.size; }
+    }
+  });
+  r.embedded_files = true;
+  return { response: r, bytes };
+}
+
+function decodeDataUri(s) {
+  const m = /^data:([^;,]*)(;base64)?,(.*)$/s.exec(s);
+  if (!m) return null;
+  return m[2] ? Buffer.from(m[3], "base64") : Buffer.from(decodeURIComponent(m[3]), "utf8");
+}
+
+/* Store every embedded file for the company and point the specification at the new ids.
+   Objects without data keep their id only if it already belongs to this company. */
+function absorbFiles(r, company) {
+  const byOld = {}, byHash = {}, problems = [];
+  let added = 0;
+  walk(r, (o) => {
+    if (typeof o.data !== "string" || !o.data.startsWith("data:")) return;
+    const b = decodeDataUri(o.data);
+    if (!b || !b.length) { problems.push("unreadable file"); delete o.data; delete o.id; return; }
+    const hash = crypto.createHash("sha256").update(b).digest("hex");
+    const isSample = typeof o.name === "string";
+    const key = (isSample ? "s:" : "i:") + hash;
+    let id = byHash[key];
+    if (!id) {
+      if (isSample) {
+        const name = cleanFilename(o.name);
+        if (!name || !sampleExtOk(name) || isExecutable(b) || b.length > MAX_SAMPLE) { problems.push(o.name); delete o.data; delete o.id; return; }
+        id = "smp_" + rand(12);
+        q.insertSample.run(id, company.id, name, b.length, hash, b, now());
+        o.name = name; o.size = b.length;
+      } else {
+        const type = imageType(b);
+        if (!type || b.length > MAX_IMAGE) { problems.push("image"); delete o.data; delete o.id; return; }
+        id = "img_" + rand(12);
+        q.insertAtt.run(id, company.id, type, b.length, b, now());
+      }
+      byHash[key] = id; added++;
+    }
+    if (typeof o.id === "string") byOld[o.id] = id;
+    o.id = id;
+    delete o.data;
+  });
+  // References elsewhere in the file (e.g. answer records) to the same old ids.
+  walk(r, (o) => {
+    if (typeof o.id !== "string" || !/^(img|smp)_/.test(o.id)) return;
+    if (byOld[o.id] && o.id !== byOld[o.id]) { o.id = byOld[o.id]; return; }
+    const own = o.id.startsWith("img_") ? q.getAtt.get(o.id) : q.getSample.get(o.id);
+    if (!own || own.company_id !== company.id) { if (!Object.values(byOld).includes(o.id)) { problems.push("missing " + o.id.slice(0, 4)); delete o.id; } }
+  });
+  delete r.embedded_files;
+  return { added, problems };
+}
+
+function importSpec(company, payload, who) {
+  const r = cleanResponse({ response: payload }, company);
+  if (!r) return { error: "Not a specification for this survey." };
+  const files = tx(() => absorbFiles(r, company));
+  const cur = q.spec.get(specId(company.id));
+  const res = saveSpec(company, r, cur ? cur.updated_at : null, "import");
+  audit(company.id, "spec.imported", "v" + res.version + " (" + who + ", " + files.added + " files" + (files.problems.length ? ", " + files.problems.length + " skipped" : "") + ")");
+  return Object.assign(res, { files_added: files.added, skipped: files.problems });
+}
+
+function sendExport(res, company) {
+  const s = q.spec.get(specId(company.id));
+  if (!s) return fail(res, 404, "not_found", "The specification has not been started.");
+  const e = embedFiles(JSON.parse(s.response), company.id);
+  e.response.exported_at = now();
+  const last = q.lastVersion.get(s.id);
+  return send(res, 200, JSON.stringify(e.response), {
+    "Content-Type": "application/json; charset=utf-8",
+    "Content-Disposition": 'attachment; filename="baerel-kravspesifikasjon-' + company.slug + "-" + now().slice(0, 16).replace(/[-:T]/g, "") + (last ? "-v" + last.n : "") + '.json"',
+    "Cache-Control": "no-store"
+  });
 }
 
 /* Minimal ZIP writer (stored, no compression) — enough to hand the admin every
@@ -797,6 +909,17 @@ async function handle(req, res) {
 
     if (m === "GET" && p === "/api/s/versions") return json(res, 200, { versions: q.versionsFor.all(id) });
 
+    // Complete export (with files) and import. Export works on a closed specification too.
+    if (p === "/api/s/export" && m === "GET") return sendExport(res, q.companyById.get(co.id));
+    if (p === "/api/s/import" && m === "POST") {
+      if (!co.open) return fail(res, 423, "closed", "The specification is closed for changes.");
+      let body;
+      try { body = await readJson(req, MAX_IMPORT); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
+      const r = importSpec(q.companyById.get(co.id), body.response, "company");
+      if (r.error) return fail(res, 422, "invalid_response", r.error);
+      return json(res, 200, Object.assign(r, specPayload(q.spec.get(id))));
+    }
+
     if ((mm = p.match(/^\/api\/s\/versions\/(\d+)(\/restore)?$/))) {
       const n = Number(mm[1]);
       if (m === "GET" && !mm[2]) {
@@ -909,6 +1032,24 @@ async function handle(req, res) {
       return fail(res, 405, "method_not_allowed", "");
     }
 
+    /* Read-only or read/write for every specification at once. The invitation example
+       stays read-only when opening all, unless include_example is set. */
+    if (m === "POST" && p === "/api/admin/access-all") {
+      let body;
+      try { body = await readJson(req); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
+      if (typeof body.open !== "boolean") return fail(res, 422, "bad_value", "open must be true or false.");
+      const example = getSetting("example_company", "");
+      let changed = 0;
+      tx(() => q.listCompanies.all().forEach((c) => {
+        if (body.open && c.id === example && !body.include_example) return;
+        if (!!c.submissions_open === body.open) return;
+        q.setOpen.run(body.open ? 1 : 0, body.open ? null : now(), c.id);
+        audit(c.id, body.open ? "spec.reopened" : "spec.closed", "all");
+        changed++;
+      }));
+      return json(res, 200, { changed, companies: q.listCompanies.all().map((r) => companyView(req, r)) });
+    }
+
     if (m === "GET" && p === "/api/admin/companies") {
       return json(res, 200, { companies: q.listCompanies.all().map((r) => companyView(req, r)) });
     }
@@ -950,6 +1091,14 @@ async function handle(req, res) {
         q.setOpen.run(open ? 1 : 0, open ? null : now(), c.id);
         audit(c.id, open ? "spec.reopened" : "spec.closed", "");
         return view();
+      }
+      if (m === "GET" && action === "export" && !mm[3]) return sendExport(res, c);
+      if (m === "POST" && action === "import" && !mm[3]) {
+        let body;
+        try { body = await readJson(req, MAX_IMPORT); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
+        const r = importSpec(c, body.response, "admin");
+        if (r.error) return fail(res, 422, "invalid_response", r.error);
+        return json(res, 200, { company: companyView(req, companyRow(c.id)), version: r.version, files_added: r.files_added, skipped: r.skipped });
       }
       // Analysis input: the company's specification as a one-element list.
       if (m === "GET" && action === "submissions" && !mm[3]) {

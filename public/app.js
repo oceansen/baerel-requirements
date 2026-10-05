@@ -143,7 +143,7 @@
       notePh: "Kommentar …", noteFor: "Kommentar til", qNote: "Kommentar til spørsmålet",
       qNotePh: "Utdyping, forbehold, eksempler, behov for oppfølging …", notesCount: "kommentarer",
       notSelected: "ikke valgt", notesHead: "Kommentarer",
-      exportBtn: "Eksporter", exportDoc: "Lesbart dokument (HTML)", exportData: "Data (JSON) – kan åpnes igjen", exportTable: "Tabell (CSV)",
+      exportBtn: "Eksporter", exportDoc: "Lesbart dokument (HTML)", exportData: "Komplett (JSON, med filer og bilder) – kan åpnes igjen", importMenu: "Åpne eksportert kravspesifikasjon …", importBusy: "Laster inn kravspesifikasjonen …", importFiles: "{n} filer og bilder er gjenopprettet.", importSkipped: "{n} filer kunne ikke tas med.", importFail: "Kunne ikke laste inn filen:", exportTable: "Tabell (CSV)",
       exportedAt: "Eksportert", saveVersion: "Lagre versjon nå", versionWord: "versjon",
       syncedAt: "lagret i prosjektet", syncPending: "lagres …", syncFail: "kunne ikke lagre til prosjektet – beholdt lokalt, prøver igjen ved neste endring",
       syncClosed: "kravspesifikasjonen er stengt for endringer",
@@ -188,7 +188,7 @@
       notePh: "Comment …", noteFor: "Comment on", qNote: "Comment on the question",
       qNotePh: "Detail, caveats, examples, follow-up needed …", notesCount: "comments",
       notSelected: "not selected", notesHead: "Comments",
-      exportBtn: "Export", exportDoc: "Readable document (HTML)", exportData: "Data (JSON) — can be reopened", exportTable: "Table (CSV)",
+      exportBtn: "Export", exportDoc: "Readable document (HTML)", exportData: "Complete (JSON, with files and images) — can be reopened", importMenu: "Open an exported specification …", importBusy: "Loading the specification …", importFiles: "{n} files and images restored.", importSkipped: "{n} files could not be included.", importFail: "Could not load the file:", exportTable: "Table (CSV)",
       exportedAt: "Exported", saveVersion: "Save a version now", versionWord: "version",
       syncedAt: "saved to the project", syncPending: "saving …", syncFail: "could not save to the project — kept locally, will retry on the next change",
       syncClosed: "the specification is closed for changes",
@@ -1136,7 +1136,9 @@
     flushDraft();
     if (kind !== "csv") {
       // Pictures stored on the server are fetched once and embedded, so the file stands on its own.
-      Promise.all([imageDataMap(), logoData()]).then(function (r) { finishExport(kind, r[0]); });
+      Promise.all([imageDataMap(), logoData(), kind === "json" ? sampleDataMap() : {}]).then(function (r) {
+        finishExport(kind, Object.assign({}, r[0], r[2]));
+      });
       return;
     }
     finishExport(kind, {});
@@ -1157,6 +1159,11 @@
       ALL_Q.forEach(function (q) {
         if (q.t !== "scenarios" || !Array.isArray(answersCopy[q.id])) return;
         answersCopy[q.id].forEach(function (sc) { (sc.images || []).forEach(function (im) { if (!im.data && im.id && imgMap[im.id]) im.data = imgMap[im.id]; }); });
+      });
+      // Sample and metadata files travel inside the file too, so an import restores everything.
+      ALL_Q.forEach(function (q) {
+        if (q.t !== "samples" || !Array.isArray(answersCopy[q.id])) return;
+        answersCopy[q.id].forEach(function (sm) { (sm.files || []).forEach(function (f) { if (!f.data && f.id && imgMap[f.id]) f.data = imgMap[f.id]; }); });
       });
       resp.draft = { answers: answersCopy, notes: state.notes, path: state.path, tracks: state.tracks,
         lang: state.lang, started: state.started, updated_at: state.updatedAt, export_seq: state.exportSeq };
@@ -1350,6 +1357,7 @@
 
   function importSpec(obj) {
     if (!obj || obj.schema !== SCHEMA || !obj.answers) { setStatus(t("importBad")); return false; }
+    if (WS) return importToServer(obj);
     var d = draftFromExport(obj);
     state.answers = d.answers || {};
     state.notes = d.notes || {};
@@ -1366,6 +1374,47 @@
     setStatus(t("importOk"));
     if (WS) { scheduleSync(); migrateImagesToServer(); }
     return true;
+  }
+
+  /* The server unpacks embedded files and images under new ids and saves the import as a
+     new version, so it can be undone by restoring the previous one. */
+  function importToServer(obj) {
+    if (!canWrite()) { setStatus(t("syncClosed")); return false; }
+    if (!obj.draft) obj.draft = draftFromExport(obj);   // older files: rebuild the working state from the records
+    setStatus(t("importBusy"));
+    flushDraft();
+    specFetch("POST", "import", { response: obj }).then(function (d) {
+      var sd = serverDraft(d.response);
+      state.answers = clone(sd.answers); state.notes = clone(sd.notes);
+      saveBase({ updated_at: d.updated_at || null, answers: clone(sd.answers), notes: clone(sd.notes) });
+      state.updatedAt = d.updated_at; sync.dirty = false; sync.err = "";
+      if (d.version) { sync.version = d.version; sync.last = new Date(d.updated_at); }
+      if (obj.language === "nb" || obj.language === "en") state.lang = obj.language;
+      state.section = 0; state.view = "form";
+      saveDraft(); render(); window.scrollTo(0, 0);
+      var msg = t("importOk");
+      if (d.files_added) msg += " " + t("importFiles").replace("{n}", d.files_added);
+      if (d.skipped && d.skipped.length) msg += " " + t("importSkipped").replace("{n}", d.skipped.length);
+      setStatus(msg);
+      versions.list = null;
+    })["catch"](function (e) {
+      setStatus(t("importFail") + " " + (e.status === 413 ? "too large" : e.message));
+    });
+    return true;
+  }
+
+  /* Picks a file and opens it; the button asks for confirmation when there is content to replace. */
+  function pickImportFile() {
+    var input = el("input", { type: "file", accept: ".json,application/json", class: "sr" });
+    input.addEventListener("change", function () {
+      var f = input.files && input.files[0];
+      if (!f) return;
+      var fr = new FileReader();
+      fr.onload = function () { try { importSpec(JSON.parse(String(fr.result))); } catch (e) { setStatus(t("importBad")); } input.remove(); };
+      fr.readAsText(f);
+    });
+    document.body.appendChild(input);
+    input.click();
   }
 
   function importControl() {
@@ -1407,6 +1456,15 @@
       if (canWrite()) {
         exportMenu.appendChild(el("button", { type: "button", role: "menuitem", class: "sep", text: t("saveVersion"),
           onclick: function () { closeExportMenu(); doSync("manual"); } }));
+      }
+      if (!WS || canWrite()) {
+        var imp = el("button", { type: "button", role: "menuitem", text: t("importMenu") });
+        imp.addEventListener("click", function (ev) {
+          ev.stopPropagation();
+          if (hasContent() && imp.getAttribute("data-armed") !== "1") { imp.setAttribute("data-armed", "1"); imp.textContent = t("importReplace"); return; }
+          closeExportMenu(); pickImportFile();
+        });
+        exportMenu.appendChild(imp);
       }
       var r = b.getBoundingClientRect();
       exportMenu.style.top = (r.bottom + 6) + "px";
@@ -1512,6 +1570,22 @@
     return Promise.all(ids.map(function (id) {
       return fetch(imgSrc({ id: id }), { credentials: "same-origin" })
         .then(function (r) { if (!r.ok) throw new Error("img"); return r.blob(); })
+        .then(blobToDataUrl).then(function (d) { map[id] = d; })["catch"](function () {});
+    })).then(function () { return map; });
+  }
+
+  /* Every sample file in the specification as a data: URI, for the complete export. */
+  function sampleDataMap() {
+    var ids = [], map = {};
+    ALL_Q.forEach(function (q) {
+      if (q.t !== "samples" || !Array.isArray(state.answers[q.id])) return;
+      state.answers[q.id].forEach(function (sm) { (sm.files || []).forEach(function (f) { if (f.id && ids.indexOf(f.id) === -1) ids.push(f.id); }); });
+    });
+    return Promise.all(ids.map(function (id) {
+      var href = sampleHref({ id: id });
+      if (!href) return null;
+      return fetch(href, { credentials: "same-origin" })
+        .then(function (r) { if (!r.ok) throw new Error("file"); return r.blob(); })
         .then(blobToDataUrl).then(function (d) { map[id] = d; })["catch"](function () {});
     })).then(function () { return map; });
   }

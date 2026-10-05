@@ -238,10 +238,82 @@ assert.equal((await signIn(code2)).status, 401); ok("revoke: no code works, sess
 /* ---- misc */
 const exp = await call("GET", "/api/admin/export");
 assert.equal(exp.data.responses.length, 1); ok("full export: one spec per company that has started");
+
 const form = await fetch(BASE + "/api/admin/companies", { method: "POST", headers: { cookie: admin, "content-type": "application/x-www-form-urlencoded" }, body: "name=Evil" });
 assert.equal(form.status, 415);
 const form2 = await fetch(BASE + "/api/access", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: "code=x" });
 assert.equal(form2.status, 415); ok("form-encoded (cross-site style) POSTs refused");
+
+/* ---- complete export (files embedded) and import */
+{
+  const pco = (await call("POST", "/api/admin/companies", { name: "Package Co" })).data.company;
+  const P = (await signIn(pco.code)).cookie;
+  const up = async (path, headers, body) => { const r = await fetch(BASE + path, { method: "POST", headers: Object.assign({ cookie: P }, headers), body }); return r.json(); };
+  const csvBytes = Buffer.from("lot,step,scrap\nAL1,WB,12\n");
+  const f = await up("/api/s/samples", { "x-file-name": "scrap.csv", "content-type": "application/octet-stream" }, csvBytes);
+  const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0xff, 0xd9]);
+  const im = await up("/api/s/attachments", { "content-type": "image/jpeg" }, jpeg);
+  const body = spec(60, { q1: "Quality" });
+  const sc = [{ situation: "yield drops", images: [{ id: im.id, caption: "Pareto", w: 10, h: 10 }] }];
+  const sm = [{ kind: "data", status: "available", title: "Scrap per step", format: 0, files: [{ id: f.id, name: f.name, size: f.size }] }];
+  body.answers.push({ id: "q217", type: "scenarios", scenarios: [{ situation: "yield drops", images: [{ id: im.id, caption: "Pareto" }] }] });
+  body.answers.push({ id: "q228", type: "samples", samples: [{ kind: "data", title: "Scrap per step", files: [{ id: f.id, name: f.name, size: f.size }] }] });
+  body.draft = { answers: { q1: "Quality", q217: sc, q228: sm }, notes: {}, path: "full", tracks: [] };
+  assert.equal((await call("PUT", "/api/s/spec", { response: body, base_updated_at: null }, P)).status, 200);
+
+  const ex = await call("GET", "/api/s/export", undefined, P);
+  assert.equal(ex.status, 200); assert.match(ex.headers.get("content-disposition"), /attachment; filename="baerel-kravspesifikasjon-package-co-/);
+  const exJ = ex.data;
+  assert.equal(exJ.draft.answers.q217[0].images[0].data.slice(0, 23), "data:image/jpeg;base64,");
+  assert.equal(Buffer.from(exJ.draft.answers.q228[0].files[0].data.split(",")[1], "base64").toString(), csvBytes.toString());
+  assert.equal((await call("GET", `/api/admin/companies/${pco.id}/export`)).data.draft.answers.q228[0].files[0].name, "scrap.csv");
+  assert.equal((await call("GET", `/api/admin/companies/${pco.id}/export`, undefined, P)).status, 401);
+  ok("complete export: images and sample files embedded, for the company and the admin");
+
+  // Admin import into another company: files stored again under new ids, saved as a version.
+  const ico = (await call("POST", "/api/admin/companies", { name: "Import Co" })).data.company;
+  const ai = await call("POST", `/api/admin/companies/${ico.id}/import`, { response: exJ });
+  assert.equal(ai.status, 200); assert.equal(ai.data.files_added, 2); assert.equal(ai.data.skipped.length, 0);
+  const got = (await call("GET", `/api/admin/companies/${ico.id}/submissions`)).data.responses[0];
+  assert.equal(got.respondent.organisation, "Import Co");
+  const nf = got.draft.answers.q228[0].files[0], ni = got.draft.answers.q217[0].images[0];
+  assert.notEqual(nf.id, f.id); assert.notEqual(ni.id, im.id); assert.equal(nf.data, undefined);
+  assert.equal(got.answers.find((a) => a.id === "q228").samples[0].files[0].id, nf.id);
+  assert.equal(got.answers.find((a) => a.id === "q217").scenarios[0].images[0].id, ni.id);
+  assert.equal(Buffer.from(await (await fetch(`${BASE}/api/admin/samples/${nf.id}`, { headers: { cookie: admin } })).arrayBuffer()).toString(), csvBytes.toString());
+  assert.equal((await fetch(`${BASE}/api/admin/attachments/${ni.id}`, { headers: { cookie: admin } })).status, 200);
+  assert.equal((await call("GET", `/api/admin/companies/${ico.id}`)).data.company.sample_files, 1);
+  assert.equal((await call("GET", `/api/admin/companies/${ico.id}/versions`)).data.versions[0].reason, "import");
+  ok("admin import: new company gets its own copies of every file and image, ids rewritten everywhere, version 'import'");
+
+  // Company import through its own session; bad content refused; closed refuses.
+  const bad = JSON.parse(JSON.stringify(exJ));
+  bad.draft.answers.q228[0].files[0].name = "payload.csv";
+  bad.draft.answers.q228[0].files[0].data = "data:application/octet-stream;base64," + Buffer.from([0x4d, 0x5a, 0x90, 0x00]).toString("base64");
+  bad.answers.find((a) => a.id === "q228").samples[0].files = [];
+  const ci = await call("POST", "/api/s/import", { response: bad }, P);
+  assert.equal(ci.status, 200); assert.equal(ci.data.files_added, 1); assert.equal(ci.data.skipped.length, 1);
+  assert.equal(ci.data.response.draft.answers.q228[0].files[0].id, undefined);
+  assert.equal((await call("POST", "/api/s/import", { response: { schema: "other", answers: [] } }, P)).status, 422);
+  await call("POST", `/api/admin/companies/${pco.id}/close`, {});
+  assert.equal((await call("POST", "/api/s/import", { response: exJ }, P)).status, 423);
+  assert.equal((await call("GET", "/api/s/export", undefined, P)).status, 200);
+  ok("company import: executables dropped, wrong schema 422, closed 423 — export still works when closed");
+
+  // Read-only / read-write for all at once; the invitation example stays read-only unless included.
+  await call("POST", "/api/admin/settings", { example_company: pco.id });
+  assert.equal((await call("POST", "/api/admin/access-all", { open: "yes" })).status, 422);
+  assert.equal((await call("POST", "/api/admin/access-all", { open: false }, P)).status, 401);
+  let all = (await call("POST", "/api/admin/access-all", { open: false })).data;
+  assert.ok(all.companies.every((c) => !c.submissions_open));
+  all = (await call("POST", "/api/admin/access-all", { open: true })).data;
+  assert.equal(all.companies.find((c) => c.id === pco.id).submissions_open, false);
+  assert.ok(all.companies.filter((c) => c.id !== pco.id).every((c) => c.submissions_open));
+  all = (await call("POST", "/api/admin/access-all", { open: true, include_example: true })).data;
+  assert.ok(all.companies.every((c) => c.submissions_open)); assert.equal(all.changed, 1);
+  await call("POST", "/api/admin/settings", { example_company: null });
+  ok("access for all: read-only / read-write in one call; example kept read-only unless included");
+}
 let limitedHit = false;
 for (let i = 0; i < 12; i++) if ((await signIn("ZZZZ-ZZZZ-ZZZZ-ZZZZ")).status === 429) limitedHit = true;
 assert.ok(limitedHit); ok("code guessing is rate-limited");
