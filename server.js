@@ -485,8 +485,10 @@ function walk(x, fn) {
 function embedFiles(resp, companyId) {
   const r = JSON.parse(JSON.stringify(resp));
   let bytes = 0;
+  const seen = new Set();   // each file once; other references keep the id and are mapped on import
   walk(r, (o) => {
-    if (typeof o.id !== "string" || o.data) return;
+    if (typeof o.id !== "string" || o.data || seen.has(o.id)) return;
+    seen.add(o.id);
     if (o.id.startsWith("img_")) {
       const a = q.getAtt.get(o.id);
       if (a && a.company_id === companyId) { o.data = "data:" + a.content_type + ";base64," + Buffer.from(a.bytes).toString("base64"); bytes += a.size; }
