@@ -113,6 +113,18 @@ assert.equal((await call("POST", "/api/admin/settings", { question_set: "full" }
 assert.equal((await call("GET", "/api/s/spec", undefined, A)).data.updated_at, keep.updated_at);
 ok("question set: admin-only switch full ↔ lean, reaches the page, leaves the specification untouched");
 
+/* ---- example company offered in invitations */
+assert.equal((await call("GET", "/api/admin/settings")).data.example_company, null);
+assert.equal((await call("POST", "/api/admin/settings", { example_company: "co_doesnotexist" })).status, 422);
+assert.equal((await call("POST", "/api/admin/settings", { example_company: co.id }, A)).status, 401);
+const exSet = await call("POST", "/api/admin/settings", { example_company: co.id });
+assert.equal(exSet.data.example_company, co.id); assert.equal(exSet.data.question_set, "full");
+assert.equal((await call("GET", "/api/admin/settings")).data.example_company, co.id);
+assert.equal((await call("POST", "/api/admin/settings", { example_company: null })).data.example_company, null);
+assert.equal((await call("POST", "/api/admin/settings", { question_set: "tiny", example_company: co.id })).status, 422);
+assert.equal((await call("GET", "/api/admin/settings")).data.example_company, null);
+ok("example company: admin-only, must exist, can be cleared, never half-applied");
+
 /* ---- versions and restore */
 const vl = await call("GET", "/api/s/versions", undefined, A);
 assert.deepEqual(vl.data.versions.map((v) => v.n), [3, 2, 1]);

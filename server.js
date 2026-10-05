@@ -134,6 +134,7 @@ const now = () => new Date().toISOString();
 const getSetting = (k, d) => { const r = db.prepare("SELECT value FROM settings WHERE key = ?").get(k); return r ? r.value : d; };
 const setSetting = (k, v) => db.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(k, v);
 const questionSet = () => (getSetting("question_set", "full") === "lean" ? "lean" : "full");
+const settingsView = () => ({ question_set: questionSet(), example_company: getSetting("example_company", "") || null });
 const rand = (bytes) => crypto.randomBytes(bytes).toString("base64url");
 const sha256 = (s) => crypto.createHash("sha256").update(s).digest("hex");
 
@@ -891,15 +892,19 @@ async function handle(req, res) {
     if (!isAdmin(req)) return fail(res, 401, "unauthorised", "Log in first.");
 
     if (p === "/api/admin/settings") {
-      if (m === "GET") return json(res, 200, { question_set: questionSet() });
+      if (m === "GET") return json(res, 200, settingsView());
       if (m === "POST") {
         let body;
         try { body = await readJson(req); } catch (e) { return fail(res, e.status || 400, "bad_request", e.message); }
-        const v = body.question_set;
-        if (v !== "full" && v !== "lean") return fail(res, 422, "bad_value", "question_set must be full or lean.");
-        setSetting("question_set", v);
-        audit(null, "settings.question_set", v);
-        return json(res, 200, { question_set: v });
+        // Validate everything first, so a bad value never leaves a half-applied change.
+        const qs = body.question_set;
+        if ("question_set" in body && qs !== "full" && qs !== "lean") return fail(res, 422, "bad_value", "question_set must be full or lean.");
+        // The company whose specification is offered as a read-only example in invitations.
+        const ex = "example_company" in body ? (body.example_company === null ? "" : String(body.example_company)) : undefined;
+        if (ex && !q.companyById.get(ex)) return fail(res, 422, "bad_value", "example_company must be an existing company or empty.");
+        if ("question_set" in body) { setSetting("question_set", qs); audit(null, "settings.question_set", qs); }
+        if (ex !== undefined) { setSetting("example_company", ex); audit(ex || null, "settings.example_company", ex || "none"); }
+        return json(res, 200, settingsView());
       }
       return fail(res, 405, "method_not_allowed", "");
     }

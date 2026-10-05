@@ -8,6 +8,14 @@ The Bærel **self-reported requirements specification** for a circular-electroni
 4. Anyone at the company opens the site, types the code and lands on the company's specification. Case, spaces and dashes don't matter; O is read as 0 and I/L as 1.
 5. The admin can **Generate new code** (the old code stops working at once and every open session is signed out), **Revoke access**, **Close / Reopen for changes**, open **Analysis**, download the JSON, and list, download or restore **Versions**.
 
+## An example in every invitation
+
+The admin console has an **Example in invitations** panel. Choose a filled-in specification (for example a fictional test company) and every **Copy invitation** text gets an extra paragraph, in Norwegian and English, with that company's code. Invited companies can then open a completed example before they start, and sign out to enter their own code.
+
+- The example should be **closed for changes**, since everyone invited gets its code. The panel warns while it is still open, and the invitation only calls it read-only once it is closed.
+- The invitation always uses the example's current code, so generating a new code for it needs no other change. With no active code, the example is left out.
+- The example company's own invitation never mentions itself.
+
 ## Question sets: full or lean
 
 The admin console has a **Question set** switch:
@@ -103,7 +111,7 @@ Requires Node 22.5 or later. There are no npm dependencies: it uses `node:http` 
 
 ```sh
 ADMIN_PASSWORD='at-least-12-characters' PUBLIC_URL=https://requirements.example.com npm start
-npm test        # 35 end-to-end checks against a throwaway database
+npm test        # 36 end-to-end checks against a throwaway database
 ```
 
 Docker: `docker build -t baerel . && docker run -p 8080:8080 -v baerel-data:/data -e ADMIN_PASSWORD=… -e PUBLIC_URL=… baerel`

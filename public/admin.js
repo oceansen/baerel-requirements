@@ -67,7 +67,27 @@
     ta.remove();
   }
 
+  /* The company offered as a worked example in invitations, if any. Not offered to the
+     example company itself, nor when its code is inactive. */
+  function exampleFor(c) {
+    var ex = state.companies.filter(function (x) { return x.id === state.example; })[0];
+    return ex && ex.id !== c.id && ex.code_active ? ex : null;
+  }
+
   function invitation(c) {
+    var ex = exampleFor(c);
+    var exNb = ex ? [
+      "Vil dere se et ferdig utfylt eksempel før dere begynner? Bruk koden " + ex.code + " på den samme nettsiden. Den åpner en oppdiktet, men realistisk kravspesifikasjon for " + ex.name + ", laget for å prøve ut plattformen – med bruksscenarioer, eksempeldata og metadata." +
+        (ex.submissions_open ? "" : " Eksempelet er skrivebeskyttet og inneholder ingen ekte data fra virksomheten.") +
+        " Velg «Logg ut» når dere er ferdige, og skriv inn deres egen kode.",
+      ""
+    ] : [];
+    var exEn = ex ? [
+      "",
+      "Would you like to see a completed example before you start? Enter the code " + ex.code + " on the same website. It opens a fictional but realistic specification for " + ex.name + ", made to try out the platform — with usage scenarios, sample data and metadata." +
+        (ex.submissions_open ? "" : " The example is read-only and contains no real data from the company.") +
+        " Choose “Sign out” when you are done, then enter your own code."
+    ] : [];
     return [
       "Hei,",
       "",
@@ -77,7 +97,8 @@
       "Tilgangskode: " + c.code,
       "",
       "Alle i virksomheten som har koden, fyller ut og oppdaterer den samme kravspesifikasjonen. Alt lagres fortløpende, og tidligere versjoner kan hentes fram igjen. Del koden bare internt, og behandle den som et passord.",
-      "",
+      ""
+    ].concat(exNb, [
       "—",
       "",
       "Hi,",
@@ -88,7 +109,7 @@
       "Access code: " + c.code,
       "",
       "Everyone in your organisation holding the code fills in and updates the same specification. Everything is saved as you go, and earlier versions can be restored. Share the code only internally and treat it like a password."
-    ].join("\n");
+    ], exEn).join("\n");
   }
 
   /* Two-step confirm without a modal: first click arms, second click acts. */
@@ -280,6 +301,7 @@
     main.appendChild(head);
 
     main.appendChild(questionSetPanel());
+    main.appendChild(examplePanel());
 
     if (!state.companies.length) {
       main.appendChild(el("p", { class: "co-empty", text: "No companies yet." }));
@@ -308,11 +330,41 @@
     return box;
   }
 
+  /* Which company's specification invitations offer as a worked example. The example
+     should be closed for changes, since everyone invited gets its code. */
+  function examplePanel() {
+    var box = el("section", { class: "panel qset" });
+    box.appendChild(el("p", { class: "eyebrow", text: "Example in invitations" }));
+    var sel = el("select", { id: "example-company", "aria-label": "Example specification offered in invitations" });
+    sel.appendChild(el("option", { value: "", text: "None — invitations carry only the company's own code" }));
+    state.companies.forEach(function (c) {
+      var o = el("option", { value: c.id, text: c.name + (c.submissions_open ? " (open for changes)" : " (read-only)") });
+      if (c.id === state.example) o.selected = true;
+      sel.appendChild(o);
+    });
+    var err = el("p", { class: "err", role: "alert" });
+    sel.addEventListener("change", function () {
+      err.textContent = "";
+      api("POST", "/api/admin/settings", { example_company: sel.value || null })
+        .then(function (d) { state.example = d.example_company; render(); })
+        .catch(function (x) { err.textContent = x.message; });
+    });
+    box.appendChild(sel);
+    box.appendChild(err);
+    var ex = state.companies.filter(function (x) { return x.id === state.example; })[0];
+    var msg = !ex ? "Choose a filled-in specification to offer every invited company as an example they can open with its code."
+      : !ex.code_active ? ex.name + " has no active code, so invitations leave the example out. Generate a code for it."
+      : ex.submissions_open ? "Warning: " + ex.name + " is open for changes, and everyone invited gets its code. Close it for changes to make the example read-only."
+      : "Every invitation now offers " + ex.name + " (code " + ex.code + ") as a read-only example. If you generate a new code for it, invitations follow automatically.";
+    box.appendChild(el("p", { class: "co-meta" + (ex && (ex.submissions_open || !ex.code_active) ? " err" : ""), style: "margin-top:10px", text: msg }));
+    return box;
+  }
+
   function render() { if (boot.authed) renderConsole(); else renderLogin(); }
 
   if (boot.authed) {
     Promise.all([api("GET", "/api/admin/companies"), api("GET", "/api/admin/settings")]).then(function (r) {
-      state.companies = r[0].companies; state.questionSet = r[1].question_set; render();
+      state.companies = r[0].companies; state.questionSet = r[1].question_set; state.example = r[1].example_company; render();
     });
   } else {
     render();
