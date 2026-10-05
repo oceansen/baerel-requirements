@@ -486,7 +486,8 @@ function embedFiles(resp, companyId) {
   const r = JSON.parse(JSON.stringify(resp));
   let bytes = 0;
   const seen = new Set();   // each file once; other references keep the id and are mapped on import
-  walk(r, (o) => {
+  // The working draft first: it is what the app reopens.
+  const embed = (o) => {
     if (typeof o.id !== "string" || o.data || seen.has(o.id)) return;
     seen.add(o.id);
     if (o.id.startsWith("img_")) {
@@ -496,7 +497,9 @@ function embedFiles(resp, companyId) {
       const f = q.getSample.get(o.id);
       if (f && f.company_id === companyId) { o.data = "data:application/octet-stream;base64," + Buffer.from(f.bytes).toString("base64"); bytes += f.size; }
     }
-  });
+  };
+  walk(r.draft, embed);
+  walk(r, embed);
   r.embedded_files = true;
   return { response: r, bytes };
 }
