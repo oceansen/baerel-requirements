@@ -847,6 +847,20 @@
       ws.info.company = d.company || ws.info.company;
       if (sync.inflight) return;                       // a save in flight will reconcile itself
       var remoteMoved = (d.updated_at || null) !== (base ? base.updated_at : null);
+      // Read-only: nothing local can ever be saved, so show exactly what the server has.
+      if (d.company && d.company.open === false && d.response && (remoteMoved || localChanged())) {
+        var v0 = state.view, s0 = state.section;
+        var sd = serverDraft(d.response);
+        state.answers = clone(sd.answers); state.notes = clone(sd.notes);
+        saveBase({ updated_at: d.updated_at || null, answers: clone(sd.answers), notes: clone(sd.notes) });
+        state.updatedAt = d.updated_at || state.updatedAt;
+        if (d.version) { sync.version = d.version; sync.last = new Date(d.updated_at); }
+        sync.dirty = false;
+        state.view = v0; state.section = s0;
+        saveDraft(); render();
+        if (remoteMoved) setStatus(t("loadedRemote"));
+        return;
+      }
       if (remoteMoved && d.response) {
         var view = state.view, section = state.section;
         var ours = absorbServer(d);
@@ -933,7 +947,20 @@
 
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "hidden" && sync.dirty) doSync();
+    else if (document.visibilityState === "visible") refreshFromServer();
   });
+
+  /* A tab left open would otherwise keep showing what it loaded first. Check the server
+     when the tab is shown again and every two minutes while it is visible — but never
+     while someone is typing or a save is pending, so nothing is interrupted. */
+  var lastPull = 0;
+  function refreshFromServer() {
+    if (!WS || ws.gone || sync.inflight || sync.dirty || isTyping()) return;
+    if (Date.now() - lastPull < 20000) return;
+    lastPull = Date.now();
+    pullServer();
+  }
+  if (WS) setInterval(function () { if (document.visibilityState === "visible") refreshFromServer(); }, 120000);
 
   /* -------- versions */
 
